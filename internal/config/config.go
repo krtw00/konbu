@@ -10,6 +10,7 @@ type Config struct {
 	Port          string
 	AdminEmail    string
 	AllowedEmails []string
+	DevUser       string
 }
 
 func Load() *Config {
@@ -38,6 +39,7 @@ func Load() *Config {
 		Port:          port,
 		AdminEmail:    os.Getenv("ADMIN_EMAIL"),
 		AllowedEmails: allowed,
+		DevUser:       os.Getenv("DEV_USER"),
 	}
 }
 

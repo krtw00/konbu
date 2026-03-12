@@ -14,7 +14,7 @@ type contextKey string
 
 const userContextKey contextKey = "user"
 
-func Auth(authSvc *service.AuthService) func(http.Handler) http.Handler {
+func Auth(authSvc *service.AuthService, devUser string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			var user *model.User
@@ -34,6 +34,14 @@ func Auth(authSvc *service.AuthService) func(http.Handler) http.Handler {
 				if err != nil {
 					log.Printf("auth error: %v", err)
 					http.Error(w, `{"error":{"code":"unauthorized","message":"authentication failed"}}`, http.StatusUnauthorized)
+					return
+				}
+			} else if devUser != "" {
+				// DEV_USER: ローカル開発用（ForwardAuth不要）
+				user, err = authSvc.GetOrCreateUser(r.Context(), devUser)
+				if err != nil {
+					log.Printf("dev auth error: %v", err)
+					http.Error(w, `{"error":{"code":"unauthorized","message":"dev user auth failed"}}`, http.StatusUnauthorized)
 					return
 				}
 			} else {

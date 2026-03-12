@@ -66,7 +66,7 @@ func main() {
 
 	// API v1 routes (authenticated)
 	r.Route("/api/v1", func(r chi.Router) {
-		r.Use(middleware.Auth(authSvc))
+		r.Use(middleware.Auth(authSvc, cfg.DevUser))
 
 		r.Mount("/auth", authH.Routes())
 		r.Mount("/api-keys", apiKeyH.Routes())
