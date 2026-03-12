@@ -20,6 +20,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /bin/server /server
 COPY --from=builder /bin/konbu /konbu
 COPY sql/migrations /migrations
+COPY web/static /web/static
 
 EXPOSE 8080
 

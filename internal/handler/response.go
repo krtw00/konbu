@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -30,6 +31,7 @@ func writeNoContent(w http.ResponseWriter) {
 }
 
 func writeError(w http.ResponseWriter, err error) {
+	log.Printf("ERROR: %v", err)
 	var appErr *apperror.Error
 	if errors.As(err, &appErr) {
 		writeJSON(w, appErr.HTTPStatus, map[string]interface{}{

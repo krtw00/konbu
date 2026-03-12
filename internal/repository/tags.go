@@ -58,12 +58,12 @@ func (q *Queries) ListTagsByUserID(ctx context.Context, userID uuid.UUID) ([]Tag
 	return tags, rows.Err()
 }
 
-func (q *Queries) UpdateTag(ctx context.Context, id uuid.UUID, name string) (Tag, error) {
+func (q *Queries) UpdateTag(ctx context.Context, id, userID uuid.UUID, name string) (Tag, error) {
 	row := q.db.QueryRowContext(ctx,
-		`UPDATE tags SET name = $2
-		 WHERE id = $1 AND deleted_at IS NULL
+		`UPDATE tags SET name = $3
+		 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
 		 RETURNING id, user_id, name, created_at`,
-		id, name)
+		id, userID, name)
 	var t Tag
 	err := row.Scan(&t.ID, &t.UserID, &t.Name, &t.CreatedAt)
 	return t, err

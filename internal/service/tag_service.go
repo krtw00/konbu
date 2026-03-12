@@ -58,8 +58,8 @@ func (s *TagService) CreateTag(ctx context.Context, userID uuid.UUID, req model.
 	return &model.Tag{ID: t.ID, Name: t.Name}, nil
 }
 
-func (s *TagService) UpdateTag(ctx context.Context, id uuid.UUID, req model.UpdateTagRequest) (*model.Tag, error) {
-	t, err := s.queries.UpdateTag(ctx, id, req.Name)
+func (s *TagService) UpdateTag(ctx context.Context, id, userID uuid.UUID, req model.UpdateTagRequest) (*model.Tag, error) {
+	t, err := s.queries.UpdateTag(ctx, id, userID, req.Name)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}

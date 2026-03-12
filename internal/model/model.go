@@ -65,7 +65,7 @@ type Memo struct {
 	Title        string           `json:"title"`
 	Type         string           `json:"type"`
 	Content      *string          `json:"content,omitempty"`
-	TableColumns json.RawMessage  `json:"table_columns,omitempty"`
+	TableColumns *json.RawMessage `json:"table_columns,omitempty"`
 	Tags         []Tag            `json:"tags,omitempty"`
 	Rows         *PaginatedResult `json:"rows,omitempty"`
 	CreatedAt    time.Time        `json:"created_at"`
@@ -73,18 +73,18 @@ type Memo struct {
 }
 
 type CreateMemoRequest struct {
-	Title        string          `json:"title"`
-	Type         string          `json:"type"`
-	Content      *string         `json:"content,omitempty"`
-	TableColumns json.RawMessage `json:"table_columns,omitempty"`
-	Tags         []string        `json:"tags,omitempty"`
+	Title        string           `json:"title"`
+	Type         string           `json:"type"`
+	Content      *string          `json:"content,omitempty"`
+	TableColumns *json.RawMessage `json:"table_columns,omitempty"`
+	Tags         []string         `json:"tags,omitempty"`
 }
 
 type UpdateMemoRequest struct {
-	Title        string          `json:"title"`
-	Content      *string         `json:"content,omitempty"`
-	TableColumns json.RawMessage `json:"table_columns,omitempty"`
-	Tags         []string        `json:"tags,omitempty"`
+	Title        string           `json:"title"`
+	Content      *string          `json:"content,omitempty"`
+	TableColumns *json.RawMessage `json:"table_columns,omitempty"`
+	Tags         []string         `json:"tags,omitempty"`
 }
 
 // --- Todo ---

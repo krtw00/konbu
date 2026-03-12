@@ -14,7 +14,7 @@ type Memo struct {
 	Title        string
 	Type         string
 	Content      *string
-	TableColumns json.RawMessage
+	TableColumns *json.RawMessage
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
@@ -24,7 +24,7 @@ type MemoTag struct {
 	Name string
 }
 
-func (q *Queries) CreateMemo(ctx context.Context, userID uuid.UUID, title, memoType string, content *string, tableCols json.RawMessage) (Memo, error) {
+func (q *Queries) CreateMemo(ctx context.Context, userID uuid.UUID, title, memoType string, content *string, tableCols *json.RawMessage) (Memo, error) {
 	row := q.db.QueryRowContext(ctx,
 		`INSERT INTO memos (user_id, title, type, content, table_columns)
 		 VALUES ($1, $2, $3, $4, $5)
@@ -75,7 +75,7 @@ func (q *Queries) CountMemosByUserID(ctx context.Context, userID uuid.UUID) (int
 	return count, err
 }
 
-func (q *Queries) UpdateMemo(ctx context.Context, id, userID uuid.UUID, title string, content *string, tableCols json.RawMessage) (Memo, error) {
+func (q *Queries) UpdateMemo(ctx context.Context, id, userID uuid.UUID, title string, content *string, tableCols *json.RawMessage) (Memo, error) {
 	row := q.db.QueryRowContext(ctx,
 		`UPDATE memos SET title = $3, content = $4, table_columns = $5, updated_at = now()
 		 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL

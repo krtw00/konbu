@@ -77,6 +77,13 @@ func main() {
 		r.Mount("/events", eventH.Routes())
 	})
 
+	// Static files (Web UI)
+	staticDir := http.Dir("/web/static")
+	r.Handle("/static/*", http.StripPrefix("/static", http.FileServer(staticDir)))
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "/web/static/index.html")
+	})
+
 	addr := ":" + cfg.Port
 	log.Printf("konbu server starting on %s", addr)
 	if err := http.ListenAndServe(addr, r); err != nil {

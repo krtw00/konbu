@@ -53,7 +53,10 @@ func (s *TodoService) GetTodo(ctx context.Context, id, userID uuid.UUID) (*model
 	}
 	todo := toModelTodo(r)
 
-	tags, _ := s.queries.GetTodoTags(ctx, id)
+	tags, err := s.queries.GetTodoTags(ctx, id)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
 	todo.Tags = make([]model.Tag, len(tags))
 	for i, t := range tags {
 		todo.Tags[i] = model.Tag{ID: t.ID, Name: t.Name}
@@ -120,7 +123,14 @@ func (s *TodoService) UpdateTodo(ctx context.Context, id, userID uuid.UUID, req 
 		status = "open"
 	}
 
-	r, err := s.queries.UpdateTodo(ctx, id, userID, req.Title, req.Description, status, dueDate)
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	defer tx.Rollback()
+
+	q := s.queries.WithTx(tx)
+	r, err := q.UpdateTodo(ctx, id, userID, req.Title, req.Description, status, dueDate)
 	if err != nil {
 		if errors.Is(err, repository.ErrNoRows) {
 			return nil, apperror.NotFound("todo")
@@ -128,7 +138,28 @@ func (s *TodoService) UpdateTodo(ctx context.Context, id, userID uuid.UUID, req 
 		return nil, apperror.Internal(err)
 	}
 
+	var modelTags []model.Tag
+	if req.Tags != nil {
+		if err := q.ClearTodoTags(ctx, id); err != nil {
+			return nil, apperror.Internal(err)
+		}
+		modelTags, err = s.tagSvc.EnsureTags(ctx, userID, req.Tags)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range modelTags {
+			if err := q.AddTodoTag(ctx, id, t.ID); err != nil {
+				return nil, apperror.Internal(err)
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, apperror.Internal(err)
+	}
+
 	todo := toModelTodo(r)
+	todo.Tags = modelTags
 	return &todo, nil
 }
 

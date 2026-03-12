@@ -56,6 +56,7 @@ func (h *TagHandler) create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TagHandler) update(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
 	id, err := uuid.Parse(chi.URLParam(r, "id"))
 	if err != nil {
 		writeError(w, err)
@@ -68,7 +69,7 @@ func (h *TagHandler) update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tag, err := h.tagSvc.UpdateTag(r.Context(), id, req)
+	tag, err := h.tagSvc.UpdateTag(r.Context(), id, user.ID, req)
 	if err != nil {
 		writeError(w, err)
 		return

@@ -63,7 +63,10 @@ func (s *MemoService) GetMemo(ctx context.Context, id, userID uuid.UUID) (*model
 		return nil, apperror.Internal(err)
 	}
 
-	tags, _ := s.queries.GetMemoTags(ctx, id)
+	tags, err := s.queries.GetMemoTags(ctx, id)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
 	modelTags := make([]model.Tag, len(tags))
 	for i, t := range tags {
 		modelTags[i] = model.Tag{ID: t.ID, Name: t.Name}
