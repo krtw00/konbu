@@ -1,0 +1,51 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: konbu
+      POSTGRES_USER: konbu
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./sql/migrations/0001_initial.up.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U konbu"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      DATABASE_URL: postgres://konbu:${POSTGRES_PASSWORD}@postgres:5432/konbu?sslmode=disable
+      PORT: "8080"
+      KONBU_USER: ${KONBU_USER}
+      KONBU_PASS: ${KONBU_PASS}
+      SESSION_SECRET: ${SESSION_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.konbu.rule=Host(`konbu.codenica.dev`)"
+      - "traefik.http.routers.konbu.entrypoints=websecure"
+      - "traefik.http.routers.konbu.tls.certresolver=letsencrypt"
+      - "traefik.http.services.konbu.loadbalancer.server.port=8080"
+      - "traefik.http.routers.konbu-http.rule=Host(`konbu.codenica.dev`)"
+      - "traefik.http.routers.konbu-http.entrypoints=web"
+      - "traefik.http.routers.konbu-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+    networks:
+      - default
+      - web
+    restart: unless-stopped
+
+networks:
+  web:
+    external: true
+
+volumes:
+  pgdata:
