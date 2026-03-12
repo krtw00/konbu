@@ -386,7 +386,14 @@ async function loadTools(){
     }else{
       icon=el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase());
     }
-    c.appendChild(el('a',{cls:'tool-card',href:t.url,target:'_blank',rel:'noopener'},icon,el('div',{cls:'tool-name'},t.name)));
+    const delBtn=el('button',{cls:'tool-del',title:'Delete'});
+    delBtn.textContent='×';
+    delBtn.onclick=async(e)=>{
+      e.preventDefault();e.stopPropagation();
+      if(!confirm(`Delete "${t.name}"?`))return;
+      await api('DELETE','/tools/'+t.id);loadTools();
+    };
+    c.appendChild(el('a',{cls:'tool-card',href:t.url,target:'_blank',rel:'noopener'},icon,el('div',{cls:'tool-name'},t.name),delBtn));
   });
 }
 
