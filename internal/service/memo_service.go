@@ -37,10 +37,19 @@ func (s *MemoService) ListMemos(ctx context.Context, userID uuid.UUID, params mo
 
 	items := make([]model.Memo, len(memos))
 	for i, m := range memos {
+		tags, err := s.queries.GetMemoTags(ctx, m.ID)
+		if err != nil {
+			return nil, apperror.Internal(err)
+		}
+		modelTags := make([]model.Tag, len(tags))
+		for j, t := range tags {
+			modelTags[j] = model.Tag{ID: t.ID, Name: t.Name}
+		}
 		items[i] = model.Memo{
 			ID:        m.ID,
 			Title:     m.Title,
 			Type:      m.Type,
+			Tags:      modelTags,
 			CreatedAt: m.CreatedAt,
 			UpdatedAt: m.UpdatedAt,
 		}
