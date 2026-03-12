@@ -1,0 +1,11 @@
+-- 0001_initial.down.sql
+DROP TABLE IF EXISTS calendar_event_tags;
+DROP TABLE IF EXISTS calendar_events;
+DROP TABLE IF EXISTS todo_tags;
+DROP TABLE IF EXISTS todos;
+DROP TABLE IF EXISTS memo_rows;
+DROP TABLE IF EXISTS memo_tags;
+DROP TABLE IF EXISTS memos;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS api_keys;
+DROP TABLE IF EXISTS users;
