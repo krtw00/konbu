@@ -372,10 +372,22 @@ async function loadTools(){
   const r=await api('GET','/tools');const items=r.data||[];
   const c=$('tool-grid');c.innerHTML='';
   if(!items.length){c.appendChild(el('div',{cls:'empty'},'No tools yet'));return}
-  items.forEach((t,i)=>c.appendChild(el('a',{cls:'tool-card',href:t.url,target:'_blank',rel:'noopener'},
-    el('div',{cls:'tool-icon tool-icon-'+i%6},(t.icon||t.name||'?')[0].toUpperCase()),
-    el('div',{cls:'tool-name'},t.name)
-  )));
+  items.forEach((t,i)=>{
+    let icon;
+    if(t.url){
+      try{
+        const domain=new URL(t.url).hostname;
+        const img=el('img',{cls:'tool-favicon'});
+        img.src=`https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+        img.alt=t.name;
+        img.onerror=()=>{img.replaceWith(el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase()))};
+        icon=el('div',{cls:'tool-icon-wrap'},img);
+      }catch(e){icon=el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase())}
+    }else{
+      icon=el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase());
+    }
+    c.appendChild(el('a',{cls:'tool-card',href:t.url,target:'_blank',rel:'noopener'},icon,el('div',{cls:'tool-name'},t.name)));
+  });
 }
 
 const loaders={home:loadHome,memos:loadMemos,todos:loadTodos,calendar:loadCalendar,tools:loadTools};
