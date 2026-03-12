@@ -401,6 +401,7 @@ function getMemoContent(){
 function openMemoEditor(id,data){
   memoEditId=id;
   memoEditTags=(data.tags||[]).map(t=>typeof t==='string'?t:t.name);
+  document.body.classList.add('memo-edit-active');
 
   // Switch to editor page
   currentPage='memo-edit';
@@ -496,6 +497,7 @@ function closeMemoEditor(){
   saveMemo();
   if(cmView){cmView.destroy();cmView=null}
   memoEditId=null;
+  document.body.classList.remove('memo-edit-active');
   navigateTo('memos');
 }
 
