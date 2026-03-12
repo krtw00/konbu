@@ -406,15 +406,13 @@ async function loadTools(){
       try{
         const u=new URL(t.url);
         const domain=u.hostname;
-        const base=domain.split('.').slice(-2).join('.');
         const img=el('img',{cls:'tool-favicon'});
         img.alt=t.name;
         // Candidate URLs in priority order
         const candidates=[
           `https://www.google.com/s2/favicons?domain=${domain}&sz=32`,
-          domain!==base?`https://www.google.com/s2/favicons?domain=${base}&sz=32`:null,
           `${u.origin}/favicon.ico`,
-        ].filter(Boolean);
+        ];
         let ci=0;
         const tryNext=()=>{
           if(ci>=candidates.length){img.replaceWith(letterIcon());return}
