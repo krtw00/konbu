@@ -402,28 +402,13 @@ async function loadTools(){
   items.forEach((t,i)=>{
     const letterIcon=()=>el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase());
     let icon;
-    if(t.url){
-      try{
-        const u=new URL(t.url);
-        const domain=u.hostname;
-        const img=el('img',{cls:'tool-favicon'});
-        img.alt=t.name;
-        // Candidate URLs in priority order
-        const candidates=[
-          `https://www.google.com/s2/favicons?domain=${domain}&sz=32`,
-          `${u.origin}/favicon.ico`,
-        ];
-        let ci=0;
-        const tryNext=()=>{
-          if(ci>=candidates.length){img.replaceWith(letterIcon());return}
-          img.src=candidates[ci++];
-        };
-        img.onerror=tryNext;
-        // Google returns a default globe icon (16x16) when no favicon found — detect & skip
-        img.onload=()=>{if(img.naturalWidth<20)tryNext()};
-        tryNext();
-        icon=el('div',{cls:'tool-icon-wrap'},img);
-      }catch(e){icon=letterIcon()}
+    if(t.icon){
+      // Use server-fetched favicon (data URI)
+      const img=el('img',{cls:'tool-favicon'});
+      img.alt=t.name;
+      img.src=t.icon;
+      img.onerror=()=>img.replaceWith(letterIcon());
+      icon=el('div',{cls:'tool-icon-wrap'},img);
     }else{
       icon=letterIcon();
     }

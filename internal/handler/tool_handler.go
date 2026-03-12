@@ -23,6 +23,7 @@ func (h *ToolHandler) Routes() chi.Router {
 
 	r.Get("/", h.list)
 	r.Post("/", h.create)
+	r.Post("/refresh-icons", h.refreshIcons)
 	r.Put("/reorder", h.reorder)
 	r.Put("/{id}", h.update)
 	r.Delete("/{id}", h.delete)
@@ -91,6 +92,16 @@ func (h *ToolHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeNoContent(w)
+}
+
+func (h *ToolHandler) refreshIcons(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	count, err := h.toolSvc.RefreshToolIcons(r.Context(), user.ID)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeData(w, map[string]int{"updated": count})
 }
 
 func (h *ToolHandler) reorder(w http.ResponseWriter, r *http.Request) {
