@@ -1,0 +1,104 @@
+package service
+
+import (
+	"context"
+	"database/sql"
+	"errors"
+
+	"github.com/google/uuid"
+	"github.com/krtw00/konbu/internal/apperror"
+	"github.com/krtw00/konbu/internal/model"
+	"github.com/krtw00/konbu/internal/repository"
+)
+
+type ToolService struct {
+	queries *repository.Queries
+	db      *sql.DB
+}
+
+func NewToolService(db *sql.DB) *ToolService {
+	return &ToolService{
+		queries: repository.New(db),
+		db:      db,
+	}
+}
+
+func (s *ToolService) ListTools(ctx context.Context, userID uuid.UUID) ([]model.Tool, error) {
+	rows, err := s.queries.ListToolsByUserID(ctx, userID)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	tools := make([]model.Tool, len(rows))
+	for i, r := range rows {
+		tools[i] = toModelTool(r)
+	}
+	return tools, nil
+}
+
+func (s *ToolService) CreateTool(ctx context.Context, userID uuid.UUID, req model.CreateToolRequest) (*model.Tool, error) {
+	if req.Name == "" || req.URL == "" {
+		return nil, apperror.BadRequest("name and url are required")
+	}
+
+	maxSort, err := s.queries.MaxToolSortOrder(ctx, userID)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+
+	t, err := s.queries.CreateTool(ctx, userID, req.Name, req.URL, req.Icon, maxSort+1)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+
+	result := toModelTool(t)
+	return &result, nil
+}
+
+func (s *ToolService) UpdateTool(ctx context.Context, id, userID uuid.UUID, req model.UpdateToolRequest) (*model.Tool, error) {
+	existing, err := s.queries.GetToolByID(ctx, id, userID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNoRows) {
+			return nil, apperror.NotFound("tool")
+		}
+		return nil, apperror.Internal(err)
+	}
+
+	t, err := s.queries.UpdateTool(ctx, id, userID, req.Name, req.URL, req.Icon, existing.SortOrder)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+
+	result := toModelTool(t)
+	return &result, nil
+}
+
+func (s *ToolService) DeleteTool(ctx context.Context, id, userID uuid.UUID) error {
+	return s.queries.SoftDeleteTool(ctx, id, userID)
+}
+
+func (s *ToolService) ReorderTools(ctx context.Context, userID uuid.UUID, order []uuid.UUID) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return apperror.Internal(err)
+	}
+	defer tx.Rollback()
+
+	q := s.queries.WithTx(tx)
+	for i, id := range order {
+		if err := q.UpdateToolSortOrder(ctx, id, userID, i); err != nil {
+			return apperror.Internal(err)
+		}
+	}
+	return tx.Commit()
+}
+
+func toModelTool(t repository.Tool) model.Tool {
+	return model.Tool{
+		ID:        t.ID,
+		Name:      t.Name,
+		URL:       t.URL,
+		Icon:      t.Icon,
+		SortOrder: t.SortOrder,
+		CreatedAt: t.CreatedAt,
+	}
+}
