@@ -6,103 +6,167 @@
 <title>konbu</title>
 <link rel="stylesheet" href="/static/style.css">
 </head>
-<body class="theme-a">
+<body data-theme="konbu">
   <div id="app">
-
-    <!-- Theme Switcher (top-right floating) -->
-    <div class="theme-switcher" id="theme-switcher">
-      <span class="theme-label">Design:</span>
-      <button class="theme-btn active" data-theme="theme-a" title="A: Light Workspace">A</button>
-      <button class="theme-btn" data-theme="theme-b" title="B: Warm Notion-like">B</button>
-      <button class="theme-btn" data-theme="theme-c" title="C: Classic Portal">C</button>
-      <button class="theme-btn" data-theme="theme-d" title="D: Dark Minimal">D</button>
+    <!-- Theme Switcher -->
+    <div class="theme-switcher">
+      <div class="theme-dot active" data-theme="konbu" title="Konbu"></div>
+      <div class="theme-dot" data-theme="notion" title="Notion"></div>
+      <div class="theme-dot" data-theme="solarized" title="Solarized"></div>
+      <div class="theme-dot" data-theme="latte" title="Catppuccin Latte"></div>
+      <div class="theme-dot" data-theme="nord" title="Nord"></div>
+      <div class="theme-dot" data-theme="linear" title="Linear"></div>
+      <div class="theme-dot" data-theme="mocha" title="Catppuccin Mocha"></div>
     </div>
 
-    <!-- Header -->
-    <header class="header">
-      <div class="header-inner">
-        <h1 class="logo"><span class="logo-mark">K</span>konbu</h1>
-        <div class="header-search">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-          <input type="text" id="global-search" placeholder="Search...">
-        </div>
-        <div class="header-right">
-          <span class="header-date" id="header-date"></span>
-          <span class="header-user" id="header-user"></span>
-        </div>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sb-logo">
+        <span class="sb-mark">K</span>
+        <span class="sb-title">konbu</span>
       </div>
-    </header>
-
-    <!-- Portal -->
-    <main class="portal">
-      <div class="grid">
-
-        <!-- Schedule -->
-        <section class="widget w-schedule">
-          <div class="w-head">
-            <h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule</h2>
-            <button class="w-add" data-action="new-event">+</button>
-          </div>
-          <div class="w-body">
-            <div id="mini-cal"></div>
-            <div id="event-list"></div>
-          </div>
-        </section>
-
-        <!-- ToDo -->
-        <section class="widget w-todo">
-          <div class="w-head">
-            <h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 12 2 2 4-4"/></svg>ToDo <span class="count" id="todo-count">0</span></h2>
-            <button class="w-add" data-action="new-todo">+</button>
-          </div>
-          <div class="w-body">
-            <div class="chips" id="todo-chips">
-              <button class="chip on" data-f="open">Open</button>
-              <button class="chip" data-f="done">Done</button>
-              <button class="chip" data-f="all">All</button>
-            </div>
-            <div id="todo-list"></div>
-          </div>
-        </section>
-
-        <!-- Memos -->
-        <section class="widget w-memos">
-          <div class="w-head">
-            <h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>Memos <span class="count" id="memo-count">0</span></h2>
-            <button class="w-add" data-action="new-memo">+</button>
-          </div>
-          <div class="w-body" id="memo-list"></div>
-        </section>
-
-        <!-- Tools -->
-        <section class="widget w-tools">
-          <div class="w-head">
-            <h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Tools</h2>
-            <button class="w-add" data-action="new-tool">+</button>
-          </div>
-          <div class="w-body" id="tool-grid"></div>
-        </section>
-
-        <!-- Tags -->
-        <section class="widget w-tags">
-          <div class="w-head"><h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/></svg>Tags</h2></div>
-          <div class="w-body" id="tag-list"></div>
-        </section>
-
-        <!-- Quick -->
-        <section class="widget w-quick">
-          <div class="w-head"><h2><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Quick Input</h2></div>
-          <div class="w-body">
-            <input type="text" class="quick-in" id="quick-in" placeholder="Type and Enter to add memo...">
-            <div class="chips" style="margin-top:6px">
-              <button class="chip on" data-q="memo">Memo</button>
-              <button class="chip" data-q="todo">ToDo</button>
-            </div>
-          </div>
-        </section>
-
+      <div class="sb-nav">
+        <button class="sb-item active" data-page="home">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="sb-item" data-page="memos">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>
+          <span>Memos</span>
+        </button>
+        <button class="sb-item" data-page="todos">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+          <span>ToDo</span>
+        </button>
+        <button class="sb-item" data-page="calendar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Calendar</span>
+        </button>
+        <button class="sb-item" data-page="tools">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span>Tools</span>
+        </button>
       </div>
+      <div class="sb-bottom">
+        <button class="sb-item" id="cmd-trigger" title="Cmd+K">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span>Search</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Mobile bottom nav -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="bn-item active" data-page="home"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>Home</span></button>
+      <button class="bn-item" data-page="memos"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/></svg><span>Memo</span></button>
+      <button class="bn-item" data-page="todos"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m9 12 2 2 4-4"/></svg><span>ToDo</span></button>
+      <button class="bn-item" data-page="calendar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg><span>Cal</span></button>
+      <button class="bn-item" data-page="tools"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span>Tools</span></button>
+    </nav>
+
+    <!-- Content -->
+    <main class="content" id="content">
+
+      <!-- Home -->
+      <section class="page active" id="page-home">
+        <div class="page-head">
+          <h1 id="home-date"></h1>
+        </div>
+        <div class="home-grid">
+          <div class="home-card">
+            <div class="hc-head"><h2>Today's Schedule</h2></div>
+            <div class="hc-body" id="home-events"></div>
+          </div>
+          <div class="home-card">
+            <div class="hc-head"><h2>ToDo</h2><span class="badge" id="home-todo-count">0</span></div>
+            <div class="hc-body" id="home-todos"></div>
+          </div>
+          <div class="home-card home-card-wide">
+            <div class="hc-head"><h2>Recent Memos</h2></div>
+            <div class="hc-body" id="home-memos"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Memos (list) -->
+      <section class="page" id="page-memos">
+        <div class="page-head">
+          <h1>Memos</h1>
+          <button class="btn-primary" data-action="new-memo">+ New</button>
+        </div>
+        <div class="page-toolbar">
+          <input type="text" class="search-input" id="memo-search" placeholder="Search memos...">
+        </div>
+        <div class="item-list" id="memo-list"></div>
+      </section>
+
+      <!-- Memo Editor (fullscreen) -->
+      <section class="page" id="page-memo-edit">
+        <div class="me-toolbar" id="me-toolbar">
+          <button class="me-back" id="me-back">← Memos</button>
+          <input type="text" class="me-title" id="me-title" placeholder="Untitled">
+          <div class="me-actions">
+            <span class="me-status" id="me-status"></span>
+            <button class="btn-ghost me-tag-btn" id="me-tag-btn">Tags</button>
+            <button class="btn-danger" id="me-delete">Delete</button>
+          </div>
+        </div>
+        <div class="me-tag-bar" id="me-tag-bar"></div>
+        <div class="me-editor" id="me-editor"></div>
+      </section>
+
+      <!-- Todos -->
+      <section class="page" id="page-todos">
+        <div class="page-head">
+          <h1>ToDo</h1>
+        </div>
+        <div class="todo-layout">
+          <div class="todo-main">
+            <div id="todo-add"></div>
+            <div class="page-toolbar">
+              <div class="tab-bar" id="todo-tabs">
+                <button class="tab active" data-f="open">Open</button>
+                <button class="tab" data-f="done">Done</button>
+                <button class="tab" data-f="all">All</button>
+              </div>
+            </div>
+            <div class="item-list" id="todo-list"></div>
+          </div>
+          <div class="todo-detail hidden" id="todo-detail"></div>
+        </div>
+      </section>
+
+      <!-- Calendar -->
+      <section class="page" id="page-calendar">
+        <div class="page-head">
+          <h1>Calendar</h1>
+        </div>
+        <div class="cal-outer">
+          <div class="cal-main">
+            <div id="cal-grid"></div>
+          </div>
+          <div class="cal-detail hidden" id="cal-detail"></div>
+        </div>
+      </section>
+
+      <!-- Tools -->
+      <section class="page" id="page-tools">
+        <div class="page-head">
+          <h1>Tools</h1>
+          <button class="btn-primary" data-action="new-tool">+ New</button>
+        </div>
+        <div class="tool-grid" id="tool-grid"></div>
+      </section>
+
     </main>
+
+    <!-- Command Palette -->
+    <div class="cmd-bg hidden" id="cmd-bg">
+      <div class="cmd-box">
+        <input type="text" class="cmd-input" id="cmd-input" placeholder="Search everything...">
+        <div class="cmd-results" id="cmd-results"></div>
+      </div>
+    </div>
 
     <!-- Modal -->
     <div class="modal-bg hidden" id="modal-bg">
@@ -113,5 +177,6 @@
     </div>
   </div>
   <script src="/static/app.js"></script>
+  <script type="module" src="/static/cm.js"></script>
 </body>
 </html>
