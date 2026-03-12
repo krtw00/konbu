@@ -11,6 +11,9 @@ type Config struct {
 	AdminEmail    string
 	AllowedEmails []string
 	DevUser       string
+	LoginUser     string
+	LoginPass     string
+	SessionSecret string
 }
 
 func Load() *Config {
@@ -34,12 +37,20 @@ func Load() *Config {
 		}
 	}
 
+	sessionSecret := os.Getenv("SESSION_SECRET")
+	if sessionSecret == "" {
+		sessionSecret = "konbu-dev-secret-change-me"
+	}
+
 	return &Config{
 		DatabaseURL:   os.Getenv("DATABASE_URL"),
 		Port:          port,
 		AdminEmail:    os.Getenv("ADMIN_EMAIL"),
 		AllowedEmails: allowed,
 		DevUser:       os.Getenv("DEV_USER"),
+		LoginUser:     os.Getenv("KONBU_USER"),
+		LoginPass:     os.Getenv("KONBU_PASS"),
+		SessionSecret: sessionSecret,
 	}
 }
 

@@ -64,24 +64,35 @@ func main() {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	// API v1 routes (authenticated)
-	r.Route("/api/v1", func(r chi.Router) {
-		r.Use(middleware.Auth(authSvc, cfg.DevUser))
+	// Login/logout (unauthenticated)
+	r.HandleFunc("/login", middleware.LoginHandler(cfg))
+	r.Get("/logout", middleware.LogoutHandler())
 
-		r.Mount("/auth", authH.Routes())
-		r.Mount("/api-keys", apiKeyH.Routes())
-		r.Mount("/tags", tagH.Routes())
-		r.Mount("/tools", toolH.Routes())
-		r.Mount("/memos", memoH.Routes())
-		r.Mount("/todos", todoH.Routes())
-		r.Mount("/events", eventH.Routes())
-	})
-
-	// Static files (Web UI)
+	// Static files (unauthenticated — needed for login page favicon/css)
 	staticDir := http.Dir("/web/static")
 	r.Handle("/static/*", http.StripPrefix("/static", http.FileServer(staticDir)))
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "/web/static/index.html")
+
+	// Session-protected routes
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.SessionAuth(cfg))
+
+		// API v1 routes
+		r.Route("/api/v1", func(r chi.Router) {
+			r.Use(middleware.Auth(authSvc, cfg.DevUser))
+
+			r.Mount("/auth", authH.Routes())
+			r.Mount("/api-keys", apiKeyH.Routes())
+			r.Mount("/tags", tagH.Routes())
+			r.Mount("/tools", toolH.Routes())
+			r.Mount("/memos", memoH.Routes())
+			r.Mount("/todos", todoH.Routes())
+			r.Mount("/events", eventH.Routes())
+		})
+
+		// Web UI
+		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "/web/static/index.html")
+		})
 	})
 
 	addr := ":" + cfg.Port
