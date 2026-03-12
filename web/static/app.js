@@ -115,11 +115,38 @@ function showMemoCtx(e,m){
   document.addEventListener('click',closeMemoCtx,{once:true});
 }
 
+let memoTagFilter=null,allMemos=[];
 async function loadMemos(){
   if(!allTagsCache.length)await fetchAllTags();
-  const r=await api('GET','/memos?limit=50');const items=r.data||[];
+  const r=await api('GET','/memos?limit=100');allMemos=r.data||[];
+  buildMemoTagTree(allMemos);
+  renderMemoList();
+}
+function buildMemoTagTree(memos){
+  const tree=$('memo-tags-tree');tree.innerHTML='';
+  // Count tags
+  const counts={};
+  memos.forEach(m=>(m.tags||[]).forEach(t=>{counts[t.name]=(counts[t.name]||0)+1}));
+  if(Object.keys(counts).length===0)return;
+  // "All" item
+  const allItem=el('div',{cls:'mt-item mt-all'+(memoTagFilter===null?' active':''),onClick:()=>{memoTagFilter=null;loadMemos()}});
+  allItem.innerHTML=`All <span class="mt-count">${memos.length}</span>`;
+  tree.appendChild(allItem);
+  // Sort by count desc
+  const sorted=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  sorted.forEach(([name,cnt])=>{
+    const item=el('div',{cls:'mt-item'+(memoTagFilter===name?' active':''),onClick:()=>{memoTagFilter=name;renderMemoList();buildMemoTagTree(allMemos)}});
+    item.innerHTML=`${name} <span class="mt-count">${cnt}</span>`;
+    tree.appendChild(item);
+  });
+}
+function renderMemoList(){
   const c=$('memo-list');c.innerHTML='';
-  if(!items.length){c.appendChild(el('div',{cls:'empty'},'No memos yet. Create one!'));return}
+  let items=allMemos;
+  if(memoTagFilter){
+    items=items.filter(m=>(m.tags||[]).some(t=>t.name===memoTagFilter));
+  }
+  if(!items.length){c.appendChild(el('div',{cls:'empty'},'No memos'));return}
   items.forEach(m=>{
     const tc=m.type==='table'?'memo-type-tbl':'memo-type-md';
     const menuBtn=el('button',{cls:'memo-menu-btn',onClick:e=>showMemoCtx(e,m)},'⋯');
@@ -376,11 +403,22 @@ async function loadTools(){
     let icon;
     if(t.url){
       try{
-        const domain=new URL(t.url).hostname;
+        const u=new URL(t.url);
+        const domain=u.hostname;
+        const baseDomain=domain.split('.').slice(-2).join('.');
         const img=el('img',{cls:'tool-favicon'});
-        img.src=`https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
         img.alt=t.name;
-        img.onerror=()=>{img.replaceWith(el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase()))};
+        const fallback=()=>{img.replaceWith(el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase()))};
+        // Try Google API with base domain, then origin/favicon.ico, then fallback
+        img.onerror=()=>{
+          if(img.src.includes('google.com')&&domain!==baseDomain){
+            img.onerror=()=>{img.onerror=fallback;img.src=u.origin+'/favicon.ico'};
+            img.src=`https://www.google.com/s2/favicons?domain=${baseDomain}&sz=32`;
+          }else if(img.src.includes('google.com')){
+            img.onerror=fallback;img.src=u.origin+'/favicon.ico';
+          }else{fallback()}
+        };
+        img.src=`https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
         icon=el('div',{cls:'tool-icon-wrap'},img);
       }catch(e){icon=el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase())}
     }else{
