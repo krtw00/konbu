@@ -25,6 +25,7 @@ services:
       KONBU_USER: ${KONBU_USER}
       KONBU_PASS: ${KONBU_PASS}
       SESSION_SECRET: ${SESSION_SECRET}
+      DEV_USER: ${DEV_USER:-}
     depends_on:
       postgres:
         condition: service_healthy
