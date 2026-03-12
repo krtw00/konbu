@@ -651,6 +651,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans JP',sans
 .tool-icon-4{background:linear-gradient(135deg,#06b6d4,#3b82f6)}
 .tool-icon-5{background:linear-gradient(135deg,#f97316,#eab308)}
 .tool-name{font-size:.78rem;color:var(--text2);text-align:center}
+.tool-card{position:relative}
+.tool-del{
+  position:absolute;top:4px;right:4px;
+  width:20px;height:20px;border-radius:50%;border:none;
+  background:var(--bg3);color:var(--text3);font-size:.7rem;
+  cursor:pointer;display:none;align-items:center;justify-content:center;line-height:1;
+}
+.tool-card:hover .tool-del{display:flex}
+.tool-del:hover{background:var(--red);color:#fff}
 
 /* ========== COMMAND PALETTE ========== */
 .cmd-bg{
