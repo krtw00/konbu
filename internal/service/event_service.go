@@ -52,7 +52,10 @@ func (s *EventService) GetEvent(ctx context.Context, id, userID uuid.UUID) (*mod
 	}
 	event := toModelEvent(r)
 
-	tags, _ := s.queries.GetEventTags(ctx, id)
+	tags, err := s.queries.GetEventTags(ctx, id)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
 	event.Tags = make([]model.Tag, len(tags))
 	for i, t := range tags {
 		event.Tags[i] = model.Tag{ID: t.ID, Name: t.Name}
@@ -96,14 +99,43 @@ func (s *EventService) CreateEvent(ctx context.Context, userID uuid.UUID, req mo
 }
 
 func (s *EventService) UpdateEvent(ctx context.Context, id, userID uuid.UUID, req model.UpdateEventRequest) (*model.CalendarEvent, error) {
-	r, err := s.queries.UpdateEvent(ctx, id, userID, req.Title, req.Description, req.StartAt, req.EndAt, req.AllDay)
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	defer tx.Rollback()
+
+	q := s.queries.WithTx(tx)
+	r, err := q.UpdateEvent(ctx, id, userID, req.Title, req.Description, req.StartAt, req.EndAt, req.AllDay)
 	if err != nil {
 		if errors.Is(err, repository.ErrNoRows) {
 			return nil, apperror.NotFound("event")
 		}
 		return nil, apperror.Internal(err)
 	}
+
+	var modelTags []model.Tag
+	if req.Tags != nil {
+		if err := q.ClearEventTags(ctx, id); err != nil {
+			return nil, apperror.Internal(err)
+		}
+		modelTags, err = s.tagSvc.EnsureTags(ctx, userID, req.Tags)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range modelTags {
+			if err := q.AddEventTag(ctx, id, t.ID); err != nil {
+				return nil, apperror.Internal(err)
+			}
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, apperror.Internal(err)
+	}
+
 	event := toModelEvent(r)
+	event.Tags = modelTags
 	return &event, nil
 }
 
