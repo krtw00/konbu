@@ -423,24 +423,30 @@ function openMemoEditor(id,data){
     memoSaveTimer=setTimeout(()=>saveMemo(),1500);
   }
 
-  // Use CodeMirror if loaded, else fallback to textarea
-  if(window.createCM){
+  // Wait for CodeMirror module to load (async ESM), then init editor
+  function initEditor(){
     cmView=window.createCM(edArea,data.content||'',onDocChange);
-    // Ctrl+S in CM
     edArea.addEventListener('keydown',e=>{
       if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveMemo()}
     });
     cmView.focus();
+  }
+  if(window.createCM){
+    initEditor();
   }else{
-    const ta=el('textarea',{id:'me-ta',placeholder:'Write in Markdown...',spellcheck:'false'});
-    ta.textContent=data.content||'';
-    edArea.appendChild(ta);
-    ta.addEventListener('input',onDocChange);
-    ta.addEventListener('keydown',e=>{
-      if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveMemo()}
-      if(e.key==='Tab'){e.preventDefault();const s=ta.selectionStart,en=ta.selectionEnd;ta.value=ta.value.substring(0,s)+'  '+ta.value.substring(en);ta.selectionStart=ta.selectionEnd=s+2}
-    });
-    ta.focus();
+    edArea.textContent='Loading editor...';
+    const wt=setInterval(()=>{
+      if(window.createCM){clearInterval(wt);edArea.textContent='';initEditor()}
+    },100);
+    // Give up after 8s and use textarea
+    setTimeout(()=>{
+      if(!window.createCM){
+        clearInterval(wt);edArea.textContent='';
+        const ta=el('textarea',{id:'me-ta',placeholder:'Write in Markdown...',spellcheck:'false'});
+        ta.textContent=data.content||'';edArea.appendChild(ta);
+        ta.addEventListener('input',onDocChange);ta.focus();
+      }
+    },8000);
   }
 
   $('me-title').addEventListener('input',()=>{
