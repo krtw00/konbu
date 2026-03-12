@@ -40,12 +40,18 @@ func (s *ToolService) CreateTool(ctx context.Context, userID uuid.UUID, req mode
 		return nil, apperror.BadRequest("name and url are required")
 	}
 
+	// Auto-fetch favicon if not provided
+	icon := req.Icon
+	if icon == "" && req.URL != "" {
+		icon = FetchFavicon(req.URL)
+	}
+
 	maxSort, err := s.queries.MaxToolSortOrder(ctx, userID)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
 
-	t, err := s.queries.CreateTool(ctx, userID, req.Name, req.URL, req.Icon, maxSort+1)
+	t, err := s.queries.CreateTool(ctx, userID, req.Name, req.URL, icon, maxSort+1)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -70,6 +76,26 @@ func (s *ToolService) UpdateTool(ctx context.Context, id, userID uuid.UUID, req 
 
 	result := toModelTool(t)
 	return &result, nil
+}
+
+func (s *ToolService) RefreshToolIcons(ctx context.Context, userID uuid.UUID) (int, error) {
+	rows, err := s.queries.ListToolsByUserID(ctx, userID)
+	if err != nil {
+		return 0, apperror.Internal(err)
+	}
+	count := 0
+	for _, r := range rows {
+		if r.Icon != "" || r.URL == "" {
+			continue
+		}
+		icon := FetchFavicon(r.URL)
+		if icon == "" {
+			continue
+		}
+		s.queries.UpdateTool(ctx, r.ID, userID, r.Name, r.URL, icon, r.SortOrder)
+		count++
+	}
+	return count, nil
 }
 
 func (s *ToolService) DeleteTool(ctx context.Context, id, userID uuid.UUID) error {
