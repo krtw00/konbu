@@ -436,12 +436,12 @@ function openMemoEditor(id,data){
     initEditor();
   }else{
     edArea.textContent='Loading editor...';
+    let cmLoaded=false;
     const wt=setInterval(()=>{
-      if(window.createCM){clearInterval(wt);edArea.textContent='';initEditor()}
+      if(window.createCM){clearInterval(wt);cmLoaded=true;edArea.textContent='';initEditor()}
     },100);
-    // Give up after 8s and use textarea
     setTimeout(()=>{
-      if(!window.createCM){
+      if(!cmLoaded&&!window.createCM){
         clearInterval(wt);edArea.textContent='';
         const ta=el('textarea',{id:'me-ta',placeholder:'Write in Markdown...',spellcheck:'false'});
         ta.textContent=data.content||'';edArea.appendChild(ta);

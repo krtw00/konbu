@@ -1,11 +1,11 @@
 // CodeMirror 6 — Markdown editor setup
-import {EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter, drawSelection, rectangularSelection} from 'https://esm.sh/@codemirror/view@6?bundle'
-import {EditorState} from 'https://esm.sh/@codemirror/state@6?bundle'
-import {defaultKeymap, history, historyKeymap, indentWithTab} from 'https://esm.sh/@codemirror/commands@6?bundle'
-import {markdown} from 'https://esm.sh/@codemirror/lang-markdown@6?bundle'
-import {syntaxHighlighting, defaultHighlightStyle, bracketMatching} from 'https://esm.sh/@codemirror/language@6?bundle'
-import {closeBrackets, closeBracketsKeymap} from 'https://esm.sh/@codemirror/autocomplete@6?bundle'
-import {highlightSelectionMatches, searchKeymap} from 'https://esm.sh/@codemirror/search@6?bundle'
+import {EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter, drawSelection, rectangularSelection} from 'https://esm.sh/@codemirror/view@6'
+import {EditorState} from 'https://esm.sh/@codemirror/state@6'
+import {defaultKeymap, history, historyKeymap, indentWithTab} from 'https://esm.sh/@codemirror/commands@6'
+import {markdown} from 'https://esm.sh/@codemirror/lang-markdown@6'
+import {syntaxHighlighting, defaultHighlightStyle, bracketMatching} from 'https://esm.sh/@codemirror/language@6'
+import {closeBrackets, closeBracketsKeymap} from 'https://esm.sh/@codemirror/autocomplete@6'
+import {highlightSelectionMatches, searchKeymap} from 'https://esm.sh/@codemirror/search@6'
 
 // Theme that adapts to CSS variables
 const cmTheme = EditorView.theme({
