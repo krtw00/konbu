@@ -125,9 +125,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans JP',sans
 }
 .sb-mark{
   width:28px;height:28px;border-radius:7px;
-  background:linear-gradient(135deg,#0D9488,#06B6D4);
-  color:#fff;font-size:.85rem;font-weight:800;
-  display:flex;align-items:center;justify-content:center;
 }
 .sb-title{font-size:1rem;font-weight:700;color:var(--text)}
 .sb-nav{flex:1;padding:8px;display:flex;flex-direction:column;gap:2px}
