@@ -400,29 +400,34 @@ async function loadTools(){
   const c=$('tool-grid');c.innerHTML='';
   if(!items.length){c.appendChild(el('div',{cls:'empty'},'No tools yet'));return}
   items.forEach((t,i)=>{
+    const letterIcon=()=>el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase());
     let icon;
     if(t.url){
       try{
         const u=new URL(t.url);
         const domain=u.hostname;
-        const baseDomain=domain.split('.').slice(-2).join('.');
+        const base=domain.split('.').slice(-2).join('.');
         const img=el('img',{cls:'tool-favicon'});
         img.alt=t.name;
-        const fallback=()=>{img.replaceWith(el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase()))};
-        // Try Google API with base domain, then origin/favicon.ico, then fallback
-        img.onerror=()=>{
-          if(img.src.includes('google.com')&&domain!==baseDomain){
-            img.onerror=()=>{img.onerror=fallback;img.src=u.origin+'/favicon.ico'};
-            img.src=`https://www.google.com/s2/favicons?domain=${baseDomain}&sz=32`;
-          }else if(img.src.includes('google.com')){
-            img.onerror=fallback;img.src=u.origin+'/favicon.ico';
-          }else{fallback()}
+        // Candidate URLs in priority order
+        const candidates=[
+          `https://www.google.com/s2/favicons?domain=${domain}&sz=32`,
+          domain!==base?`https://www.google.com/s2/favicons?domain=${base}&sz=32`:null,
+          `${u.origin}/favicon.ico`,
+        ].filter(Boolean);
+        let ci=0;
+        const tryNext=()=>{
+          if(ci>=candidates.length){img.replaceWith(letterIcon());return}
+          img.src=candidates[ci++];
         };
-        img.src=`https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+        img.onerror=tryNext;
+        // Google returns a default globe icon (16x16) when no favicon found — detect & skip
+        img.onload=()=>{if(img.naturalWidth<20)tryNext()};
+        tryNext();
         icon=el('div',{cls:'tool-icon-wrap'},img);
-      }catch(e){icon=el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase())}
+      }catch(e){icon=letterIcon()}
     }else{
-      icon=el('div',{cls:'tool-icon tool-icon-'+i%6},(t.name||'?')[0].toUpperCase());
+      icon=letterIcon();
     }
     const delBtn=el('button',{cls:'tool-del',title:'Delete'});
     delBtn.textContent='×';
