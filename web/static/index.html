@@ -108,11 +108,15 @@
           <div class="me-actions">
             <span class="me-status" id="me-status"></span>
             <button class="btn-ghost me-tag-btn" id="me-tag-btn">Tags</button>
+            <button class="btn-ghost" id="me-preview-btn">Preview</button>
             <button class="btn-danger" id="me-delete">Delete</button>
           </div>
         </div>
         <div class="me-tag-bar" id="me-tag-bar"></div>
-        <div class="me-editor" id="me-editor"></div>
+        <div class="me-body">
+          <div class="me-editor" id="me-editor"></div>
+          <div class="me-preview hidden" id="me-preview"></div>
+        </div>
       </section>
 
       <!-- Todos -->
@@ -176,6 +180,7 @@
       </div>
     </div>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js"></script>
   <script src="/static/app.js"></script>
   <script type="module" src="/static/cm.js"></script>
 </body>

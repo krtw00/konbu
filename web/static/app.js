@@ -391,7 +391,7 @@ function fa(...btns){return el('div',{cls:'fa'},...btns)}
 function pt(s){return(s||'').split(',').map(x=>x.trim()).filter(Boolean)}
 
 // === MEMO EDITOR (fullscreen) ===
-let memoEditId=null,memoEditTags=[],memoSaveTimer=null,cmView=null;
+let memoEditId=null,memoEditTags=[],memoSaveTimer=null,cmView=null,previewOpen=false;
 
 function getMemoContent(){
   if(cmView)return cmView.state.doc.toString();
@@ -422,6 +422,13 @@ function openMemoEditor(id,data){
     $('me-status').textContent='Editing...';
     clearTimeout(memoSaveTimer);
     memoSaveTimer=setTimeout(()=>saveMemo(),1500);
+    updatePreview();
+  }
+  function updatePreview(){
+    const pv=$('me-preview');
+    if(!pv||pv.classList.contains('hidden'))return;
+    const md=getMemoContent();
+    pv.innerHTML=window.marked?marked.parse(md):md.replace(/</g,'&lt;').replace(/\n/g,'<br>');
   }
 
   // Wait for CodeMirror module to load (async ESM), then init editor
@@ -456,6 +463,18 @@ function openMemoEditor(id,data){
   });
 
   renderMemoTags();
+
+  // Preview toggle
+  const pvBtn=$('me-preview-btn');
+  const pv=$('me-preview');
+  pv.classList.add('hidden');
+  previewOpen=false;
+  pvBtn.onclick=()=>{
+    previewOpen=!previewOpen;
+    pv.classList.toggle('hidden',!previewOpen);
+    pvBtn.textContent=previewOpen?'Edit only':'Preview';
+    if(previewOpen)updatePreview();
+  };
 }
 
 function renderMemoTags(){
