@@ -68,9 +68,12 @@ func main() {
 	r.HandleFunc("/login", middleware.LoginHandler(cfg))
 	r.Get("/logout", middleware.LogoutHandler())
 
-	// Static files (unauthenticated — needed for login page favicon/css)
+	// Static files (unauthenticated — Vite outputs to /web/static with /assets/ subdir)
 	staticDir := http.Dir("/web/static")
-	r.Handle("/static/*", http.StripPrefix("/static", http.FileServer(staticDir)))
+	r.Handle("/assets/*", http.FileServer(staticDir))
+	r.Get("/favicon.svg", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "/web/static/favicon.svg")
+	})
 
 	// Session-protected routes
 	r.Group(func(r chi.Router) {
