@@ -2,7 +2,8 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useAppStore } from '@/stores/app'
-import { CommandDialog, CommandInput, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command'
+import { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { FileText, CheckSquare, Calendar } from 'lucide-react'
 import type { SearchResult } from '@/types/api'
 
@@ -101,28 +102,36 @@ export function CommandPalette({ onOpenMemo }: CommandPaletteProps) {
   const displayItems = query.length >= 2 ? results : fallbackItems
 
   return (
-    <CommandDialog open={commandOpen} onOpenChange={setCommandOpen}>
-      <CommandInput
-        placeholder={t('command.searchPlaceholder')}
-        value={query}
-        onValueChange={handleQueryChange}
-      />
-      <CommandList>
-        <CommandEmpty>{t('command.noResults')}</CommandEmpty>
-        <CommandGroup>
-          {displayItems.map((item) => {
-            const Icon = icons[item.type]
-            return (
-              <CommandItem key={`${item.type}-${item.id}`} onSelect={() => handleSelect(item)}>
-                <Icon size={14} className="mr-2 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground mr-2 w-10">{typeLabels[item.type]}</span>
-                <span className="flex-1 truncate">{item.title}</span>
-                {item.snippet && <span className="text-xs text-muted-foreground truncate ml-2 max-w-40">{item.snippet}</span>}
-              </CommandItem>
-            )
-          })}
-        </CommandGroup>
-      </CommandList>
-    </CommandDialog>
+    <Dialog open={commandOpen} onOpenChange={setCommandOpen}>
+      <DialogHeader className="sr-only">
+        <DialogTitle>Search</DialogTitle>
+        <DialogDescription>Search everything</DialogDescription>
+      </DialogHeader>
+      <DialogContent className="top-1/3 translate-y-0 overflow-hidden rounded-xl! p-0" showCloseButton={false}>
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder={t('command.searchPlaceholder')}
+            value={query}
+            onValueChange={handleQueryChange}
+          />
+          <CommandList>
+            <CommandEmpty>{t('command.noResults')}</CommandEmpty>
+            <CommandGroup>
+              {displayItems.map((item) => {
+                const Icon = icons[item.type]
+                return (
+                  <CommandItem key={`${item.type}-${item.id}`} onSelect={() => handleSelect(item)}>
+                    <Icon size={14} className="mr-2 text-muted-foreground" />
+                    <span className="text-xs text-muted-foreground mr-2 w-10">{typeLabels[item.type]}</span>
+                    <span className="flex-1 truncate">{item.title}</span>
+                    {item.snippet && <span className="text-xs text-muted-foreground truncate ml-2 max-w-40">{item.snippet}</span>}
+                  </CommandItem>
+                )
+              })}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </DialogContent>
+    </Dialog>
   )
 }

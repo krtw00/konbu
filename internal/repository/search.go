@@ -20,7 +20,7 @@ func (q *Queries) SearchMemos(ctx context.Context, userID uuid.UUID, pattern str
 		`SELECT id, title, COALESCE(content, ''), created_at AS updated_at
 		 FROM memos
 		 WHERE user_id = $1 AND deleted_at IS NULL
-		   AND (title LIKE $2 OR content LIKE $2)
+		   AND (title ILIKE $2 OR content ILIKE $2)
 		 ORDER BY updated_at DESC LIMIT $3`,
 		userID, pattern, limit)
 	if err != nil {
@@ -44,7 +44,7 @@ func (q *Queries) SearchTodos(ctx context.Context, userID uuid.UUID, pattern str
 		`SELECT id, title, COALESCE(description, ''), updated_at
 		 FROM todos
 		 WHERE user_id = $1 AND deleted_at IS NULL
-		   AND (title LIKE $2 OR description LIKE $2)
+		   AND (title ILIKE $2 OR description ILIKE $2)
 		 ORDER BY updated_at DESC LIMIT $3`,
 		userID, pattern, limit)
 	if err != nil {
@@ -68,7 +68,7 @@ func (q *Queries) SearchEvents(ctx context.Context, userID uuid.UUID, pattern st
 		`SELECT id, title, COALESCE(description, ''), updated_at
 		 FROM calendar_events
 		 WHERE user_id = $1 AND deleted_at IS NULL
-		   AND (title LIKE $2 OR description LIKE $2)
+		   AND (title ILIKE $2 OR description ILIKE $2)
 		 ORDER BY updated_at DESC LIMIT $3`,
 		userID, pattern, limit)
 	if err != nil {
