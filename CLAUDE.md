@@ -111,8 +111,9 @@ Request → middleware(認証) → handler → service → repository → Postgr
 
 ### 認証
 
-- Web UI: `X-Forwarded-User` ヘッダーからメールアドレス取得 → users テーブル参照（なければ自動登録）
-- CLI/bot: `Authorization: Bearer <key>` → api_keys テーブルの key_hash と照合
+- Web UI: メール+パスワードでログイン → HMAC署名セッションCookie
+- CLI: `Authorization: Bearer <api-key>` → api_keys テーブルの key_hash と照合
+- 開発環境: `DEV_USER` 環境変数で自動ログイン
 - 全エンドポイントでユーザーコンテキストを注入、自分のデータのみアクセス可能
 
 ### タグ
@@ -161,9 +162,9 @@ go run ./cmd/server migrate down
 | 変数 | 必須 | デフォルト | 説明 |
 |---|---|---|---|
 | `DATABASE_URL` | Yes | — | PostgreSQL 接続文字列 |
+| `SESSION_SECRET` | Yes | `konbu-dev-secret-change-me` | セッション署名キー |
 | `PORT` | No | `8080` | API サーバーポート |
-| `ADMIN_EMAIL` | No | — | 管理者メールアドレス（指定時はこのユーザーを管理者にする） |
-| `ALLOWED_EMAILS` | No | `*` | 許可するメールアドレス（カンマ区切り、`*` で全許可） |
+| `DEV_USER` | No | — | 開発用自動ログインユーザー（メール形式） |
 
 ## やらないこと
 

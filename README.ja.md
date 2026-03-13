@@ -1,0 +1,201 @@
+<p align="center">
+  <img src="web/static/favicon.svg" width="64" height="64" alt="konbu">
+</p>
+
+<h1 align="center">konbu</h1>
+
+<p align="center">セルフホスト型パーソナルワークスペース。メモ・ToDo・カレンダー・ツールランチャーをひとつに。</p>
+
+<p align="center">日本語 | <a href="README.md">English</a></p>
+
+---
+
+## 機能
+
+- **メモ** -- Markdown対応、CodeMirror 6エディタ、ライブプレビュー、タグ管理
+- **ToDo** -- インライン作成、期限設定、タグフィルタ、ノート付き
+- **カレンダー** -- 月表示、予定の作成・編集、iCalインポート
+- **ツール** -- ブックマークランチャー、カテゴリ分類、ヘルスチェック
+- **横断検索** -- メモ・ToDo・予定をまたいだ全文検索（pg_bigmで日本語対応）
+- **CLI** -- リモートAPI経由で全機能にアクセスできるCLIクライアント
+- **エクスポート/インポート** -- JSON・Markdown ZIP出力、iCal取り込み
+- **マルチユーザー** -- メール/パスワード認証、APIキー対応
+
+## クイックスタート
+
+```bash
+cp .env.example .env
+docker compose up -d
+```
+
+`http://localhost:8080` を開いてアカウントを作成します。開発用composeでは `DEV_USER=dev@local` が設定されており、登録なしで利用できます。
+
+### 本番環境（Traefik連携）
+
+```bash
+# .env にドメインとパスワードを設定して起動
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### ネイティブ（Docker不要）
+
+```bash
+# 前提: Go 1.25+, Node.js 22+, PostgreSQL 16+
+
+# フロントエンドビルド
+cd web/frontend && npm ci && npm run build && cd ../..
+
+# サーバービルド
+go build -o bin/server ./cmd/server
+
+# マイグレーション実行
+psql $DATABASE_URL -f sql/migrations/0001_initial.up.sql
+psql $DATABASE_URL -f sql/migrations/0002_auth_password.up.sql
+psql $DATABASE_URL -f sql/migrations/0003_recurring_events.up.sql
+psql $DATABASE_URL -f sql/migrations/0004_tool_category.up.sql
+
+# 起動
+DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
+```
+
+## 設定
+
+| 変数 | 必須 | デフォルト | 説明 |
+|---|---|---|---|
+| `DATABASE_URL` | Yes | -- | PostgreSQL接続文字列 |
+| `SESSION_SECRET` | Yes | 開発用フォールバック | セッション署名キー |
+| `PORT` | No | `8080` | サーバーポート |
+| `DEV_USER` | No | -- | 開発用自動ログイン（メール形式） |
+
+### Docker Compose（本番用）変数
+
+| 変数 | 説明 |
+|---|---|
+| `POSTGRES_PASSWORD` | PostgreSQLパスワード |
+| `KONBU_DOMAIN` | Traefik TLSルーティング用ドメイン |
+
+## CLI
+
+CLIはリモートのkonbuサーバーにAPI経由で接続するスタンドアロンクライアントです。サーバーのコードはCLIバイナリに含まれません。
+
+```bash
+go install github.com/krtw00/konbu/cmd/konbu@latest
+```
+
+### セットアップ
+
+```bash
+# 環境変数を設定（~/.zshrc 等に追記推奨）
+export KONBU_API=https://konbu.example.com
+export KONBU_API_KEY=your-api-key
+
+# フラグでも指定可能
+konbu --api https://... --api-key your-key memo list
+```
+
+APIキーはWeb UIの **設定 > セキュリティ** で発行できます。
+
+### コマンド一覧
+
+全コマンドで `--json` フラグを使うと機械可読なJSON出力になります。
+
+```
+konbu memo list                        # メモ一覧
+konbu memo show <id>                   # メモ内容を表示
+konbu memo add "タイトル" -c "内容"     # メモ作成（-c - で標準入力）
+konbu memo edit <id> --title "新名"    # メモ更新
+konbu memo rm <id>                     # メモ削除
+
+konbu todo list                        # ToDo一覧
+konbu todo show <id>                   # ToDo詳細
+konbu todo add "タスク" -t "tag1,tag2" # ToDo作成
+konbu todo add "タスク" -d 2025-04-01  # 期限付きで作成
+konbu todo edit <id> --desc "メモ"     # ToDo更新
+konbu todo done <id>                   # 完了にする
+konbu todo reopen <id>                 # 未完了に戻す
+konbu todo rm <id>                     # 削除
+
+konbu event list                       # 予定一覧
+konbu event show <id>                  # 予定詳細
+konbu event add "タイトル" -s <RFC3339> # 予定作成
+konbu event edit <id> --title "新名"   # 予定更新
+konbu event rm <id>                    # 削除
+
+konbu tool list                        # ツール一覧
+konbu tool add "名前" "https://..."    # ツール追加
+konbu tool edit <id> --category "開発" # ツール更新
+konbu tool rm <id>                     # 削除
+
+konbu tag list                         # タグ一覧
+konbu tag rm <id>                      # タグ削除
+
+konbu search "検索語"                  # 横断検索
+
+konbu api-key list                     # APIキー一覧
+konbu api-key create "キー名"          # APIキー作成
+konbu api-key rm <id>                  # APIキー削除
+
+konbu export json -o backup.json       # JSONエクスポート
+konbu export markdown -o backup.zip    # Markdown ZIPエクスポート
+konbu import ical calendar.ics         # iCalインポート
+```
+
+IDは先頭8文字の短縮形で指定できます。
+
+## API
+
+ベースパス: `/api/v1`
+
+| リソース | エンドポイント |
+|---|---|
+| 認証 | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` |
+| ユーザー | `GET/PUT /auth/me`, `GET/PUT /auth/settings`, `POST /auth/change-password` |
+| APIキー | `GET/POST /api-keys`, `DELETE /api-keys/:id` |
+| メモ | `GET/POST /memos`, `GET/PUT/DELETE /memos/:id` |
+| ToDo | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done`, `PATCH /todos/:id/reopen` |
+| 予定 | `GET/POST /events`, `GET/PUT/DELETE /events/:id` |
+| ツール | `GET/POST /tools`, `PUT/DELETE /tools/:id` |
+| タグ | `GET/POST /tags`, `PUT/DELETE /tags/:id` |
+| 検索 | `GET /search?q=...` |
+| エクスポート | `GET /export/json`, `GET /export/markdown` |
+| インポート | `POST /import/ical` |
+
+## 開発
+
+```bash
+# PostgreSQL起動
+docker compose up -d postgres
+
+# フロントエンド開発サーバー
+cd web/frontend && npm run dev
+
+# サーバー起動
+DEV_USER=dev@local go run ./cmd/server
+
+# CLIビルド
+go build -o bin/konbu ./cmd/konbu
+
+# テスト
+go test ./...
+```
+
+### ディレクトリ構成
+
+```
+cmd/
+  server/       # APIサーバー
+  konbu/        # CLIクライアント
+internal/
+  handler/      # HTTPハンドラ
+  service/      # ビジネスロジック
+  repository/   # DBアクセス (sqlc)
+  middleware/    # 認証・ログ
+  client/       # APIクライアント（CLI用）
+web/frontend/   # React + Vite SPA
+sql/            # スキーマ・マイグレーション
+docker/         # Dockerfile
+```
+
+## ライセンス
+
+[MIT](LICENSE)

@@ -9,7 +9,10 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./sql/migrations/0001_initial.up.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/migrations/0001_initial.up.sql:/docker-entrypoint-initdb.d/01_initial.sql:ro
+      - ./sql/migrations/0002_auth_password.up.sql:/docker-entrypoint-initdb.d/02_auth_password.sql:ro
+      - ./sql/migrations/0003_recurring_events.up.sql:/docker-entrypoint-initdb.d/03_recurring_events.sql:ro
+      - ./sql/migrations/0004_tool_category.up.sql:/docker-entrypoint-initdb.d/04_tool_category.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U konbu"]
       interval: 5s
@@ -23,6 +26,7 @@ services:
     environment:
       DATABASE_URL: postgres://konbu:konbu@postgres:5432/konbu?sslmode=disable
       PORT: "8080"
+      SESSION_SECRET: konbu-dev-secret-change-me
       DEV_USER: dev@local
     ports:
       - "8080:8080"
