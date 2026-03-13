@@ -45,6 +45,25 @@ function ProfileTab() {
 
 function AppearanceTab() {
   const { t, i18n } = useTranslation()
+  const [firstDayOfWeek, setFirstDayOfWeek] = useState(0)
+
+  useEffect(() => {
+    api.getSettings().then((r) => {
+      if (r.data?.first_day_of_week !== undefined) {
+        setFirstDayOfWeek(r.data.first_day_of_week)
+      }
+    }).catch(() => {})
+  }, [])
+
+  async function handleFirstDayChange(val: number) {
+    setFirstDayOfWeek(val)
+    try {
+      const current = await api.getSettings()
+      await api.updateSettings({ ...current.data, first_day_of_week: val })
+    } catch {
+      // ignore
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -57,6 +76,17 @@ function AppearanceTab() {
         >
           <option value="en">English</option>
           <option value="ja">日本語</option>
+        </select>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium">{t('settings.firstDayOfWeek')}</label>
+        <select
+          className="flex h-8 w-full rounded-md border border-input bg-background px-3 text-sm"
+          value={firstDayOfWeek}
+          onChange={(e) => handleFirstDayChange(Number(e.target.value))}
+        >
+          <option value={0}>{t('settings.sunday')}</option>
+          <option value={1}>{t('settings.monday')}</option>
         </select>
       </div>
       <div className="flex flex-col gap-1.5">

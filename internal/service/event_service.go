@@ -71,7 +71,7 @@ func (s *EventService) CreateEvent(ctx context.Context, userID uuid.UUID, req mo
 	defer tx.Rollback()
 
 	q := s.queries.WithTx(tx)
-	r, err := q.CreateEvent(ctx, userID, req.Title, req.Description, req.StartAt, req.EndAt, req.AllDay)
+	r, err := q.CreateEvent(ctx, userID, req.Title, req.Description, req.StartAt, req.EndAt, req.AllDay, req.RecurrenceRule, req.RecurrenceEnd)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -106,7 +106,7 @@ func (s *EventService) UpdateEvent(ctx context.Context, id, userID uuid.UUID, re
 	defer tx.Rollback()
 
 	q := s.queries.WithTx(tx)
-	r, err := q.UpdateEvent(ctx, id, userID, req.Title, req.Description, req.StartAt, req.EndAt, req.AllDay)
+	r, err := q.UpdateEvent(ctx, id, userID, req.Title, req.Description, req.StartAt, req.EndAt, req.AllDay, req.RecurrenceRule, req.RecurrenceEnd)
 	if err != nil {
 		if errors.Is(err, repository.ErrNoRows) {
 			return nil, apperror.NotFound("event")
@@ -145,13 +145,15 @@ func (s *EventService) DeleteEvent(ctx context.Context, id, userID uuid.UUID) er
 
 func toModelEvent(r repository.EventRow) model.CalendarEvent {
 	return model.CalendarEvent{
-		ID:          r.ID,
-		Title:       r.Title,
-		Description: r.Description,
-		StartAt:     r.StartAt,
-		EndAt:       r.EndAt,
-		AllDay:      r.AllDay,
-		CreatedAt:   r.CreatedAt,
-		UpdatedAt:   r.UpdatedAt,
+		ID:             r.ID,
+		Title:          r.Title,
+		Description:    r.Description,
+		StartAt:        r.StartAt,
+		EndAt:          r.EndAt,
+		AllDay:         r.AllDay,
+		RecurrenceRule: r.RecurrenceRule,
+		RecurrenceEnd:  r.RecurrenceEnd,
+		CreatedAt:      r.CreatedAt,
+		UpdatedAt:      r.UpdatedAt,
 	}
 }

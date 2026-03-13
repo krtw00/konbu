@@ -33,7 +33,7 @@ export function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader>
           <div className="flex items-center gap-2 mb-2">
-            <img className="w-6 h-6" src="/static/favicon.svg" alt="K" />
+            <img className="w-6 h-6" src="/favicon.svg" alt="K" />
             <span className="font-semibold text-sm">konbu</span>
           </div>
           <CardTitle>{t('auth.login')}</CardTitle>

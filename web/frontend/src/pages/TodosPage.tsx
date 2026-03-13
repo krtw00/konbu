@@ -94,8 +94,8 @@ export function TodosPage() {
 
       <div className="flex gap-4">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-3 bg-accent/30 rounded-lg px-3 py-2">
-            <span className="text-muted-foreground text-lg">+</span>
+          <div className="flex items-center gap-2 mb-3 bg-card rounded-lg px-3 py-2 border border-border shadow-sm">
+            <span className="text-primary text-lg font-bold">+</span>
             <Input
               ref={inputRef}
               placeholder={t('todos.addPlaceholder')}

@@ -10,16 +10,21 @@ import (
 // --- User ---
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Name      string    `json:"name"`
-	IsAdmin   bool      `json:"is_admin"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID           uuid.UUID        `json:"id"`
+	Email        string           `json:"email"`
+	Name         string           `json:"name"`
+	IsAdmin      bool             `json:"is_admin"`
+	UserSettings *json.RawMessage `json:"user_settings,omitempty"`
+	CreatedAt    time.Time        `json:"created_at"`
+	UpdatedAt    time.Time        `json:"updated_at"`
 }
 
 type UpdateUserRequest struct {
 	Name string `json:"name"`
+}
+
+type UpdateSettingsRequest struct {
+	Settings json.RawMessage `json:"settings"`
 }
 
 // --- API Key ---
@@ -119,34 +124,40 @@ type UpdateTodoRequest struct {
 // --- Calendar Event ---
 
 type CalendarEvent struct {
-	ID          uuid.UUID  `json:"id"`
-	UserID      uuid.UUID  `json:"user_id,omitempty"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	StartAt     time.Time  `json:"start_at"`
-	EndAt       *time.Time `json:"end_at,omitempty"`
-	AllDay      bool       `json:"all_day"`
-	Tags        []Tag      `json:"tags,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID             uuid.UUID  `json:"id"`
+	UserID         uuid.UUID  `json:"user_id,omitempty"`
+	Title          string     `json:"title"`
+	Description    string     `json:"description"`
+	StartAt        time.Time  `json:"start_at"`
+	EndAt          *time.Time `json:"end_at,omitempty"`
+	AllDay         bool       `json:"all_day"`
+	RecurrenceRule *string    `json:"recurrence_rule,omitempty"`
+	RecurrenceEnd  *string    `json:"recurrence_end,omitempty"`
+	Tags           []Tag      `json:"tags,omitempty"`
+	CreatedAt      time.Time  `json:"created_at"`
+	UpdatedAt      time.Time  `json:"updated_at"`
 }
 
 type CreateEventRequest struct {
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	StartAt     time.Time  `json:"start_at"`
-	EndAt       *time.Time `json:"end_at,omitempty"`
-	AllDay      bool       `json:"all_day"`
-	Tags        []string   `json:"tags,omitempty"`
+	Title          string     `json:"title"`
+	Description    string     `json:"description"`
+	StartAt        time.Time  `json:"start_at"`
+	EndAt          *time.Time `json:"end_at,omitempty"`
+	AllDay         bool       `json:"all_day"`
+	RecurrenceRule *string    `json:"recurrence_rule,omitempty"`
+	RecurrenceEnd  *string    `json:"recurrence_end,omitempty"`
+	Tags           []string   `json:"tags,omitempty"`
 }
 
 type UpdateEventRequest struct {
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	StartAt     time.Time  `json:"start_at"`
-	EndAt       *time.Time `json:"end_at,omitempty"`
-	AllDay      bool       `json:"all_day"`
-	Tags        []string   `json:"tags,omitempty"`
+	Title          string     `json:"title"`
+	Description    string     `json:"description"`
+	StartAt        time.Time  `json:"start_at"`
+	EndAt          *time.Time `json:"end_at,omitempty"`
+	AllDay         bool       `json:"all_day"`
+	RecurrenceRule *string    `json:"recurrence_rule,omitempty"`
+	RecurrenceEnd  *string    `json:"recurrence_end,omitempty"`
+	Tags           []string   `json:"tags,omitempty"`
 }
 
 // --- Tool ---
@@ -157,20 +168,23 @@ type Tool struct {
 	Name      string    `json:"name"`
 	URL       string    `json:"url"`
 	Icon      string    `json:"icon"`
+	Category  string    `json:"category"`
 	SortOrder int       `json:"sort_order"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
 type CreateToolRequest struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
-	Icon string `json:"icon"`
+	Name     string `json:"name"`
+	URL      string `json:"url"`
+	Icon     string `json:"icon"`
+	Category string `json:"category"`
 }
 
 type UpdateToolRequest struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
-	Icon string `json:"icon"`
+	Name     string `json:"name"`
+	URL      string `json:"url"`
+	Icon     string `json:"icon"`
+	Category string `json:"category"`
 }
 
 type ReorderRequest struct {
@@ -192,6 +206,16 @@ type ListParams struct {
 	Sort   string
 	Query  string
 	Tags   []string
+}
+
+// --- Search ---
+
+type SearchResult struct {
+	Type      string    `json:"type"`
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	Snippet   string    `json:"snippet"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func DefaultListParams() ListParams {

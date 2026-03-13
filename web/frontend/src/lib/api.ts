@@ -37,20 +37,26 @@ export const api = {
   // Events
   listEvents: (limit = 100) => request<{ data: import('@/types/api').CalendarEvent[] }>('GET', `/events?limit=${limit}&sort=start_at:asc`),
   getEvent: (id: string) => request<{ data: import('@/types/api').CalendarEvent }>('GET', `/events/${id}`),
-  createEvent: (body: { title: string; description: string; start_at: string; end_at: string | null; all_day: boolean; tags: string[] }) =>
+  createEvent: (body: { title: string; description: string; start_at: string; end_at: string | null; all_day: boolean; recurrence_rule?: string | null; recurrence_end?: string | null; tags: string[] }) =>
     request<{ data: import('@/types/api').CalendarEvent }>('POST', '/events', body),
-  updateEvent: (id: string, body: { title: string; description: string; start_at: string; end_at: string | null; all_day: boolean; tags: string[] }) =>
+  updateEvent: (id: string, body: { title: string; description: string; start_at: string; end_at: string | null; all_day: boolean; recurrence_rule?: string | null; recurrence_end?: string | null; tags: string[] }) =>
     request<{ data: import('@/types/api').CalendarEvent }>('PUT', `/events/${id}`, body),
   deleteEvent: (id: string) => request<null>('DELETE', `/events/${id}`),
 
   // Tools
   listTools: () => request<{ data: import('@/types/api').Tool[] }>('GET', '/tools'),
-  createTool: (body: { name: string; url: string; icon: string }) =>
+  createTool: (body: { name: string; url: string; icon: string; category?: string }) =>
     request<{ data: import('@/types/api').Tool }>('POST', '/tools', body),
+  updateTool: (id: string, body: { name: string; url: string; icon: string; category?: string }) =>
+    request<{ data: import('@/types/api').Tool }>('PUT', `/tools/${id}`, body),
   deleteTool: (id: string) => request<null>('DELETE', `/tools/${id}`),
+  healthCheckTools: () => request<{ data: { id: string; url: string; alive: boolean; status: number }[] }>('POST', '/tools/health-check'),
 
   // Tags
   listTags: () => request<{ data: import('@/types/api').Tag[] }>('GET', '/tags'),
+
+  // Search
+  search: (q: string, limit = 20) => request<{ data: import('@/types/api').SearchResult[] }>('GET', `/search?q=${encodeURIComponent(q)}&limit=${limit}`),
 
   // Auth
   setupStatus: () => request<{ data: { needs_setup: boolean; user_count: number } }>('GET', '/auth/setup-status'),
@@ -64,6 +70,9 @@ export const api = {
     request<{ data: import('@/types/api').User }>('PUT', '/auth/me', body),
   changePassword: (body: { old_password: string; new_password: string }) =>
     request<null>('POST', '/auth/change-password', body),
+  getSettings: () => request<{ data: import('@/types/api').UserSettings }>('GET', '/auth/settings'),
+  updateSettings: (body: import('@/types/api').UserSettings) =>
+    request<{ data: import('@/types/api').UserSettings }>('PUT', '/auth/settings', body),
 
   // API Keys
   listApiKeys: () => request<{ data: import('@/types/api').ApiKey[] }>('GET', '/api-keys'),

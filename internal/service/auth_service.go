@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -243,8 +244,16 @@ func (s *AuthService) DeleteAPIKey(ctx context.Context, id, userID uuid.UUID) er
 	return s.queries.DeleteAPIKey(ctx, id, userID)
 }
 
+func (s *AuthService) UpdateSettings(ctx context.Context, userID uuid.UUID, settings json.RawMessage) error {
+	return s.queries.UpdateUserSettings(ctx, userID, settings)
+}
+
+func (s *AuthService) GetSettings(ctx context.Context, userID uuid.UUID) (json.RawMessage, error) {
+	return s.queries.GetUserSettings(ctx, userID)
+}
+
 func toModelUser(u repository.User) *model.User {
-	return &model.User{
+	usr := &model.User{
 		ID:        u.ID,
 		Email:     u.Email,
 		Name:      u.Name,
@@ -252,6 +261,11 @@ func toModelUser(u repository.User) *model.User {
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}
+	if len(u.UserSettings) > 0 {
+		raw := json.RawMessage(u.UserSettings)
+		usr.UserSettings = &raw
+	}
+	return usr
 }
 
 func generateAPIKey() (string, error) {
