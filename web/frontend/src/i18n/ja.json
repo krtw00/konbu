@@ -82,7 +82,11 @@
     "url": "URL",
     "icon": "アイコン",
     "iconPlaceholder": "絵文字または文字",
-    "confirmDelete": "「{{name}}」を削除しますか？"
+    "confirmDelete": "「{{name}}」を削除しますか？",
+    "editTool": "ツールを編集",
+    "category": "カテゴリ",
+    "categoryPlaceholder": "例: 開発, インフラ, ドキュメント",
+    "healthCheck": "ヘルスチェック"
   },
   "command": {
     "searchPlaceholder": "すべてを検索…",
@@ -135,6 +139,9 @@
     "noKeys": "API キーはありません",
     "keyCreated": "キーを作成しました",
     "keyCopied": "コピーしました！",
-    "logout": "ログアウト"
+    "logout": "ログアウト",
+    "firstDayOfWeek": "週の開始曜日",
+    "sunday": "日曜日",
+    "monday": "月曜日"
   }
 }

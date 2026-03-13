@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -20,30 +21,7 @@ func NewAuthHandler(authSvc *service.AuthService, cfg *config.Config) *AuthHandl
 	return &AuthHandler{authSvc: authSvc, cfg: cfg}
 }
 
-func (h *AuthHandler) PublicRoutes() chi.Router {
-	r := chi.NewRouter()
-
-	r.Post("/register", h.register)
-	r.Post("/login", h.login)
-	r.Post("/logout", h.logout)
-	r.Get("/setup-status", h.setupStatus)
-
-	return r
-}
-
-func (h *AuthHandler) Routes() chi.Router {
-	r := chi.NewRouter()
-
-	r.Route("/me", func(r chi.Router) {
-		r.Get("/", h.getMe)
-		r.Put("/", h.updateMe)
-	})
-	r.Post("/change-password", h.changePassword)
-
-	return r
-}
-
-func (h *AuthHandler) setupStatus(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleSetupStatus(w http.ResponseWriter, r *http.Request) {
 	needsSetup, userCount, err := h.authSvc.NeedsSetup(r.Context())
 	if err != nil {
 		writeError(w, err)
@@ -55,7 +33,7 @@ func (h *AuthHandler) setupStatus(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h *AuthHandler) register(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -94,7 +72,7 @@ func (h *AuthHandler) register(w http.ResponseWriter, r *http.Request) {
 	writeCreated(w, created)
 }
 
-func (h *AuthHandler) login(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 	var req struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -114,14 +92,14 @@ func (h *AuthHandler) login(w http.ResponseWriter, r *http.Request) {
 	writeData(w, user)
 }
 
-func (h *AuthHandler) logout(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
 	middleware.ClearSessionCookie(w)
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"data": map[string]string{"message": "logged out"},
 	})
 }
 
-func (h *AuthHandler) changePassword(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleChangePassword(w http.ResponseWriter, r *http.Request) {
 	user := middleware.UserFromContext(r.Context())
 	if user == nil {
 		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{
@@ -150,12 +128,12 @@ func (h *AuthHandler) changePassword(w http.ResponseWriter, r *http.Request) {
 	writeData(w, map[string]string{"message": "password changed"})
 }
 
-func (h *AuthHandler) getMe(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
 	user := middleware.UserFromContext(r.Context())
 	writeData(w, user)
 }
 
-func (h *AuthHandler) updateMe(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) HandleUpdateMe(w http.ResponseWriter, r *http.Request) {
 	user := middleware.UserFromContext(r.Context())
 	var req model.UpdateUserRequest
 	if err := decodeJSON(r, &req); err != nil {
@@ -169,6 +147,30 @@ func (h *AuthHandler) updateMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeData(w, updated)
+}
+
+func (h *AuthHandler) HandleGetSettings(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	settings, err := h.authSvc.GetSettings(r.Context(), user.ID)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeData(w, json.RawMessage(settings))
+}
+
+func (h *AuthHandler) HandleUpdateSettings(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	var settings json.RawMessage
+	if err := decodeJSON(r, &settings); err != nil {
+		writeError(w, err)
+		return
+	}
+	if err := h.authSvc.UpdateSettings(r.Context(), user.ID, settings); err != nil {
+		writeError(w, err)
+		return
+	}
+	writeData(w, json.RawMessage(settings))
 }
 
 // --- API Keys ---

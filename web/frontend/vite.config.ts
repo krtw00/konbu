@@ -18,5 +18,13 @@ export default defineConfig({
   build: {
     outDir: '../static',
     emptyOutDir: true,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'monaco-editor': ['monaco-editor'],
+        },
+      },
+    },
   },
 })

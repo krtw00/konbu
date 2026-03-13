@@ -42,6 +42,7 @@ func main() {
 	memoSvc := service.NewMemoService(db, tagSvc)
 	todoSvc := service.NewTodoService(db, tagSvc)
 	eventSvc := service.NewEventService(db, tagSvc)
+	searchSvc := service.NewSearchService(db)
 
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc, cfg)
@@ -51,6 +52,7 @@ func main() {
 	memoH := handler.NewMemoHandler(memoSvc)
 	todoH := handler.NewTodoHandler(todoSvc)
 	eventH := handler.NewEventHandler(eventSvc)
+	searchH := handler.NewSearchHandler(searchSvc)
 
 	// Router
 	r := chi.NewRouter()
@@ -65,14 +67,11 @@ func main() {
 	})
 
 	// Static files (unauthenticated)
-	staticDir := http.Dir("/web/static")
+	staticDir := http.Dir("web/static")
 	r.Handle("/assets/*", http.FileServer(staticDir))
 	r.Get("/favicon.svg", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "/web/static/favicon.svg")
+		http.ServeFile(w, r, "web/static/favicon.svg")
 	})
-
-	// Auth endpoints (unauthenticated)
-	r.Mount("/api/v1/auth", authH.PublicRoutes())
 
 	// Legacy login (KONBU_USER/KONBU_PASS fallback)
 	if cfg.LoginUser != "" {
@@ -80,26 +79,44 @@ func main() {
 		r.Get("/logout", middleware.LogoutHandler())
 	}
 
-	// Session-protected routes
+	// Auth public endpoints (no session required)
+	r.Route("/api/v1/auth", func(r chi.Router) {
+		r.Post("/register", authH.HandleRegister)
+		r.Post("/login", authH.HandleLogin)
+		r.Post("/logout", authH.HandleLogout)
+		r.Get("/setup-status", authH.HandleSetupStatus)
+
+		// Authenticated endpoints under /auth
+		r.Group(func(r chi.Router) {
+			r.Use(middleware.SessionAuth(cfg))
+			r.Use(middleware.Auth(authSvc, cfg))
+			r.Get("/me", authH.HandleGetMe)
+			r.Put("/me", authH.HandleUpdateMe)
+			r.Post("/change-password", authH.HandleChangePassword)
+			r.Get("/settings", authH.HandleGetSettings)
+			r.Put("/settings", authH.HandleUpdateSettings)
+		})
+	})
+
+	// Session-protected API routes
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.SessionAuth(cfg))
 
-		// API v1 routes (require user context)
 		r.Route("/api/v1", func(r chi.Router) {
 			r.Use(middleware.Auth(authSvc, cfg))
 
-			r.Mount("/auth", authH.Routes())
 			r.Mount("/api-keys", apiKeyH.Routes())
 			r.Mount("/tags", tagH.Routes())
 			r.Mount("/tools", toolH.Routes())
 			r.Mount("/memos", memoH.Routes())
 			r.Mount("/todos", todoH.Routes())
 			r.Mount("/events", eventH.Routes())
+			r.Get("/search", searchH.HandleSearch)
 		})
 
 		// SPA fallback
 		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "/web/static/index.html")
+			http.ServeFile(w, r, "web/static/index.html")
 		})
 	})
 

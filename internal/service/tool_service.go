@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net/http"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/krtw00/konbu/internal/apperror"
@@ -51,7 +53,7 @@ func (s *ToolService) CreateTool(ctx context.Context, userID uuid.UUID, req mode
 		return nil, apperror.Internal(err)
 	}
 
-	t, err := s.queries.CreateTool(ctx, userID, req.Name, req.URL, icon, maxSort+1)
+	t, err := s.queries.CreateTool(ctx, userID, req.Name, req.URL, icon, req.Category, maxSort+1)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -69,7 +71,7 @@ func (s *ToolService) UpdateTool(ctx context.Context, id, userID uuid.UUID, req 
 		return nil, apperror.Internal(err)
 	}
 
-	t, err := s.queries.UpdateTool(ctx, id, userID, req.Name, req.URL, req.Icon, existing.SortOrder)
+	t, err := s.queries.UpdateTool(ctx, id, userID, req.Name, req.URL, req.Icon, req.Category, existing.SortOrder)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -92,7 +94,7 @@ func (s *ToolService) RefreshToolIcons(ctx context.Context, userID uuid.UUID) (i
 		if icon == "" {
 			continue
 		}
-		s.queries.UpdateTool(ctx, r.ID, userID, r.Name, r.URL, icon, r.SortOrder)
+		s.queries.UpdateTool(ctx, r.ID, userID, r.Name, r.URL, icon, r.Category, r.SortOrder)
 		count++
 	}
 	return count, nil
@@ -118,12 +120,41 @@ func (s *ToolService) ReorderTools(ctx context.Context, userID uuid.UUID, order 
 	return tx.Commit()
 }
 
+type HealthResult struct {
+	ID     uuid.UUID `json:"id"`
+	URL    string    `json:"url"`
+	Alive  bool      `json:"alive"`
+	Status int       `json:"status"`
+}
+
+func (s *ToolService) HealthCheck(ctx context.Context, userID uuid.UUID) ([]HealthResult, error) {
+	tools, err := s.queries.ListToolsByUserID(ctx, userID)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	results := make([]HealthResult, len(tools))
+	for i, t := range tools {
+		results[i] = HealthResult{ID: t.ID, URL: t.URL}
+		resp, err := client.Head(t.URL)
+		if err != nil {
+			continue
+		}
+		resp.Body.Close()
+		results[i].Status = resp.StatusCode
+		results[i].Alive = resp.StatusCode >= 200 && resp.StatusCode < 400
+	}
+	return results, nil
+}
+
 func toModelTool(t repository.Tool) model.Tool {
 	return model.Tool{
 		ID:        t.ID,
 		Name:      t.Name,
 		URL:       t.URL,
 		Icon:      t.Icon,
+		Category:  t.Category,
 		SortOrder: t.SortOrder,
 		CreatedAt: t.CreatedAt,
 	}

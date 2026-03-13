@@ -82,7 +82,11 @@
     "url": "URL",
     "icon": "Icon",
     "iconPlaceholder": "Emoji or letter",
-    "confirmDelete": "Delete \"{{name}}\"?"
+    "confirmDelete": "Delete \"{{name}}\"?",
+    "editTool": "Edit Tool",
+    "category": "Category",
+    "categoryPlaceholder": "e.g. Dev, Infra, Docs",
+    "healthCheck": "Health Check"
   },
   "command": {
     "searchPlaceholder": "Search everything...",
@@ -135,6 +139,9 @@
     "noKeys": "No API keys",
     "keyCreated": "Key created",
     "keyCopied": "Copied!",
-    "logout": "Log out"
+    "logout": "Log out",
+    "firstDayOfWeek": "First day of week",
+    "sunday": "Sunday",
+    "monday": "Monday"
   }
 }

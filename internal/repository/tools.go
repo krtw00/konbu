@@ -13,36 +13,39 @@ type Tool struct {
 	Name      string
 	URL       string
 	Icon      string
+	Category  string
 	SortOrder int
 	CreatedAt time.Time
 }
 
-func (q *Queries) CreateTool(ctx context.Context, userID uuid.UUID, name, url, icon string, sortOrder int) (Tool, error) {
-	row := q.db.QueryRowContext(ctx,
-		`INSERT INTO tools (user_id, name, url, icon, sort_order)
-		 VALUES ($1, $2, $3, $4, $5)
-		 RETURNING id, user_id, name, url, icon, sort_order, created_at`,
-		userID, name, url, icon, sortOrder)
+var toolCols = `id, user_id, name, url, icon, COALESCE(category, ''), sort_order, created_at`
+
+func scanTool(row interface{ Scan(...any) error }) (Tool, error) {
 	var t Tool
-	err := row.Scan(&t.ID, &t.UserID, &t.Name, &t.URL, &t.Icon, &t.SortOrder, &t.CreatedAt)
+	err := row.Scan(&t.ID, &t.UserID, &t.Name, &t.URL, &t.Icon, &t.Category, &t.SortOrder, &t.CreatedAt)
 	return t, err
+}
+
+func (q *Queries) CreateTool(ctx context.Context, userID uuid.UUID, name, url, icon, category string, sortOrder int) (Tool, error) {
+	row := q.db.QueryRowContext(ctx,
+		`INSERT INTO tools (user_id, name, url, icon, category, sort_order)
+		 VALUES ($1, $2, $3, $4, $5, $6)
+		 RETURNING `+toolCols,
+		userID, name, url, icon, category, sortOrder)
+	return scanTool(row)
 }
 
 func (q *Queries) GetToolByID(ctx context.Context, id, userID uuid.UUID) (Tool, error) {
 	row := q.db.QueryRowContext(ctx,
-		`SELECT id, user_id, name, url, icon, sort_order, created_at
-		 FROM tools WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
+		`SELECT `+toolCols+` FROM tools WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`,
 		id, userID)
-	var t Tool
-	err := row.Scan(&t.ID, &t.UserID, &t.Name, &t.URL, &t.Icon, &t.SortOrder, &t.CreatedAt)
-	return t, err
+	return scanTool(row)
 }
 
 func (q *Queries) ListToolsByUserID(ctx context.Context, userID uuid.UUID) ([]Tool, error) {
 	rows, err := q.db.QueryContext(ctx,
-		`SELECT id, user_id, name, url, icon, sort_order, created_at
-		 FROM tools WHERE user_id = $1 AND deleted_at IS NULL
-		 ORDER BY sort_order, created_at`, userID)
+		`SELECT `+toolCols+` FROM tools WHERE user_id = $1 AND deleted_at IS NULL
+		 ORDER BY COALESCE(category, ''), sort_order, created_at`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -50,8 +53,8 @@ func (q *Queries) ListToolsByUserID(ctx context.Context, userID uuid.UUID) ([]To
 
 	var tools []Tool
 	for rows.Next() {
-		var t Tool
-		if err := rows.Scan(&t.ID, &t.UserID, &t.Name, &t.URL, &t.Icon, &t.SortOrder, &t.CreatedAt); err != nil {
+		t, err := scanTool(rows)
+		if err != nil {
 			return nil, err
 		}
 		tools = append(tools, t)
@@ -59,15 +62,13 @@ func (q *Queries) ListToolsByUserID(ctx context.Context, userID uuid.UUID) ([]To
 	return tools, rows.Err()
 }
 
-func (q *Queries) UpdateTool(ctx context.Context, id, userID uuid.UUID, name, url, icon string, sortOrder int) (Tool, error) {
+func (q *Queries) UpdateTool(ctx context.Context, id, userID uuid.UUID, name, url, icon, category string, sortOrder int) (Tool, error) {
 	row := q.db.QueryRowContext(ctx,
-		`UPDATE tools SET name = $3, url = $4, icon = $5, sort_order = $6
+		`UPDATE tools SET name = $3, url = $4, icon = $5, category = $6, sort_order = $7
 		 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
-		 RETURNING id, user_id, name, url, icon, sort_order, created_at`,
-		id, userID, name, url, icon, sortOrder)
-	var t Tool
-	err := row.Scan(&t.ID, &t.UserID, &t.Name, &t.URL, &t.Icon, &t.SortOrder, &t.CreatedAt)
-	return t, err
+		 RETURNING `+toolCols,
+		id, userID, name, url, icon, category, sortOrder)
+	return scanTool(row)
 }
 
 func (q *Queries) SoftDeleteTool(ctx context.Context, id, userID uuid.UUID) error {

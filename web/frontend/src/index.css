@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "highlight.js/styles/github.css";
 @import "@fontsource-variable/geist";
 
 @custom-variant dark (&:is(.dark *));
@@ -122,3 +123,39 @@
     @apply font-sans;
     }
 }
+
+/* GFM alerts */
+.md-preview .markdown-alert { border-left: 3px solid; padding: 0.5em 0.75em; margin: 0.5em 0; border-radius: 4px; }
+.md-preview .markdown-alert-note { border-color: #2f81f7; background: #2f81f710; }
+.md-preview .markdown-alert-tip { border-color: #3fb950; background: #3fb95010; }
+.md-preview .markdown-alert-important { border-color: #a371f7; background: #a371f710; }
+.md-preview .markdown-alert-warning { border-color: #d29922; background: #d2992210; }
+.md-preview .markdown-alert-caution { border-color: #f85149; background: #f8514910; }
+.md-preview .markdown-alert-title { font-weight: 600; font-size: 0.85em; margin-bottom: 0.25em; }
+
+/* Task list checkboxes */
+.md-preview input[type="checkbox"] { margin-right: 0.4em; vertical-align: middle; }
+.md-preview li:has(input[type="checkbox"]) { list-style: none; margin-left: -1.5em; }
+
+/* Markdown preview */
+.md-preview { font-size: 0.875rem; line-height: 1.6; }
+.md-preview h1 { font-size: 1.5em; font-weight: 700; margin: 0.8em 0 0.4em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
+.md-preview h2 { font-size: 1.25em; font-weight: 600; margin: 0.7em 0 0.3em; border-bottom: 1px solid var(--border); padding-bottom: 0.2em; }
+.md-preview h3 { font-size: 1.1em; font-weight: 600; margin: 0.6em 0 0.3em; }
+.md-preview h4, .md-preview h5, .md-preview h6 { font-size: 1em; font-weight: 600; margin: 0.5em 0 0.2em; }
+.md-preview p { margin: 0.4em 0; }
+.md-preview ul, .md-preview ol { margin: 0.4em 0; padding-left: 1.5em; }
+.md-preview li { margin: 0.15em 0; }
+.md-preview ul { list-style-type: disc; }
+.md-preview ol { list-style-type: decimal; }
+.md-preview code { font-size: 0.85em; background: var(--muted); padding: 0.15em 0.35em; border-radius: 3px; font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Consolas, monospace; }
+.md-preview pre { background: var(--muted); padding: 0.75em 1em; border-radius: 6px; overflow-x: auto; margin: 0.5em 0; }
+.md-preview pre code { background: none; padding: 0; font-size: 0.8em; }
+.md-preview blockquote { border-left: 3px solid var(--border); padding-left: 0.75em; margin: 0.5em 0; color: var(--muted-foreground); }
+.md-preview a { color: var(--primary); text-decoration: underline; }
+.md-preview hr { border: none; border-top: 1px solid var(--border); margin: 0.8em 0; }
+.md-preview table { border-collapse: collapse; width: 100%; margin: 0.5em 0; }
+.md-preview th, .md-preview td { border: 1px solid var(--border); padding: 0.35em 0.6em; font-size: 0.85em; }
+.md-preview th { background: var(--muted); font-weight: 600; }
+.md-preview strong { font-weight: 600; }
+.md-preview img { max-width: 100%; border-radius: 4px; }
