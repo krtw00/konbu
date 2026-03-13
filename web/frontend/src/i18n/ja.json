@@ -1,0 +1,140 @@
+{
+  "common": {
+    "delete": "削除",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "edit": "編集",
+    "new": "新規",
+    "add": "追加",
+    "create": "作成",
+    "untitled": "無題",
+    "allDay": "終日",
+    "done": "完了",
+    "open": "未完了",
+    "all": "すべて",
+    "noTags": "タグなし",
+    "confirmDelete": "「{{name}}」を削除しますか？",
+    "search": "検索"
+  },
+  "nav": {
+    "home": "ホーム",
+    "memos": "メモ",
+    "memo": "メモ",
+    "todo": "ToDo",
+    "calendar": "カレンダー",
+    "cal": "カレンダー",
+    "tools": "ツール",
+    "settings": "設定"
+  },
+  "home": {
+    "todaySchedule": "今日の予定",
+    "noEventsToday": "予定はありません",
+    "recentMemos": "最近のメモ",
+    "noMemos": "メモはまだありません",
+    "allDone": "すべて完了！"
+  },
+  "memos": {
+    "title": "メモ",
+    "noMemos": "メモはありません",
+    "confirmDelete": "「{{title}}」を削除しますか？"
+  },
+  "memoEdit": {
+    "tags": "タグ",
+    "tagsCount": "タグ ({{count}})",
+    "preview": "プレビュー",
+    "saved": "保存済み",
+    "errorSaving": "保存に失敗しました",
+    "editing": "編集中...",
+    "confirmDelete": "このメモを削除しますか？"
+  },
+  "todos": {
+    "title": "ToDo",
+    "addPlaceholder": "タスクを追加… Enterで作成、!today !tomorrowで日付、#タグ",
+    "allDone": "すべて完了！",
+    "noItems": "アイテムなし",
+    "completed": "完了済み",
+    "notes": "メモ",
+    "addNotes": "メモを追加…",
+    "dueDate": "期限",
+    "confirmDelete": "削除しますか？",
+    "overdue": "{{days}}日超過",
+    "today": "今日",
+    "tomorrow": "明日"
+  },
+  "calendar": {
+    "title": "カレンダー",
+    "today": "今日",
+    "noEvents": "予定なし",
+    "newEvent": "新しい予定",
+    "eventTitle": "予定のタイトル",
+    "start": "開始",
+    "end": "終了",
+    "description": "詳細",
+    "descriptionPlaceholder": "詳細（任意）",
+    "more": "他 {{count}}件",
+    "confirmDelete": "削除しますか？"
+  },
+  "tools": {
+    "title": "ツール",
+    "noTools": "ツールはまだありません",
+    "newTool": "ツールを追加",
+    "name": "名前",
+    "url": "URL",
+    "icon": "アイコン",
+    "iconPlaceholder": "絵文字または文字",
+    "confirmDelete": "「{{name}}」を削除しますか？"
+  },
+  "command": {
+    "searchPlaceholder": "すべてを検索…",
+    "noResults": "見つかりませんでした",
+    "memo": "メモ",
+    "todo": "ToDo",
+    "event": "予定"
+  },
+  "date": {
+    "now": "たった今",
+    "minutesAgo": "{{count}}分前",
+    "hoursAgo": "{{count}}時間前",
+    "daysAgo": "{{count}}日前"
+  },
+  "auth": {
+    "login": "ログイン",
+    "loginDescription": "アカウントにサインイン",
+    "register": "登録",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "confirmPassword": "パスワード（確認）",
+    "name": "名前",
+    "loginButton": "ログイン",
+    "registerButton": "アカウント作成",
+    "loginError": "メールアドレスまたはパスワードが正しくありません",
+    "setupTitle": "konbu へようこそ",
+    "setupDescription": "管理者アカウントを作成してください"
+  },
+  "settings": {
+    "title": "設定",
+    "profile": "プロフィール",
+    "appearance": "外観",
+    "security": "セキュリティ",
+    "displayName": "表示名",
+    "email": "メールアドレス",
+    "language": "言語",
+    "theme": "テーマ",
+    "themeDefault": "konbu（デフォルト）",
+    "changePassword": "パスワード変更",
+    "oldPassword": "現在のパスワード",
+    "newPassword": "新しいパスワード",
+    "confirmPassword": "新しいパスワード（確認）",
+    "passwordChanged": "パスワードを変更しました",
+    "passwordMismatch": "パスワードが一致しません",
+    "apiKeys": "API キー",
+    "createKey": "作成",
+    "keyName": "キー名",
+    "copyKey": "コピー",
+    "deleteKey": "削除",
+    "noKeys": "API キーはありません",
+    "keyCreated": "キーを作成しました",
+    "keyCopied": "コピーしました！",
+    "logout": "ログアウト"
+  }
+}

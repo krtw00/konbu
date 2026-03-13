@@ -1,20 +1,22 @@
+import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
-import { Home, FileText, CheckSquare, Calendar, Monitor } from 'lucide-react'
+import { Home, FileText, CheckSquare, Calendar, Settings } from 'lucide-react'
 
 const navItems = [
-  { page: 'home' as const, icon: Home, label: 'Home' },
-  { page: 'memos' as const, icon: FileText, label: 'Memo' },
-  { page: 'todos' as const, icon: CheckSquare, label: 'ToDo' },
-  { page: 'calendar' as const, icon: Calendar, label: 'Cal' },
-  { page: 'tools' as const, icon: Monitor, label: 'Tools' },
+  { page: 'home' as const, icon: Home, labelKey: 'nav.home' },
+  { page: 'memos' as const, icon: FileText, labelKey: 'nav.memo' },
+  { page: 'todos' as const, icon: CheckSquare, labelKey: 'nav.todo' },
+  { page: 'calendar' as const, icon: Calendar, labelKey: 'nav.cal' },
+  { page: 'settings' as const, icon: Settings, labelKey: 'nav.settings' },
 ]
 
 export function BottomNav() {
+  const { t } = useTranslation()
   const { currentPage, setPage } = useAppStore()
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 flex border-t border-border bg-background z-50">
-      {navItems.map(({ page, icon: Icon, label }) => (
+      {navItems.map(({ page, icon: Icon, labelKey }) => (
         <button
           key={page}
           onClick={() => setPage(page)}
@@ -25,7 +27,7 @@ export function BottomNav() {
           }`}
         >
           <Icon size={20} />
-          <span>{label}</span>
+          <span>{t(labelKey)}</span>
         </button>
       ))}
     </nav>

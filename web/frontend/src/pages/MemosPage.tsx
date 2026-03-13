@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { relativeTime } from '@/lib/date'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +13,7 @@ interface MemosPageProps {
 }
 
 export function MemosPage({ onEditMemo }: MemosPageProps) {
+  const { t } = useTranslation()
   const [memos, setMemos] = useState<Memo[]>([])
   const [, setAllTags] = useState<string[]>([])
   const [tagFilter, setTagFilter] = useState<string | null>(null)
@@ -41,7 +43,7 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
   }
 
   async function deleteMemo(id: string, title: string) {
-    if (!confirm(`Delete "${title || 'Untitled'}"?`)) return
+    if (!confirm(t('memos.confirmDelete', { title: title || t('common.untitled') }))) return
     await api.deleteMemo(id)
     loadMemos()
   }
@@ -49,14 +51,13 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-semibold">Memos</h1>
+        <h1 className="text-2xl font-semibold">{t('memos.title')}</h1>
         <Button size="sm" onClick={createMemo}>
-          <Plus size={16} className="mr-1" /> New
+          <Plus size={16} className="mr-1" /> {t('common.new')}
         </Button>
       </div>
 
       <div className="flex gap-4">
-        {/* Tag tree */}
         {Object.keys(tagCounts).length > 0 && (
           <div className="hidden md:block w-40 shrink-0 space-y-0.5">
             <button
@@ -65,7 +66,7 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
                 tagFilter === null ? 'bg-accent font-medium' : 'hover:bg-accent/50'
               }`}
             >
-              All <span className="text-muted-foreground ml-1">{memos.length}</span>
+              {t('common.all')} <span className="text-muted-foreground ml-1">{memos.length}</span>
             </button>
             {Object.entries(tagCounts)
               .sort((a, b) => b[1] - a[1])
@@ -83,10 +84,9 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
           </div>
         )}
 
-        {/* Memo list */}
         <div className="flex-1 space-y-1">
           {filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground py-8 text-center">No memos</p>
+            <p className="text-sm text-muted-foreground py-8 text-center">{t('memos.noMemos')}</p>
           ) : (
             filtered.map((m) => (
               <div
@@ -100,15 +100,15 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
                   {m.type === 'table' ? 'TBL' : 'MD'}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{m.title || 'Untitled'}</div>
+                  <div className="text-sm font-medium truncate">{m.title || t('common.untitled')}</div>
                   {m.content && (
                     <div className="text-xs text-muted-foreground truncate">{m.content}</div>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                  {m.tags?.map((t) => (
-                    <Badge key={t.id} variant="secondary" className="text-xs">
-                      {t.name}
+                  {m.tags?.map((tag) => (
+                    <Badge key={tag.id} variant="secondary" className="text-xs">
+                      {tag.name}
                     </Badge>
                   ))}
                   <span className="text-xs text-muted-foreground">{relativeTime(m.updated_at)}</span>
@@ -121,14 +121,14 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEditMemo(m.id) }}>
-                      Edit
+                      {t('common.edit')}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="text-destructive"
                       onClick={(e) => { e.stopPropagation(); deleteMemo(m.id, m.title) }}
                     >
-                      Delete
+                      {t('common.delete')}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

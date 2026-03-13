@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +16,7 @@ interface MemoEditPageProps {
 }
 
 export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
+  const { t } = useTranslation()
   const [memo, setMemo] = useState<Memo | null>(null)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -26,32 +28,32 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
 
   useEffect(() => {
     async function load() {
-      const [r, t] = await Promise.all([api.getMemo(memoId), api.listTags()])
+      const [r, tRes] = await Promise.all([api.getMemo(memoId), api.listTags()])
       const m = r.data
       setMemo(m)
       setTitle(m.title)
       setContent(m.content)
-      setTags(m.tags?.map((t) => t.name) || [])
-      setAllTags((t.data || []).map((tag) => tag.name))
+      setTags(m.tags?.map((tag) => tag.name) || [])
+      setAllTags((tRes.data || []).map((tag) => tag.name))
     }
     load()
   }, [memoId])
 
-  const save = useCallback(async (t?: string, c?: string, tg?: string[]) => {
-    const saveTitle = t ?? title
+  const save = useCallback(async (ti?: string, c?: string, tg?: string[]) => {
+    const saveTitle = ti ?? title
     const saveContent = c ?? content
     const saveTags = tg ?? tags
     try {
       await api.updateMemo(memoId, { title: saveTitle, content: saveContent, tags: saveTags })
-      setStatus('Saved')
+      setStatus(t('memoEdit.saved'))
       setTimeout(() => setStatus(''), 2000)
     } catch {
-      setStatus('Error saving')
+      setStatus(t('memoEdit.errorSaving'))
     }
-  }, [memoId, title, content, tags])
+  }, [memoId, title, content, tags, t])
 
   function scheduleAutosave(newTitle?: string, newContent?: string) {
-    setStatus('Editing...')
+    setStatus(t('memoEdit.editing'))
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => save(newTitle, newContent), 1500)
   }
@@ -73,12 +75,11 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
   }
 
   async function handleDelete() {
-    if (!confirm('Delete this memo?')) return
+    if (!confirm(t('memoEdit.confirmDelete'))) return
     await api.deleteMemo(memoId)
     onClose()
   }
 
-  // Save on unmount
   useEffect(() => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current)
@@ -89,16 +90,15 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Toolbar */}
       <div className="flex items-center gap-2 px-4 py-2 border-b border-border">
         <Button variant="ghost" size="sm" onClick={() => { save(); onClose() }}>
-          <ArrowLeft size={16} className="mr-1" /> Memos
+          <ArrowLeft size={16} className="mr-1" /> {t('memos.title')}
         </Button>
         <input
           type="text"
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
-          placeholder="Untitled"
+          placeholder={t('common.untitled')}
           className="flex-1 bg-transparent text-lg font-medium outline-none"
         />
         <span className="text-xs text-muted-foreground">{status}</span>
@@ -106,7 +106,7 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
           <DropdownMenuTrigger>
             <Button variant="ghost" size="sm">
               <Tag size={14} className="mr-1" />
-              Tags{tags.length > 0 && ` (${tags.length})`}
+              {tags.length > 0 ? t('memoEdit.tagsCount', { count: tags.length }) : t('memoEdit.tags')}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -116,20 +116,19 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
               </DropdownMenuItem>
             ))}
             {allTags.length === 0 && (
-              <DropdownMenuItem disabled>No tags</DropdownMenuItem>
+              <DropdownMenuItem disabled>{t('common.noTags')}</DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
         <Button variant="ghost" size="sm" onClick={() => setPreview(!preview)}>
           {preview ? <Edit3 size={14} /> : <Eye size={14} />}
-          <span className="ml-1">{preview ? 'Edit' : 'Preview'}</span>
+          <span className="ml-1">{preview ? t('common.edit') : t('memoEdit.preview')}</span>
         </Button>
         <Button variant="ghost" size="sm" className="text-destructive" onClick={handleDelete}>
           <Trash2 size={14} />
         </Button>
       </div>
 
-      {/* Tags bar */}
       {tags.length > 0 && (
         <div className="flex items-center gap-1.5 px-4 py-1.5 border-b border-border">
           {tags.map((name) => (
@@ -143,7 +142,6 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
         </div>
       )}
 
-      {/* Editor / Preview */}
       <div className="flex-1 overflow-hidden flex">
         {!preview ? (
           <div className="flex-1 overflow-auto">
