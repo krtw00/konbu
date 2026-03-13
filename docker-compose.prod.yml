@@ -31,11 +31,11 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.konbu.rule=Host(`konbu.codenica.dev`)"
+      - "traefik.http.routers.konbu.rule=Host(`${KONBU_DOMAIN}`)"
       - "traefik.http.routers.konbu.entrypoints=websecure"
       - "traefik.http.routers.konbu.tls.certresolver=letsencrypt"
       - "traefik.http.services.konbu.loadbalancer.server.port=8080"
-      - "traefik.http.routers.konbu-http.rule=Host(`konbu.codenica.dev`)"
+      - "traefik.http.routers.konbu-http.rule=Host(`${KONBU_DOMAIN}`)"
       - "traefik.http.routers.konbu-http.entrypoints=web"
       - "traefik.http.routers.konbu-http.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"

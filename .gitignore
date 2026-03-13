@@ -1,5 +1,7 @@
 # Binaries
 bin/
+konbu
+server
 *.exe
 
 # IDE
@@ -13,7 +15,7 @@ bin/
 
 # Environment
 .env
-.env.local
+.env.*
 
 # Dependencies
 vendor/
@@ -21,3 +23,7 @@ vendor/
 # Test
 coverage.out
 coverage.html
+
+# Database
+*.sqlite
+*.sqlite3
