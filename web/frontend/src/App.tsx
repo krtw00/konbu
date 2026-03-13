@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useAppStore } from '@/stores/app'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { BottomNav } from '@/components/layout/BottomNav'
+import { MobileHeader } from '@/components/layout/MobileHeader'
 import { CommandPalette } from '@/components/CommandPalette'
 import { HomePage } from '@/pages/HomePage'
 import { MemosPage } from '@/pages/MemosPage'
@@ -53,25 +53,27 @@ function App() {
   }
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex flex-col md:flex-row h-screen bg-background">
       <Sidebar />
-      {currentPage === 'memo-edit' && editingMemoId ? (
-        <main className="flex-1 overflow-hidden">
-          <MemoEditPage memoId={editingMemoId} onClose={handleCloseMemoEdit} />
-        </main>
-      ) : (
-        <main className="flex-1 overflow-auto pb-16 md:pb-0">
-          <div className="max-w-5xl mx-auto p-4 md:p-6">
-            {currentPage === 'home' && <HomePage onEditMemo={handleEditMemo} />}
-            {currentPage === 'memos' && <MemosPage onEditMemo={handleEditMemo} />}
-            {currentPage === 'todos' && <TodosPage />}
-            {currentPage === 'calendar' && <CalendarPage />}
-            {currentPage === 'tools' && <ToolsPage />}
-            {currentPage === 'settings' && <SettingsPage />}
-          </div>
-        </main>
-      )}
-      <BottomNav />
+      <div className="flex-1 flex flex-col min-h-0">
+        <MobileHeader />
+        {currentPage === 'memo-edit' && editingMemoId ? (
+          <main className="flex-1 overflow-hidden">
+            <MemoEditPage memoId={editingMemoId} onClose={handleCloseMemoEdit} />
+          </main>
+        ) : (
+          <main className="flex-1 overflow-auto">
+            <div className="max-w-5xl mx-auto p-4 md:p-6">
+              {currentPage === 'home' && <HomePage onEditMemo={handleEditMemo} />}
+              {currentPage === 'memos' && <MemosPage onEditMemo={handleEditMemo} />}
+              {currentPage === 'todos' && <TodosPage />}
+              {currentPage === 'calendar' && <CalendarPage />}
+              {currentPage === 'tools' && <ToolsPage />}
+              {currentPage === 'settings' && <SettingsPage />}
+            </div>
+          </main>
+        )}
+      </div>
       <CommandPalette onOpenMemo={handleEditMemo} />
     </div>
   )
