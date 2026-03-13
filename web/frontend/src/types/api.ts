@@ -46,6 +46,22 @@ export interface Tag {
   name: string
 }
 
+export interface User {
+  id: string
+  email: string
+  name: string
+  is_admin: boolean
+  locale: string
+}
+
+export interface ApiKey {
+  id: string
+  name: string
+  key?: string
+  created_at: string
+  last_used_at: string | null
+}
+
 export interface ListResponse<T> {
   data: T[]
   total: number

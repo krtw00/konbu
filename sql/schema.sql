@@ -18,13 +18,16 @@ CREATE EXTENSION IF NOT EXISTS "pg_bigm";    -- Japanese full-text search (2-gra
 
 -- ForwardAuth ヘッダーから自動登録。最初の登録ユーザーが管理者。
 CREATE TABLE users (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email      TEXT NOT NULL UNIQUE,
-    name       TEXT NOT NULL DEFAULT '',
-    is_admin   BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    deleted_at TIMESTAMPTZ
+    id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email         TEXT NOT NULL UNIQUE,
+    name          TEXT NOT NULL DEFAULT '',
+    password_hash TEXT,
+    is_admin      BOOLEAN NOT NULL DEFAULT FALSE,
+    user_settings JSONB DEFAULT '{}'::jsonb,
+    locale        TEXT DEFAULT 'en',
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at    TIMESTAMPTZ
 );
 
 -- =============================================================================

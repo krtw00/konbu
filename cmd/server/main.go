@@ -44,7 +44,7 @@ func main() {
 	eventSvc := service.NewEventService(db, tagSvc)
 
 	// Handlers
-	authH := handler.NewAuthHandler(authSvc)
+	authH := handler.NewAuthHandler(authSvc, cfg)
 	apiKeyH := handler.NewAPIKeyHandler(authSvc)
 	tagH := handler.NewTagHandler(tagSvc)
 	toolH := handler.NewToolHandler(toolSvc)
@@ -64,24 +64,29 @@ func main() {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	// Login/logout (unauthenticated)
-	r.HandleFunc("/login", middleware.LoginHandler(cfg))
-	r.Get("/logout", middleware.LogoutHandler())
-
-	// Static files (unauthenticated — Vite outputs to /web/static with /assets/ subdir)
+	// Static files (unauthenticated)
 	staticDir := http.Dir("/web/static")
 	r.Handle("/assets/*", http.FileServer(staticDir))
 	r.Get("/favicon.svg", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "/web/static/favicon.svg")
 	})
 
+	// Auth endpoints (unauthenticated)
+	r.Mount("/api/v1/auth", authH.PublicRoutes())
+
+	// Legacy login (KONBU_USER/KONBU_PASS fallback)
+	if cfg.LoginUser != "" {
+		r.HandleFunc("/login", middleware.LoginHandler(cfg))
+		r.Get("/logout", middleware.LogoutHandler())
+	}
+
 	// Session-protected routes
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.SessionAuth(cfg))
 
-		// API v1 routes
+		// API v1 routes (require user context)
 		r.Route("/api/v1", func(r chi.Router) {
-			r.Use(middleware.Auth(authSvc, cfg.DevUser))
+			r.Use(middleware.Auth(authSvc, cfg))
 
 			r.Mount("/auth", authH.Routes())
 			r.Mount("/api-keys", apiKeyH.Routes())
@@ -92,7 +97,7 @@ func main() {
 			r.Mount("/events", eventH.Routes())
 		})
 
-		// SPA fallback: serve index.html for all non-API, non-static routes
+		// SPA fallback
 		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "/web/static/index.html")
 		})

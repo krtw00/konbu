@@ -51,4 +51,23 @@ export const api = {
 
   // Tags
   listTags: () => request<{ data: import('@/types/api').Tag[] }>('GET', '/tags'),
+
+  // Auth
+  setupStatus: () => request<{ data: { needs_setup: boolean; user_count: number } }>('GET', '/auth/setup-status'),
+  register: (body: { email: string; password: string; name: string }) =>
+    request<{ data: import('@/types/api').User }>('POST', '/auth/register', body),
+  login: (body: { email: string; password: string }) =>
+    request<{ data: import('@/types/api').User }>('POST', '/auth/login', body),
+  logout: () => request<null>('POST', '/auth/logout'),
+  getMe: () => request<{ data: import('@/types/api').User }>('GET', '/auth/me'),
+  updateMe: (body: { name: string }) =>
+    request<{ data: import('@/types/api').User }>('PUT', '/auth/me', body),
+  changePassword: (body: { old_password: string; new_password: string }) =>
+    request<null>('POST', '/auth/change-password', body),
+
+  // API Keys
+  listApiKeys: () => request<{ data: import('@/types/api').ApiKey[] }>('GET', '/api-keys'),
+  createApiKey: (body: { name: string }) =>
+    request<{ data: import('@/types/api').ApiKey }>('POST', '/api-keys', body),
+  deleteApiKey: (id: string) => request<null>('DELETE', `/api-keys/${id}`),
 }

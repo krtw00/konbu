@@ -17,52 +17,52 @@ const (
 	sessionMaxAge     = 30 * 24 * 3600 // 30 days
 )
 
-func makeSessionToken(user, secret string) string {
+func MakeSessionToken(payload, secret string) string {
 	mac := hmac.New(sha256.New, []byte(secret))
-	mac.Write([]byte(user))
-	return user + ":" + hex.EncodeToString(mac.Sum(nil))
+	mac.Write([]byte(payload))
+	return payload + ":" + hex.EncodeToString(mac.Sum(nil))
 }
 
-func verifySessionToken(token, secret string) (string, bool) {
+func VerifySessionToken(token, secret string) (string, bool) {
 	parts := strings.SplitN(token, ":", 2)
 	if len(parts) != 2 {
 		return "", false
 	}
-	expected := makeSessionToken(parts[0], secret)
+	expected := MakeSessionToken(parts[0], secret)
 	return parts[0], hmac.Equal([]byte(token), []byte(expected))
 }
 
-// SessionAuth redirects unauthenticated requests to /login.
-// If KONBU_USER is not set, it's a no-op (dev mode).
-func SessionAuth(cfg *config.Config) func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Skip if no login configured (dev mode)
-			if cfg.LoginUser == "" {
-				next.ServeHTTP(w, r)
-				return
-			}
-
-			cookie, err := r.Cookie(sessionCookieName)
-			if err == nil {
-				if _, ok := verifySessionToken(cookie.Value, cfg.SessionSecret); ok {
-					next.ServeHTTP(w, r)
-					return
-				}
-			}
-
-			// API requests get 401 instead of redirect
-			if strings.HasPrefix(r.URL.Path, "/api/") {
-				http.Error(w, `{"error":{"code":"unauthorized","message":"not logged in"}}`, http.StatusUnauthorized)
-				return
-			}
-
-			http.Redirect(w, r, "/login", http.StatusFound)
-		})
-	}
+func SetSessionCookie(w http.ResponseWriter, r *http.Request, userID, secret string) {
+	token := MakeSessionToken(userID, secret)
+	http.SetCookie(w, &http.Cookie{
+		Name:     sessionCookieName,
+		Value:    token,
+		Path:     "/",
+		MaxAge:   sessionMaxAge,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+		Secure:   r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
+	})
 }
 
-// LoginHandler serves the login page and processes login form submissions.
+func ClearSessionCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:    sessionCookieName,
+		Value:   "",
+		Path:    "/",
+		MaxAge:  -1,
+		Expires: time.Unix(0, 0),
+	})
+}
+
+func GetSessionUserID(r *http.Request, secret string) (string, bool) {
+	cookie, err := r.Cookie(sessionCookieName)
+	if err != nil {
+		return "", false
+	}
+	return VerifySessionToken(cookie.Value, secret)
+}
+
 func LoginHandler(cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
@@ -75,13 +75,12 @@ func LoginHandler(cfg *config.Config) http.HandlerFunc {
 			return
 		}
 
-		// POST
 		r.ParseForm()
 		user := r.FormValue("username")
 		pass := r.FormValue("password")
 
 		if user == cfg.LoginUser && pass == cfg.LoginPass {
-			token := makeSessionToken(user, cfg.SessionSecret)
+			token := MakeSessionToken(user, cfg.SessionSecret)
 			http.SetCookie(w, &http.Cookie{
 				Name:     sessionCookieName,
 				Value:    token,
@@ -99,17 +98,36 @@ func LoginHandler(cfg *config.Config) http.HandlerFunc {
 	}
 }
 
-// LogoutHandler clears the session cookie.
 func LogoutHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.SetCookie(w, &http.Cookie{
-			Name:    sessionCookieName,
-			Value:   "",
-			Path:    "/",
-			MaxAge:  -1,
-			Expires: time.Unix(0, 0),
-		})
+		ClearSessionCookie(w)
 		http.Redirect(w, r, "/login", http.StatusFound)
+	}
+}
+
+func SessionAuth(cfg *config.Config) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if cfg.LoginUser != "" {
+				cookie, err := r.Cookie(sessionCookieName)
+				if err == nil {
+					if _, ok := VerifySessionToken(cookie.Value, cfg.SessionSecret); ok {
+						next.ServeHTTP(w, r)
+						return
+					}
+				}
+
+				if strings.HasPrefix(r.URL.Path, "/api/") {
+					http.Error(w, `{"error":{"code":"unauthorized","message":"not logged in"}}`, http.StatusUnauthorized)
+					return
+				}
+
+				http.Redirect(w, r, "/login", http.StatusFound)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
 	}
 }
 
