@@ -12,7 +12,7 @@ import type { Todo, Tag } from '@/types/api'
 export function TodosPage() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [filter, setFilter] = useState<'open' | 'done' | 'all'>('open')
-  const [allTags, setAllTags] = useState<string[]>([])
+  const [, setAllTags] = useState<string[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
