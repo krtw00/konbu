@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- A: 波打つ昆布のシルエット -->
+  <rect width="32" height="32" rx="7" fill="#1a2e23"/>
+  <path d="M10 28 C10 28 8 20 9 14 C10 8 13 5 14 4 C15 3 16 4 15.5 6 C15 8 14 12 14.5 18 C15 24 16 28 16 28" fill="#3db86a" opacity=".7"/>
+  <path d="M15 28 C15 28 14 22 15 16 C16 10 18 6 19.5 5 C21 4 22 5 21 7 C20 9 18 14 18.5 20 C19 26 20 28 20 28" fill="#4ade80"/>
+  <path d="M20 28 C20 28 19 24 20 19 C21 14 22.5 10 23.5 8 C24.5 6 25 7 24.5 9 C24 11 23 16 23 21 C23 26 24 28 24 28" fill="#3db86a" opacity=".5"/>
+  <!-- 泡 -->
+  <circle cx="24" cy="7" r="1.8" fill="none" stroke="#4ade80" stroke-width=".6" opacity=".5"/>
+  <circle cx="7" cy="10" r="1.3" fill="none" stroke="#4ade80" stroke-width=".5" opacity=".4"/>
+  <circle cx="26" cy="13" r="1" fill="none" stroke="#6ee7a0" stroke-width=".5" opacity=".35"/>
+  <circle cx="6" cy="18" r=".8" fill="none" stroke="#4ade80" stroke-width=".4" opacity=".3"/>
+  <circle cx="25" cy="20" r=".6" fill="none" stroke="#6ee7a0" stroke-width=".4" opacity=".25"/>
+</svg>

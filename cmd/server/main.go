@@ -89,8 +89,8 @@ func main() {
 			r.Mount("/events", eventH.Routes())
 		})
 
-		// Web UI
-		r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		// SPA fallback: serve index.html for all non-API, non-static routes
+		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
 			http.ServeFile(w, r, "/web/static/index.html")
 		})
 	})
