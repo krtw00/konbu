@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { api } from '@/lib/api'
@@ -271,6 +271,84 @@ function SecurityTab() {
   )
 }
 
+function DataTab() {
+  const { t } = useTranslation()
+  const [importing, setImporting] = useState(false)
+  const [importMsg, setImportMsg] = useState('')
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  function downloadExport(format: 'json' | 'markdown') {
+    const url = `/api/v1/export/${format}`
+    const a = document.createElement('a')
+    a.href = url
+    a.download = ''
+    a.click()
+  }
+
+  async function handleICalImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    setImportMsg('')
+    try {
+      const form = new FormData()
+      form.append('file', file)
+      const res = await fetch('/api/v1/import/ical', { method: 'POST', body: form })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error?.message || 'Import failed')
+      }
+      setImportMsg(t('settings.importSuccess'))
+    } catch (err) {
+      setImportMsg(err instanceof Error ? err.message : 'Error')
+    }
+    setImporting(false)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings.export')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <p className="text-sm text-muted-foreground">{t('settings.exportDescription')}</p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => downloadExport('json')}>
+              {t('settings.exportJSON')}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => downloadExport('markdown')}>
+              {t('settings.exportMarkdown')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t('settings.import')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <p className="text-sm text-muted-foreground">{t('settings.importDescription')}</p>
+          <div>
+            <label className="text-sm font-medium">{t('settings.importICal')}</label>
+            <Input
+              ref={fileRef}
+              type="file"
+              accept=".ics,.ical"
+              onChange={handleICalImport}
+              disabled={importing}
+              className="mt-1"
+            />
+          </div>
+          {importMsg && <p className="text-sm text-green-600">{importMsg}</p>}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export function SettingsPage() {
   const { t } = useTranslation()
 
@@ -282,6 +360,7 @@ export function SettingsPage() {
           <TabsTrigger value="profile">{t('settings.profile')}</TabsTrigger>
           <TabsTrigger value="appearance">{t('settings.appearance')}</TabsTrigger>
           <TabsTrigger value="security">{t('settings.security')}</TabsTrigger>
+          <TabsTrigger value="data">{t('settings.data')}</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="mt-4">
           <ProfileTab />
@@ -291,6 +370,9 @@ export function SettingsPage() {
         </TabsContent>
         <TabsContent value="security" className="mt-4">
           <SecurityTab />
+        </TabsContent>
+        <TabsContent value="data" className="mt-4">
+          <DataTab />
         </TabsContent>
       </Tabs>
     </div>

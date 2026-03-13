@@ -5,16 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 )
 
 type Client struct {
 	BaseURL    string
+	APIKey     string
 	HTTPClient *http.Client
 }
 
-func New(baseURL string) *Client {
-	return &Client{BaseURL: baseURL, HTTPClient: &http.Client{}}
+func New(baseURL, apiKey string) *Client {
+	return &Client{BaseURL: baseURL, APIKey: apiKey, HTTPClient: &http.Client{}}
 }
 
 type apiResponse struct {
@@ -37,6 +41,9 @@ func (c *Client) do(method, path string, body any) (json.RawMessage, error) {
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	}
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		return nil, err
@@ -56,16 +63,27 @@ func (c *Client) do(method, path string, body any) (json.RawMessage, error) {
 	return ar.Data, nil
 }
 
+func (c *Client) doRaw(method, path string) (*http.Response, error) {
+	req, err := http.NewRequest(method, c.BaseURL+path, nil)
+	if err != nil {
+		return nil, err
+	}
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	}
+	return c.HTTPClient.Do(req)
+}
+
 // Memo
 
 type Memo struct {
-	ID        string   `json:"id"`
-	Title     string   `json:"title"`
-	Content   string   `json:"content"`
-	Type      string   `json:"type"`
-	Tags      []Tag    `json:"tags"`
-	CreatedAt string   `json:"created_at"`
-	UpdatedAt string   `json:"updated_at"`
+	ID        string `json:"id"`
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	Type      string `json:"type"`
+	Tags      []Tag  `json:"tags"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 type Tag struct {
@@ -101,6 +119,15 @@ func (c *Client) GetMemo(id string) (*Memo, error) {
 	return &m, json.Unmarshal(data, &m)
 }
 
+func (c *Client) UpdateMemo(id string, fields map[string]any) (*Memo, error) {
+	data, err := c.do("PUT", "/api/v1/memos/"+id, fields)
+	if err != nil {
+		return nil, err
+	}
+	var m Memo
+	return &m, json.Unmarshal(data, &m)
+}
+
 func (c *Client) DeleteMemo(id string) error {
 	_, err := c.do("DELETE", "/api/v1/memos/"+id, nil)
 	return err
@@ -116,6 +143,7 @@ type Todo struct {
 	DueDate     string `json:"due_date"`
 	Tags        []Tag  `json:"tags"`
 	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
 }
 
 func (c *Client) ListTodos() ([]Todo, error) {
@@ -138,7 +166,17 @@ func (c *Client) CreateTodo(title string, tags []string) (*Todo, error) {
 }
 
 func (c *Client) UpdateTodo(id string, fields map[string]any) error {
-	_, err := c.do("PATCH", "/api/v1/todos/"+id, fields)
+	_, err := c.do("PUT", "/api/v1/todos/"+id, fields)
+	return err
+}
+
+func (c *Client) DoneTodo(id string) error {
+	_, err := c.do("PATCH", "/api/v1/todos/"+id+"/done", nil)
+	return err
+}
+
+func (c *Client) ReopenTodo(id string) error {
+	_, err := c.do("PATCH", "/api/v1/todos/"+id+"/reopen", nil)
 	return err
 }
 
@@ -147,13 +185,52 @@ func (c *Client) DeleteTodo(id string) error {
 	return err
 }
 
+// Event
+
+type Event struct {
+	ID             string  `json:"id"`
+	Title          string  `json:"title"`
+	Description    string  `json:"description"`
+	StartAt        string  `json:"start_at"`
+	EndAt          *string `json:"end_at"`
+	AllDay         bool    `json:"all_day"`
+	RecurrenceRule *string `json:"recurrence_rule"`
+	Tags           []Tag   `json:"tags"`
+	CreatedAt      string  `json:"created_at"`
+	UpdatedAt      string  `json:"updated_at"`
+}
+
+func (c *Client) ListEvents() ([]Event, error) {
+	data, err := c.do("GET", "/api/v1/events?limit=100&sort=start_at:asc", nil)
+	if err != nil {
+		return nil, err
+	}
+	var events []Event
+	return events, json.Unmarshal(data, &events)
+}
+
+func (c *Client) CreateEvent(fields map[string]any) (*Event, error) {
+	data, err := c.do("POST", "/api/v1/events", fields)
+	if err != nil {
+		return nil, err
+	}
+	var e Event
+	return &e, json.Unmarshal(data, &e)
+}
+
+func (c *Client) DeleteEvent(id string) error {
+	_, err := c.do("DELETE", "/api/v1/events/"+id, nil)
+	return err
+}
+
 // Tool
 
 type Tool struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-	URL  string `json:"url"`
-	Icon string `json:"icon"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	URL      string `json:"url"`
+	Icon     string `json:"icon"`
+	Category string `json:"category"`
 }
 
 func (c *Client) ListTools() ([]Tool, error) {
@@ -177,4 +254,105 @@ func (c *Client) CreateTool(name, url string) (*Tool, error) {
 func (c *Client) DeleteTool(id string) error {
 	_, err := c.do("DELETE", "/api/v1/tools/"+id, nil)
 	return err
+}
+
+// Search
+
+type SearchResult struct {
+	Type    string `json:"type"`
+	ID      string `json:"id"`
+	Title   string `json:"title"`
+	Snippet string `json:"snippet"`
+}
+
+func (c *Client) Search(query string) ([]SearchResult, error) {
+	data, err := c.do("GET", "/api/v1/search?q="+query, nil)
+	if err != nil {
+		return nil, err
+	}
+	var results []SearchResult
+	return results, json.Unmarshal(data, &results)
+}
+
+// Export
+
+func (c *Client) ExportJSON(outPath string) error {
+	resp, err := c.doRaw("GET", "/api/v1/export/json")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+	}
+	f, err := os.Create(outPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = io.Copy(f, resp.Body)
+	return err
+}
+
+func (c *Client) ExportMarkdown(outPath string) error {
+	resp, err := c.doRaw("GET", "/api/v1/export/markdown")
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+	}
+	f, err := os.Create(outPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = io.Copy(f, resp.Body)
+	return err
+}
+
+// Import
+
+func (c *Client) ImportICal(filePath string) (json.RawMessage, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
+	if err != nil {
+		return nil, err
+	}
+	if _, err := io.Copy(part, f); err != nil {
+		return nil, err
+	}
+	writer.Close()
+
+	req, err := http.NewRequest("POST", c.BaseURL+"/api/v1/import/ical", &buf)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	}
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(raw))
+	}
+	return raw, nil
 }

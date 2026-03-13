@@ -44,6 +44,8 @@ func main() {
 	eventSvc := service.NewEventService(db, tagSvc)
 	searchSvc := service.NewSearchService(db)
 
+	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc, toolSvc)
+
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc, cfg)
 	apiKeyH := handler.NewAPIKeyHandler(authSvc)
@@ -53,6 +55,8 @@ func main() {
 	todoH := handler.NewTodoHandler(todoSvc)
 	eventH := handler.NewEventHandler(eventSvc)
 	searchH := handler.NewSearchHandler(searchSvc)
+	exportH := handler.NewExportHandler(exportSvc)
+	importH := handler.NewImportHandler(eventSvc)
 
 	// Router
 	r := chi.NewRouter()
@@ -112,6 +116,8 @@ func main() {
 			r.Mount("/todos", todoH.Routes())
 			r.Mount("/events", eventH.Routes())
 			r.Get("/search", searchH.HandleSearch)
+			r.Mount("/export", exportH.Routes())
+			r.Mount("/import", importH.Routes())
 		})
 
 		// SPA fallback

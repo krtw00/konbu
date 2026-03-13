@@ -142,6 +142,15 @@
     "logout": "ログアウト",
     "firstDayOfWeek": "週の開始曜日",
     "sunday": "日曜日",
-    "monday": "月曜日"
+    "monday": "月曜日",
+    "data": "データ",
+    "export": "エクスポート",
+    "exportDescription": "すべてのデータをダウンロードします",
+    "exportJSON": "JSON",
+    "exportMarkdown": "Markdown (ZIP)",
+    "import": "インポート",
+    "importDescription": "外部サービスからデータを取り込みます",
+    "importICal": "iCalファイル (.ics)",
+    "importSuccess": "インポートが完了しました"
   }
 }
