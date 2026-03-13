@@ -142,6 +142,15 @@
     "logout": "Log out",
     "firstDayOfWeek": "First day of week",
     "sunday": "Sunday",
-    "monday": "Monday"
+    "monday": "Monday",
+    "data": "Data",
+    "export": "Export",
+    "exportDescription": "Download all your data",
+    "exportJSON": "JSON",
+    "exportMarkdown": "Markdown (ZIP)",
+    "import": "Import",
+    "importDescription": "Import data from external services",
+    "importICal": "iCal file (.ics)",
+    "importSuccess": "Import complete"
   }
 }
