@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/krtw00/konbu/internal/config"
 	"github.com/krtw00/konbu/internal/middleware"
 	"github.com/krtw00/konbu/internal/model"
 	"github.com/krtw00/konbu/internal/service"
@@ -12,10 +13,22 @@ import (
 
 type AuthHandler struct {
 	authSvc *service.AuthService
+	cfg     *config.Config
 }
 
-func NewAuthHandler(authSvc *service.AuthService) *AuthHandler {
-	return &AuthHandler{authSvc: authSvc}
+func NewAuthHandler(authSvc *service.AuthService, cfg *config.Config) *AuthHandler {
+	return &AuthHandler{authSvc: authSvc, cfg: cfg}
+}
+
+func (h *AuthHandler) PublicRoutes() chi.Router {
+	r := chi.NewRouter()
+
+	r.Post("/register", h.register)
+	r.Post("/login", h.login)
+	r.Post("/logout", h.logout)
+	r.Get("/setup-status", h.setupStatus)
+
+	return r
 }
 
 func (h *AuthHandler) Routes() chi.Router {
@@ -25,8 +38,116 @@ func (h *AuthHandler) Routes() chi.Router {
 		r.Get("/", h.getMe)
 		r.Put("/", h.updateMe)
 	})
+	r.Post("/change-password", h.changePassword)
 
 	return r
+}
+
+func (h *AuthHandler) setupStatus(w http.ResponseWriter, r *http.Request) {
+	needsSetup, userCount, err := h.authSvc.NeedsSetup(r.Context())
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeData(w, map[string]interface{}{
+		"needs_setup": needsSetup,
+		"user_count":  userCount,
+	})
+}
+
+func (h *AuthHandler) register(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+		Name     string `json:"name"`
+	}
+	if err := decodeJSON(r, &req); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	needsSetup, _, err := h.authSvc.NeedsSetup(r.Context())
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	if !needsSetup {
+		user := middleware.UserFromContext(r.Context())
+		if user == nil || !user.IsAdmin {
+			writeJSON(w, http.StatusForbidden, map[string]interface{}{
+				"error": map[string]string{
+					"code":    "forbidden",
+					"message": "only admins can register new users",
+				},
+			})
+			return
+		}
+	}
+
+	created, err := h.authSvc.Register(r.Context(), req.Email, req.Password, req.Name)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	writeCreated(w, created)
+}
+
+func (h *AuthHandler) login(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+	if err := decodeJSON(r, &req); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	user, err := h.authSvc.Login(r.Context(), req.Email, req.Password)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+
+	middleware.SetSessionCookie(w, r, user.ID.String(), h.cfg.SessionSecret)
+	writeData(w, user)
+}
+
+func (h *AuthHandler) logout(w http.ResponseWriter, r *http.Request) {
+	middleware.ClearSessionCookie(w)
+	writeJSON(w, http.StatusOK, map[string]interface{}{
+		"data": map[string]string{"message": "logged out"},
+	})
+}
+
+func (h *AuthHandler) changePassword(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	if user == nil {
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{
+			"error": map[string]string{
+				"code":    "unauthorized",
+				"message": "not logged in",
+			},
+		})
+		return
+	}
+
+	var req struct {
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := decodeJSON(r, &req); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	if err := h.authSvc.ChangePassword(r.Context(), user.ID, req.OldPassword, req.NewPassword); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	writeData(w, map[string]string{"message": "password changed"})
 }
 
 func (h *AuthHandler) getMe(w http.ResponseWriter, r *http.Request) {

@@ -58,8 +58,8 @@
 - ツールランチャー（ブックマーク / favicon自動取得 / D&Dリオーダー）
 - タグ（メモ・Todo・イベント横断 / 自動作成）
 - コマンドパレット（Ctrl+K）
-- テーマ（7種プリセット）
-- 認証（X-Forwarded-User + Cookie + APIキー）
+- テーマ（konbuデフォルト。設定画面で変更予定）
+- 認証（Cookie + APIキー）
 
 ---
 
@@ -153,8 +153,8 @@
 | DB | PostgreSQL 16+ |
 | 全文検索 | pg_bigm |
 | ベクトル検索 | pgvector（Phase 2） |
-| コンテナ | Docker / Docker Compose |
-| リバースプロキシ | Traefik |
+| コンテナ | Docker / Docker Compose（開発用） |
+| 本番デプロイ | systemd + Caddy |
 
 ### フロントエンド選定理由（ADR）
 

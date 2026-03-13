@@ -8,9 +8,10 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
+
 	"github.com/krtw00/konbu/internal/apperror"
 	"github.com/krtw00/konbu/internal/config"
 	"github.com/krtw00/konbu/internal/model"
@@ -31,11 +32,112 @@ func NewAuthService(db *sql.DB, cfg *config.Config) *AuthService {
 	}
 }
 
-func (s *AuthService) GetOrCreateUser(ctx context.Context, email string) (*model.User, error) {
-	if !s.cfg.IsEmailAllowed(email) {
-		return nil, apperror.Forbidden("email not allowed")
+func (s *AuthService) Register(ctx context.Context, email, password, name string) (*model.User, error) {
+	if email == "" || password == "" {
+		return nil, apperror.BadRequest("email and password are required")
+	}
+	if len(password) < 8 {
+		return nil, apperror.BadRequest("password must be at least 8 characters")
 	}
 
+	_, err := s.queries.GetUserByEmail(ctx, email)
+	if err == nil {
+		return nil, apperror.BadRequest("email already registered")
+	}
+	if !errors.Is(err, repository.ErrNoRows) {
+		return nil, apperror.Internal(err)
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+
+	count, err := s.queries.CountUsers(ctx)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	isAdmin := count == 0
+
+	u, err := s.queries.CreateUserWithPassword(ctx, email, name, string(hash), isAdmin)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	return toModelUser(u), nil
+}
+
+func (s *AuthService) Login(ctx context.Context, email, password string) (*model.User, error) {
+	if email == "" || password == "" {
+		return nil, apperror.Unauthorized("invalid credentials")
+	}
+
+	u, err := s.queries.GetUserByEmailWithPassword(ctx, email)
+	if err != nil {
+		if errors.Is(err, repository.ErrNoRows) {
+			return nil, apperror.Unauthorized("invalid credentials")
+		}
+		return nil, apperror.Internal(err)
+	}
+
+	if u.PasswordHash == nil {
+		return nil, apperror.Unauthorized("password not set for this account")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(*u.PasswordHash), []byte(password)); err != nil {
+		return nil, apperror.Unauthorized("invalid credentials")
+	}
+
+	return &model.User{
+		ID:        u.ID,
+		Email:     u.Email,
+		Name:      u.Name,
+		IsAdmin:   u.IsAdmin,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
+	}, nil
+}
+
+func (s *AuthService) ChangePassword(ctx context.Context, userID uuid.UUID, oldPassword, newPassword string) error {
+	if newPassword == "" || len(newPassword) < 8 {
+		return apperror.BadRequest("new password must be at least 8 characters")
+	}
+
+	u, err := s.queries.GetUserByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNoRows) {
+			return apperror.NotFound("user")
+		}
+		return apperror.Internal(err)
+	}
+
+	uwp, err := s.queries.GetUserByEmailWithPassword(ctx, u.Email)
+	if err != nil {
+		return apperror.Internal(err)
+	}
+
+	if uwp.PasswordHash != nil {
+		if err := bcrypt.CompareHashAndPassword([]byte(*uwp.PasswordHash), []byte(oldPassword)); err != nil {
+			return apperror.Unauthorized("current password is incorrect")
+		}
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return apperror.Internal(err)
+	}
+
+	return s.queries.SetUserPassword(ctx, userID, string(hash))
+}
+
+func (s *AuthService) NeedsSetup(ctx context.Context) (bool, int64, error) {
+	count, err := s.queries.CountUsers(ctx)
+	if err != nil {
+		return false, 0, apperror.Internal(err)
+	}
+	return count == 0, count, nil
+}
+
+func (s *AuthService) GetOrCreateUser(ctx context.Context, email string) (*model.User, error) {
 	u, err := s.queries.GetUserByEmail(ctx, email)
 	if err == nil {
 		return toModelUser(u), nil
@@ -50,9 +152,6 @@ func (s *AuthService) GetOrCreateUser(ctx context.Context, email string) (*model
 	}
 
 	isAdmin := count == 0
-	if s.cfg.AdminEmail != "" && strings.EqualFold(email, s.cfg.AdminEmail) {
-		isAdmin = true
-	}
 
 	u, err = s.queries.CreateUser(ctx, email, "", isAdmin)
 	if err != nil {

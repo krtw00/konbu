@@ -1,0 +1,3 @@
+ALTER TABLE users DROP COLUMN IF EXISTS locale;
+ALTER TABLE users DROP COLUMN IF EXISTS user_settings;
+ALTER TABLE users DROP COLUMN IF EXISTS password_hash;

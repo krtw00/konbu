@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useAppStore } from '@/stores/app'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
@@ -9,10 +9,17 @@ import { MemoEditPage } from '@/pages/MemoEditPage'
 import { TodosPage } from '@/pages/TodosPage'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { ToolsPage } from '@/pages/ToolsPage'
+import { SettingsPage } from '@/pages/SettingsPage'
+import { LoginPage } from '@/pages/LoginPage'
+import { SetupPage } from '@/pages/SetupPage'
 
 function App() {
-  const { currentPage, setPage } = useAppStore()
+  const { currentPage, setPage, isAuthenticated, isLoading, needsSetup, checkAuth } = useAppStore()
   const [editingMemoId, setEditingMemoId] = useState<string | null>(null)
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   const handleEditMemo = useCallback((id: string) => {
     setEditingMemoId(id)
@@ -23,6 +30,18 @@ function App() {
     setEditingMemoId(null)
     setPage('memos')
   }, [setPage])
+
+  if (isLoading) {
+    return <div className="flex h-screen items-center justify-center bg-background" />
+  }
+
+  if (needsSetup) {
+    return <SetupPage />
+  }
+
+  if (!isAuthenticated) {
+    return <LoginPage />
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -37,6 +56,7 @@ function App() {
           {currentPage === 'todos' && <TodosPage />}
           {currentPage === 'calendar' && <CalendarPage />}
           {currentPage === 'tools' && <ToolsPage />}
+          {currentPage === 'settings' && <SettingsPage />}
         </div>
       </main>
       <BottomNav />
