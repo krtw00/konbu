@@ -1,10 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { api } from '@/lib/api'
 import { relativeTime } from '@/lib/date'
-import { useAppStore } from '@/stores/app'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Plus, MoreHorizontal } from 'lucide-react'
 import type { Memo, Tag } from '@/types/api'
@@ -15,7 +13,7 @@ interface MemosPageProps {
 
 export function MemosPage({ onEditMemo }: MemosPageProps) {
   const [memos, setMemos] = useState<Memo[]>([])
-  const [allTags, setAllTags] = useState<string[]>([])
+  const [, setAllTags] = useState<string[]>([])
   const [tagFilter, setTagFilter] = useState<string | null>(null)
 
   const loadMemos = useCallback(async () => {
@@ -116,7 +114,7 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
                   <span className="text-xs text-muted-foreground">{relativeTime(m.updated_at)}</span>
                 </div>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
                     <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100">
                       <MoreHorizontal size={14} />
                     </Button>

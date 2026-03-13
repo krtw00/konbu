@@ -1,14 +1,12 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { api } from '@/lib/api'
-import { useAppStore } from '@/stores/app'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown } from '@codemirror/lang-markdown'
-import { oneDark } from '@codemirror/theme-one-dark'
 import { marked } from 'marked'
-import { ArrowLeft, Tag, Eye, Edit3, Trash2, Plus } from 'lucide-react'
+import { ArrowLeft, Tag, Eye, Edit3, Trash2 } from 'lucide-react'
 import type { Memo } from '@/types/api'
 
 interface MemoEditPageProps {
@@ -17,7 +15,6 @@ interface MemoEditPageProps {
 }
 
 export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
-  const theme = useAppStore((s) => s.theme)
   const [memo, setMemo] = useState<Memo | null>(null)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
@@ -88,8 +85,6 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
     }
   }, [])
 
-  const isDark = ['konbu', 'mocha', 'linear', 'nord'].includes(theme)
-
   if (!memo) return null
 
   return (
@@ -108,7 +103,7 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
         />
         <span className="text-xs text-muted-foreground">{status}</span>
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <Button variant="ghost" size="sm">
               <Tag size={14} className="mr-1" />
               Tags{tags.length > 0 && ` (${tags.length})`}
@@ -156,7 +151,7 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
               value={content}
               onChange={handleContentChange}
               extensions={[markdown()]}
-              theme={isDark ? oneDark : undefined}
+              theme={undefined}
               className="h-full"
               basicSetup={{
                 lineNumbers: false,
