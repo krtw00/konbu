@@ -1,42 +1,17 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { relativeTime, formatTime, dueFmt } from '@/lib/date'
 import { useAppStore } from '@/stores/app'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { DndContext, closestCenter, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { GripVertical } from 'lucide-react'
 import type { Memo, Todo, CalendarEvent } from '@/types/api'
-import type { DragEndEvent } from '@dnd-kit/core'
 
 interface HomePageProps {
   onEditMemo: (id: string) => void
 }
 
 const DEFAULT_ORDER = ['schedule', 'todos', 'memos']
-
-function SortableWidget({ id, children }: { id: string; children: React.ReactNode }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id })
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
-  return (
-    <div ref={setNodeRef} style={style} className="relative group">
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center cursor-grab opacity-0 group-hover:opacity-50 hover:!opacity-100 z-10"
-      >
-        <GripVertical size={14} className="text-muted-foreground" />
-      </div>
-      {children}
-    </div>
-  )
-}
 
 export function HomePage({ onEditMemo }: HomePageProps) {
   const { t, i18n } = useTranslation()
@@ -45,10 +20,8 @@ export function HomePage({ onEditMemo }: HomePageProps) {
   const [memos, setMemos] = useState<Memo[]>([])
   const [widgetOrder, setWidgetOrder] = useState<string[]>(DEFAULT_ORDER)
   const setPage = useAppStore((s) => s.setPage)
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
-  )
+  const dragItem = useRef<number | null>(null)
+  const dragOver = useRef<number | null>(null)
 
   useEffect(() => {
     loadHome()
@@ -78,20 +51,33 @@ export function HomePage({ onEditMemo }: HomePageProps) {
     }
   }
 
-  const handleDragEnd = useCallback(async (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-    const oldIndex = widgetOrder.indexOf(active.id as string)
-    const newIndex = widgetOrder.indexOf(over.id as string)
-    const newOrder = arrayMove(widgetOrder, oldIndex, newIndex)
+  function handleDragStart(idx: number) {
+    dragItem.current = idx
+  }
+
+  function handleDragEnter(idx: number) {
+    dragOver.current = idx
+  }
+
+  async function handleDragEnd() {
+    if (dragItem.current === null || dragOver.current === null || dragItem.current === dragOver.current) {
+      dragItem.current = null
+      dragOver.current = null
+      return
+    }
+    const newOrder = [...widgetOrder]
+    const [removed] = newOrder.splice(dragItem.current, 1)
+    newOrder.splice(dragOver.current, 0, removed)
     setWidgetOrder(newOrder)
+    dragItem.current = null
+    dragOver.current = null
     try {
       const current = await api.getSettings()
       await api.updateSettings({ ...current.data, widget_order: newOrder })
     } catch {
       // ignore
     }
-  }, [widgetOrder])
+  }
 
   const locale = i18n.language === 'ja' ? 'ja-JP' : 'en-US'
 
@@ -199,17 +185,24 @@ export function HomePage({ onEditMemo }: HomePageProps) {
           year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',
         })}
       </h1>
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={widgetOrder} strategy={verticalListSortingStrategy}>
-          <div className="space-y-4">
-            {widgetOrder.map((id) => (
-              <SortableWidget key={id} id={id}>
-                {widgets[id]}
-              </SortableWidget>
-            ))}
+      <div className="space-y-4">
+        {widgetOrder.map((id, idx) => (
+          <div
+            key={id}
+            draggable
+            onDragStart={() => handleDragStart(idx)}
+            onDragEnter={() => handleDragEnter(idx)}
+            onDragEnd={handleDragEnd}
+            onDragOver={(e) => e.preventDefault()}
+            className="relative group"
+          >
+            <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center cursor-grab opacity-0 group-hover:opacity-50 hover:!opacity-100 z-10">
+              <GripVertical size={14} className="text-muted-foreground" />
+            </div>
+            {widgets[id]}
           </div>
-        </SortableContext>
-      </DndContext>
+        ))}
+      </div>
     </div>
   )
 }
