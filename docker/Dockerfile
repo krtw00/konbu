@@ -1,4 +1,15 @@
-# Build stage
+# Frontend build stage
+FROM node:22-alpine AS frontend
+
+WORKDIR /app/web/frontend
+
+COPY web/frontend/package.json web/frontend/package-lock.json ./
+RUN npm ci
+
+COPY web/frontend/ .
+RUN npm run build
+
+# Go build stage
 FROM golang:1.24-alpine AS builder
 
 RUN apk add --no-cache git
@@ -20,7 +31,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /bin/server /server
 COPY --from=builder /bin/konbu /konbu
 COPY sql/migrations /migrations
-COPY web/static /web/static
+COPY --from=frontend /app/web/static /web/static
 
 EXPOSE 8080
 

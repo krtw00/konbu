@@ -1,7 +1,7 @@
 # Binaries
 bin/
-konbu
-server
+/konbu
+/server
 *.exe
 
 # IDE
@@ -19,6 +19,11 @@ server
 
 # Dependencies
 vendor/
+node_modules/
+
+# Frontend build output
+web/static/assets/
+web/static/index.html
 
 # Test
 coverage.out
