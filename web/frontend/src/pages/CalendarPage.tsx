@@ -56,7 +56,7 @@ export function CalendarPage() {
   const totalCells = startPad + lastDate
   const remainder = (7 - totalCells % 7) % 7
 
-  async function handleNewEvent(dk: string) {
+  async function handleNewEvent(_dk: string) {
     const title = (document.getElementById('new-ev-title') as HTMLInputElement)?.value.trim()
     if (!title) return
     const startAt = (document.getElementById('new-ev-start') as HTMLInputElement)?.value

@@ -144,7 +144,7 @@ export function TodosPage() {
                         {t.title}
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">
-                        {t.tags?.map((tag, i) => (
+                        {t.tags?.map((tag) => (
                           <Badge key={tag.id} variant="secondary" className="text-xs py-0">
                             {tag.name}
                           </Badge>
