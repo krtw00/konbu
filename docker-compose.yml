@@ -23,7 +23,7 @@ services:
     environment:
       DATABASE_URL: postgres://konbu:konbu@postgres:5432/konbu?sslmode=disable
       PORT: "8080"
-      DEV_USER: iguchi@local
+      DEV_USER: dev@local
     ports:
       - "8080:8080"
     depends_on:

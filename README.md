@@ -4,78 +4,114 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">セルフホスト型の個人ツール基盤<br>メモ・ToDo・カレンダー・ツールランチャーを一箇所に</p>
+<p align="center">Self-hosted personal tool hub: memos, todos, calendar, and tool launcher in one place.</p>
 
 ---
 
-## 概要
+## Features
 
-konbu は「これ一つ開けば個人の管理が全部できる」を目指すWebアプリ + CLI。
+- **Memos** -- Markdown and table-type notes with tagging, full-screen CodeMirror 6 editor, and live preview
+- **ToDo** -- Inline task creation, due dates, tag filtering, and detail panel
+- **Calendar** -- Monthly view with event creation and editing
+- **Tools** -- Bookmark launcher with automatic favicon fetching
+- **Cross-search** -- Full-text search across memos, todos, and events (pg_bigm)
+- **CLI** -- Manage memos, todos, and tools from the terminal
+- **Themes** -- 7 built-in color themes (Konbu, Notion, Solarized, Catppuccin Latte/Mocha, Nord, Linear)
 
-- **Memos** — Markdown メモ。タグ分類、全画面 CodeMirror 6 エディタ、ライブプレビュー
-- **ToDo** — インラインタスク追加、日付・タグ管理、右パネル詳細表示
-- **Calendar** — 月間カレンダー、右パネルでイベント作成・編集
-- **Tools** — ブックマーク管理。favicon 自動取得
-
-## 技術スタック
-
-| レイヤー | 技術 |
-|----------|------|
-| Backend | Go, chi, PostgreSQL (pg_bigm) |
-| Frontend | Vanilla JS, CodeMirror 6, CSS Variables テーマ |
-| CLI | Go, cobra |
-| Infra | Docker, マルチステージビルド |
-
-## セットアップ
+## Quick Start
 
 ```bash
-# 起動
+cp .env.example .env
 docker compose up -d
-
-# CLI ビルド
-go build -o bin/konbu ./cmd/konbu
 ```
 
-デフォルトで `http://localhost:8080` でアクセス可能。
+Open `http://localhost:8080`. The dev compose file sets `DEV_USER=dev@local` to bypass authentication.
+
+### Production (with Traefik)
+
+```bash
+# Edit .env with real credentials and your domain
+docker compose -f docker-compose.prod.yml up -d
+```
+
+## Configuration
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `DATABASE_URL` | Yes | -- | PostgreSQL connection string |
+| `PORT` | No | `8080` | Server port |
+| `KONBU_USER` | Prod | -- | Login username |
+| `KONBU_PASS` | Prod | -- | Login password |
+| `SESSION_SECRET` | Prod | -- | Session signing key |
+| `ADMIN_EMAIL` | No | -- | Admin user email |
+| `ALLOWED_EMAILS` | No | `*` | Comma-separated allowed emails (`*` = all) |
+| `DEV_USER` | No | -- | Dev mode: bypass auth with this email |
+| `POSTGRES_PASSWORD` | Prod | -- | PostgreSQL password (prod compose) |
+| `KONBU_DOMAIN` | Prod | -- | Domain for Traefik routing (prod compose) |
+
+## API
+
+Base path: `/api/v1`
+
+| Resource | Endpoints |
+|---|---|
+| Memos | `GET/POST /memos`, `GET/PUT/DELETE /memos/:id` |
+| ToDos | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done` |
+| Events | `GET/POST /events`, `GET/PUT/DELETE /events/:id` |
+| Tools | `GET/POST /tools`, `PUT/DELETE /tools/:id` |
+| Tags | `GET/POST /tags`, `PUT/DELETE /tags/:id` |
+| Search | `GET /search?q=...` |
+| Auth | `GET/PUT /auth/me`, `GET/POST/DELETE /api-keys` |
+
+See [docs/api.md](docs/api.md) for full specification.
 
 ## CLI
 
 ```bash
-konbu memo list                        # メモ一覧
-konbu memo add "title" -c "content"    # メモ作成
-konbu memo show <id>                   # 内容表示
+go build -o bin/konbu ./cmd/konbu
 
-konbu todo list                        # ToDo一覧
-konbu todo add "task name"             # タスク追加
-konbu todo done <id>                   # 完了
-
-konbu tool list                        # ツール一覧
-konbu tool add "name" "https://..."    # ツール追加
+konbu memo list
+konbu memo add "title" -c "content"
+konbu todo list
+konbu todo add "task name"
+konbu todo done <id>
+konbu tool list
+konbu tool add "name" "https://..."
 ```
 
-`KONBU_API` 環境変数または `--api` フラグで接続先を変更可能。
+Set `KONBU_API` or use `--api` flag to point to your server.
 
-## テーマ
+## Development
 
-7 種類のカラーテーマを同梱（右上のドットで切り替え）:
+```bash
+# Start PostgreSQL
+docker compose up -d postgres
 
-Konbu / Notion / Solarized / Catppuccin Latte / Nord / Linear / Catppuccin Mocha
+# Run server
+go run ./cmd/server
 
-## ディレクトリ構成
+# Generate repository code from SQL
+sqlc generate
+
+# Run tests
+go test ./...
+```
+
+### Project Structure
 
 ```
 cmd/
-  server/       # API サーバー
+  server/       # API server
   konbu/        # CLI
 internal/
-  handler/      # HTTP ハンドラ
-  service/      # ビジネスロジック
-  repository/   # DB アクセス (sqlc)
-  client/       # CLI 用 API クライアント
-web/static/     # フロントエンド (HTML/CSS/JS)
-sql/            # スキーマ・マイグレーション
+  handler/      # HTTP handlers
+  service/      # Business logic
+  repository/   # DB access (sqlc)
+  middleware/    # Auth, logging
+web/static/     # Frontend (HTML/CSS/JS)
+sql/            # Schema and migrations
 ```
 
-## ライセンス
+## License
 
-Private
+[MIT](LICENSE)
