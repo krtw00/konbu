@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { dateKey, formatTime } from '@/lib/date'
 import { Button } from '@/components/ui/button'
@@ -12,6 +13,7 @@ const MAX_EVENTS = 3
 const EVENT_COLORS = ['bg-blue-500/20 text-blue-700 dark:text-blue-300', 'bg-green-500/20 text-green-700 dark:text-green-300', 'bg-purple-500/20 text-purple-700 dark:text-purple-300', 'bg-orange-500/20 text-orange-700 dark:text-orange-300']
 
 export function CalendarPage() {
+  const { t, i18n } = useTranslation()
   const [year, setYear] = useState(() => new Date().getFullYear())
   const [month, setMonth] = useState(() => new Date().getMonth())
   const [events, setEvents] = useState<CalendarEvent[]>([])
@@ -55,6 +57,7 @@ export function CalendarPage() {
   const today = new Date()
   const totalCells = startPad + lastDate
   const remainder = (7 - totalCells % 7) % 7
+  const locale = i18n.language === 'ja' ? 'ja-JP' : 'en-US'
 
   async function handleNewEvent(_dk: string) {
     const title = (document.getElementById('new-ev-title') as HTMLInputElement)?.value.trim()
@@ -81,14 +84,14 @@ export function CalendarPage() {
       start_at: editingEvent.start_at,
       end_at: editingEvent.end_at,
       all_day: editingEvent.all_day,
-      tags: editingEvent.tags?.map((t) => t.name) || [],
+      tags: editingEvent.tags?.map((tag) => tag.name) || [],
     })
     setEditingEvent(null)
     load()
   }
 
   async function deleteEvent(id: string) {
-    if (!confirm('Delete?')) return
+    if (!confirm(t('calendar.confirmDelete'))) return
     await api.deleteEvent(id)
     setEditingEvent(null)
     load()
@@ -98,38 +101,34 @@ export function CalendarPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold mb-4">Calendar</h1>
+      <h1 className="text-2xl font-semibold mb-4">{t('calendar.title')}</h1>
 
       <div className="flex gap-4">
         <div className="flex-1">
-          {/* Header */}
           <div className="flex items-center justify-between mb-3">
             <span className="font-medium">{year}/{String(month + 1).padStart(2, '0')}</span>
             <div className="flex gap-1">
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={prevMonth}>
                 <ChevronLeft size={16} />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8" onClick={goToday}>Today</Button>
+              <Button variant="ghost" size="sm" className="h-8" onClick={goToday}>{t('calendar.today')}</Button>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={nextMonth}>
                 <ChevronRight size={16} />
               </Button>
             </div>
           </div>
 
-          {/* Grid */}
           <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
             {DAYS.map((d) => (
               <div key={d} className="bg-muted/50 text-center text-xs font-medium py-1.5 text-muted-foreground">
                 {d}
               </div>
             ))}
-            {/* Previous month padding */}
             {Array.from({ length: startPad }, (_, i) => (
               <div key={`p${i}`} className="bg-background p-1 min-h-20 text-muted-foreground/40">
                 <span className="text-xs">{prevLastDate - startPad + 1 + i}</span>
               </div>
             ))}
-            {/* Current month */}
             {Array.from({ length: lastDate }, (_, i) => {
               const d = i + 1
               const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear()
@@ -161,13 +160,12 @@ export function CalendarPage() {
                       </div>
                     ))}
                     {dayEvents.length > MAX_EVENTS && (
-                      <div className="text-xs text-muted-foreground px-1">+{dayEvents.length - MAX_EVENTS} more</div>
+                      <div className="text-xs text-muted-foreground px-1">{t('calendar.more', { count: dayEvents.length - MAX_EVENTS })}</div>
                     )}
                   </div>
                 </div>
               )
             })}
-            {/* Next month padding */}
             {Array.from({ length: remainder }, (_, i) => (
               <div key={`n${i}`} className="bg-background p-1 min-h-20 text-muted-foreground/40">
                 <span className="text-xs">{i + 1}</span>
@@ -176,12 +174,11 @@ export function CalendarPage() {
           </div>
         </div>
 
-        {/* Day detail / Event edit panel */}
         {selectedDay && (
           <div className="hidden md:block w-72 shrink-0 border-l border-border pl-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-medium text-sm">
-                {new Date(selectedDay[0], selectedDay[1], selectedDay[2]).toLocaleDateString('ja-JP', {
+                {new Date(selectedDay[0], selectedDay[1], selectedDay[2]).toLocaleDateString(locale, {
                   month: 'long', day: 'numeric', weekday: 'short',
                 })}
               </span>
@@ -191,7 +188,6 @@ export function CalendarPage() {
             </div>
 
             {editingEvent ? (
-              /* Edit event */
               <div className="space-y-2">
                 <Input
                   value={editingEvent.title}
@@ -199,7 +195,7 @@ export function CalendarPage() {
                   className="font-medium"
                 />
                 <div>
-                  <label className="text-xs text-muted-foreground">Start</label>
+                  <label className="text-xs text-muted-foreground">{t('calendar.start')}</label>
                   <Input
                     type="datetime-local"
                     value={editingEvent.start_at ? new Date(editingEvent.start_at).toISOString().slice(0, 16) : ''}
@@ -208,7 +204,7 @@ export function CalendarPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">End</label>
+                  <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
                   <Input
                     type="datetime-local"
                     value={editingEvent.end_at ? new Date(editingEvent.end_at).toISOString().slice(0, 16) : ''}
@@ -217,7 +213,7 @@ export function CalendarPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground">Description</label>
+                  <label className="text-xs text-muted-foreground">{t('calendar.description')}</label>
                   <Textarea
                     value={editingEvent.description || ''}
                     onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
@@ -225,17 +221,16 @@ export function CalendarPage() {
                   />
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="destructive" size="sm" onClick={() => deleteEvent(editingEvent.id)}>Delete</Button>
+                  <Button variant="destructive" size="sm" onClick={() => deleteEvent(editingEvent.id)}>{t('common.delete')}</Button>
                   <div className="flex-1" />
-                  <Button size="sm" onClick={saveEvent}>Save</Button>
+                  <Button size="sm" onClick={saveEvent}>{t('common.save')}</Button>
                 </div>
               </div>
             ) : (
-              /* Day events + new event form */
               <>
                 <div className="space-y-1.5">
                   {dk && eventsForDay(dk).length === 0 && (
-                    <p className="text-sm text-muted-foreground">No events</p>
+                    <p className="text-sm text-muted-foreground">{t('calendar.noEvents')}</p>
                   )}
                   {dk && eventsForDay(dk).map((ev) => (
                     <div
@@ -244,21 +239,21 @@ export function CalendarPage() {
                       className="text-sm p-2 rounded hover:bg-accent/50 cursor-pointer"
                     >
                       <div className="text-xs text-muted-foreground">
-                        {ev.all_day ? 'All day' : `${formatTime(ev.start_at)}${ev.end_at ? ' – ' + formatTime(ev.end_at) : ''}`}
+                        {ev.all_day ? t('common.allDay') : `${formatTime(ev.start_at)}${ev.end_at ? ' – ' + formatTime(ev.end_at) : ''}`}
                       </div>
                       <div>{ev.title}</div>
                     </div>
                   ))}
                 </div>
                 <div className="border-t border-border pt-3 space-y-2">
-                  <div className="text-xs text-muted-foreground font-medium">New Event</div>
-                  <Input id="new-ev-title" placeholder="Event title" />
+                  <div className="text-xs text-muted-foreground font-medium">{t('calendar.newEvent')}</div>
+                  <Input id="new-ev-title" placeholder={t('calendar.eventTitle')} />
                   <div className="flex gap-2">
                     <Input id="new-ev-start" type="datetime-local" defaultValue={dk + 'T09:00'} />
                     <Input id="new-ev-end" type="datetime-local" defaultValue={dk + 'T10:00'} />
                   </div>
-                  <Textarea id="new-ev-desc" placeholder="Description (optional)" />
-                  <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk)}>Add</Button>
+                  <Textarea id="new-ev-desc" placeholder={t('calendar.descriptionPlaceholder')} />
+                  <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk)}>{t('common.add')}</Button>
                 </div>
               </>
             )}

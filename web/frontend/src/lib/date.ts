@@ -1,23 +1,31 @@
+import i18n from '@/i18n'
+
+function currentLocale(): string {
+  const lng = i18n.language || 'en'
+  return lng === 'ja' ? 'ja-JP' : 'en-US'
+}
+
 export function relativeTime(iso: string): string {
   if (!iso) return ''
+  const t = i18n.t.bind(i18n)
   const d = new Date(iso)
   const now = new Date()
   const diff = now.getTime() - d.getTime()
-  if (diff < 60_000) return 'now'
-  if (diff < 3_600_000) return Math.floor(diff / 60_000) + 'm ago'
-  if (diff < 86_400_000) return Math.floor(diff / 3_600_000) + 'h ago'
-  if (diff < 604_800_000) return Math.floor(diff / 86_400_000) + 'd ago'
-  return d.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
+  if (diff < 60_000) return t('date.now')
+  if (diff < 3_600_000) return t('date.minutesAgo', { count: Math.floor(diff / 60_000) })
+  if (diff < 86_400_000) return t('date.hoursAgo', { count: Math.floor(diff / 3_600_000) })
+  if (diff < 604_800_000) return t('date.daysAgo', { count: Math.floor(diff / 86_400_000) })
+  return d.toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' })
 }
 
 export function formatTime(iso: string): string {
   if (!iso) return ''
-  return new Date(iso).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleTimeString(currentLocale(), { hour: '2-digit', minute: '2-digit' })
 }
 
 export function formatDate(iso: string): string {
   if (!iso) return ''
-  return new Date(iso).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })
+  return new Date(iso).toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' })
 }
 
 export function dateKey(y: number, m: number, d: number): string {
@@ -26,16 +34,17 @@ export function dateKey(y: number, m: number, d: number): string {
 
 export function dueFmt(dueDate: string | null): { text: string; className: string } | null {
   if (!dueDate) return null
+  const t = i18n.t.bind(i18n)
   const today = new Date()
   const due = new Date(dueDate + 'T00:00:00')
   const diff = Math.floor(
     (due.getTime() - new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime()) / 86_400_000
   )
-  if (diff < 0) return { text: `${Math.abs(diff)}d overdue`, className: 'text-destructive' }
-  if (diff === 0) return { text: 'Today', className: 'text-orange-500' }
-  if (diff === 1) return { text: 'Tomorrow', className: '' }
+  if (diff < 0) return { text: t('todos.overdue', { days: Math.abs(diff) }), className: 'text-destructive' }
+  if (diff === 0) return { text: t('todos.today'), className: 'text-orange-500' }
+  if (diff === 1) return { text: t('todos.tomorrow'), className: '' }
   if (diff <= 7) return { text: `${diff}d`, className: '' }
-  return { text: due.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }), className: '' }
+  return { text: due.toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' }), className: '' }
 }
 
 export function dateDelta(n: number): string {

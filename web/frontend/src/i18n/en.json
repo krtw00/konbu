@@ -1,0 +1,140 @@
+{
+  "common": {
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "new": "New",
+    "add": "Add",
+    "create": "Create",
+    "untitled": "Untitled",
+    "allDay": "All day",
+    "done": "Done",
+    "open": "Open",
+    "all": "All",
+    "noTags": "No tags",
+    "confirmDelete": "Delete \"{{name}}\"?",
+    "search": "Search"
+  },
+  "nav": {
+    "home": "Home",
+    "memos": "Memos",
+    "memo": "Memo",
+    "todo": "ToDo",
+    "calendar": "Calendar",
+    "cal": "Cal",
+    "tools": "Tools",
+    "settings": "Settings"
+  },
+  "home": {
+    "todaySchedule": "Today's Schedule",
+    "noEventsToday": "No events today",
+    "recentMemos": "Recent Memos",
+    "noMemos": "No memos yet",
+    "allDone": "All done!"
+  },
+  "memos": {
+    "title": "Memos",
+    "noMemos": "No memos",
+    "confirmDelete": "Delete \"{{title}}\"?"
+  },
+  "memoEdit": {
+    "tags": "Tags",
+    "tagsCount": "Tags ({{count}})",
+    "preview": "Preview",
+    "saved": "Saved",
+    "errorSaving": "Error saving",
+    "editing": "Editing...",
+    "confirmDelete": "Delete this memo?"
+  },
+  "todos": {
+    "title": "ToDo",
+    "addPlaceholder": "Add a task... Enter to create, !today !tomorrow for date, #tag",
+    "allDone": "All done!",
+    "noItems": "No items",
+    "completed": "Completed",
+    "notes": "Notes",
+    "addNotes": "Add notes...",
+    "dueDate": "Due Date",
+    "confirmDelete": "Delete?",
+    "overdue": "{{days}}d overdue",
+    "today": "Today",
+    "tomorrow": "Tomorrow"
+  },
+  "calendar": {
+    "title": "Calendar",
+    "today": "Today",
+    "noEvents": "No events",
+    "newEvent": "New Event",
+    "eventTitle": "Event title",
+    "start": "Start",
+    "end": "End",
+    "description": "Description",
+    "descriptionPlaceholder": "Description (optional)",
+    "more": "+{{count}} more",
+    "confirmDelete": "Delete?"
+  },
+  "tools": {
+    "title": "Tools",
+    "noTools": "No tools yet",
+    "newTool": "New Tool",
+    "name": "Name",
+    "url": "URL",
+    "icon": "Icon",
+    "iconPlaceholder": "Emoji or letter",
+    "confirmDelete": "Delete \"{{name}}\"?"
+  },
+  "command": {
+    "searchPlaceholder": "Search everything...",
+    "noResults": "No results found.",
+    "memo": "memo",
+    "todo": "todo",
+    "event": "event"
+  },
+  "date": {
+    "now": "now",
+    "minutesAgo": "{{count}}m ago",
+    "hoursAgo": "{{count}}h ago",
+    "daysAgo": "{{count}}d ago"
+  },
+  "auth": {
+    "login": "Log in",
+    "loginDescription": "Sign in to your account",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "name": "Name",
+    "loginButton": "Log in",
+    "registerButton": "Create Account",
+    "loginError": "Invalid email or password",
+    "setupTitle": "Welcome to konbu",
+    "setupDescription": "Create your admin account to get started"
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "appearance": "Appearance",
+    "security": "Security",
+    "displayName": "Display Name",
+    "email": "Email",
+    "language": "Language",
+    "theme": "Theme",
+    "themeDefault": "konbu (default)",
+    "changePassword": "Change Password",
+    "oldPassword": "Current password",
+    "newPassword": "New password",
+    "confirmPassword": "Confirm new password",
+    "passwordChanged": "Password changed",
+    "passwordMismatch": "Passwords do not match",
+    "apiKeys": "API Keys",
+    "createKey": "Create",
+    "keyName": "Key name",
+    "copyKey": "Copy",
+    "deleteKey": "Delete",
+    "noKeys": "No API keys",
+    "keyCreated": "Key created",
+    "keyCopied": "Copied!",
+    "logout": "Log out"
+  }
+}
