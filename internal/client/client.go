@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime/multipart"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 )
@@ -74,7 +75,7 @@ func (c *Client) doRaw(method, path string) (*http.Response, error) {
 	return c.HTTPClient.Do(req)
 }
 
-// Memo
+// --- Memo ---
 
 type Memo struct {
 	ID        string `json:"id"`
@@ -87,6 +88,7 @@ type Memo struct {
 }
 
 type Tag struct {
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -133,7 +135,7 @@ func (c *Client) DeleteMemo(id string) error {
 	return err
 }
 
-// Todo
+// --- Todo ---
 
 type Todo struct {
 	ID          string `json:"id"`
@@ -155,9 +157,8 @@ func (c *Client) ListTodos() ([]Todo, error) {
 	return todos, json.Unmarshal(data, &todos)
 }
 
-func (c *Client) CreateTodo(title string, tags []string) (*Todo, error) {
-	body := map[string]any{"title": title, "status": "open", "tags": tags}
-	data, err := c.do("POST", "/api/v1/todos", body)
+func (c *Client) GetTodo(id string) (*Todo, error) {
+	data, err := c.do("GET", "/api/v1/todos/"+id, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -165,9 +166,28 @@ func (c *Client) CreateTodo(title string, tags []string) (*Todo, error) {
 	return &t, json.Unmarshal(data, &t)
 }
 
-func (c *Client) UpdateTodo(id string, fields map[string]any) error {
-	_, err := c.do("PUT", "/api/v1/todos/"+id, fields)
-	return err
+func (c *Client) CreateTodo(fields map[string]any) (*Todo, error) {
+	if _, ok := fields["status"]; !ok {
+		fields["status"] = "open"
+	}
+	if _, ok := fields["tags"]; !ok {
+		fields["tags"] = []string{}
+	}
+	data, err := c.do("POST", "/api/v1/todos", fields)
+	if err != nil {
+		return nil, err
+	}
+	var t Todo
+	return &t, json.Unmarshal(data, &t)
+}
+
+func (c *Client) UpdateTodo(id string, fields map[string]any) (*Todo, error) {
+	data, err := c.do("PUT", "/api/v1/todos/"+id, fields)
+	if err != nil {
+		return nil, err
+	}
+	var t Todo
+	return &t, json.Unmarshal(data, &t)
 }
 
 func (c *Client) DoneTodo(id string) error {
@@ -185,7 +205,7 @@ func (c *Client) DeleteTodo(id string) error {
 	return err
 }
 
-// Event
+// --- Event ---
 
 type Event struct {
 	ID             string  `json:"id"`
@@ -209,8 +229,26 @@ func (c *Client) ListEvents() ([]Event, error) {
 	return events, json.Unmarshal(data, &events)
 }
 
+func (c *Client) GetEvent(id string) (*Event, error) {
+	data, err := c.do("GET", "/api/v1/events/"+id, nil)
+	if err != nil {
+		return nil, err
+	}
+	var e Event
+	return &e, json.Unmarshal(data, &e)
+}
+
 func (c *Client) CreateEvent(fields map[string]any) (*Event, error) {
 	data, err := c.do("POST", "/api/v1/events", fields)
+	if err != nil {
+		return nil, err
+	}
+	var e Event
+	return &e, json.Unmarshal(data, &e)
+}
+
+func (c *Client) UpdateEvent(id string, fields map[string]any) (*Event, error) {
+	data, err := c.do("PUT", "/api/v1/events/"+id, fields)
 	if err != nil {
 		return nil, err
 	}
@@ -223,7 +261,7 @@ func (c *Client) DeleteEvent(id string) error {
 	return err
 }
 
-// Tool
+// --- Tool ---
 
 type Tool struct {
 	ID       string `json:"id"`
@@ -251,12 +289,69 @@ func (c *Client) CreateTool(name, url string) (*Tool, error) {
 	return &t, json.Unmarshal(data, &t)
 }
 
+func (c *Client) UpdateTool(id string, fields map[string]any) (*Tool, error) {
+	data, err := c.do("PUT", "/api/v1/tools/"+id, fields)
+	if err != nil {
+		return nil, err
+	}
+	var t Tool
+	return &t, json.Unmarshal(data, &t)
+}
+
 func (c *Client) DeleteTool(id string) error {
 	_, err := c.do("DELETE", "/api/v1/tools/"+id, nil)
 	return err
 }
 
-// Search
+// --- Tag ---
+
+func (c *Client) ListTags() ([]Tag, error) {
+	data, err := c.do("GET", "/api/v1/tags", nil)
+	if err != nil {
+		return nil, err
+	}
+	var tags []Tag
+	return tags, json.Unmarshal(data, &tags)
+}
+
+func (c *Client) DeleteTag(id string) error {
+	_, err := c.do("DELETE", "/api/v1/tags/"+id, nil)
+	return err
+}
+
+// --- API Key ---
+
+type APIKey struct {
+	ID        string `json:"id"`
+	Name      string `json:"name"`
+	Key       string `json:"key,omitempty"`
+	CreatedAt string `json:"created_at"`
+}
+
+func (c *Client) ListAPIKeys() ([]APIKey, error) {
+	data, err := c.do("GET", "/api/v1/api-keys", nil)
+	if err != nil {
+		return nil, err
+	}
+	var keys []APIKey
+	return keys, json.Unmarshal(data, &keys)
+}
+
+func (c *Client) CreateAPIKey(name string) (*APIKey, error) {
+	data, err := c.do("POST", "/api/v1/api-keys", map[string]any{"name": name})
+	if err != nil {
+		return nil, err
+	}
+	var k APIKey
+	return &k, json.Unmarshal(data, &k)
+}
+
+func (c *Client) DeleteAPIKey(id string) error {
+	_, err := c.do("DELETE", "/api/v1/api-keys/"+id, nil)
+	return err
+}
+
+// --- Search ---
 
 type SearchResult struct {
 	Type    string `json:"type"`
@@ -266,7 +361,7 @@ type SearchResult struct {
 }
 
 func (c *Client) Search(query string) ([]SearchResult, error) {
-	data, err := c.do("GET", "/api/v1/search?q="+query, nil)
+	data, err := c.do("GET", "/api/v1/search?q="+url.QueryEscape(query), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -274,7 +369,7 @@ func (c *Client) Search(query string) ([]SearchResult, error) {
 	return results, json.Unmarshal(data, &results)
 }
 
-// Export
+// --- Export ---
 
 func (c *Client) ExportJSON(outPath string) error {
 	resp, err := c.doRaw("GET", "/api/v1/export/json")
@@ -314,7 +409,7 @@ func (c *Client) ExportMarkdown(outPath string) error {
 	return err
 }
 
-// Import
+// --- Import ---
 
 func (c *Client) ImportICal(filePath string) (json.RawMessage, error) {
 	f, err := os.Open(filePath)

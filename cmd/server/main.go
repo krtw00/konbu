@@ -77,12 +77,6 @@ func main() {
 		http.ServeFile(w, r, "web/static/favicon.svg")
 	})
 
-	// Legacy login (KONBU_USER/KONBU_PASS fallback)
-	if cfg.LoginUser != "" {
-		r.HandleFunc("/login", middleware.LoginHandler(cfg))
-		r.Get("/logout", middleware.LogoutHandler())
-	}
-
 	// Auth public endpoints (no session required)
 	r.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/register", authH.HandleRegister)

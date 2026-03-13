@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -14,6 +15,7 @@ import (
 var (
 	apiURL string
 	apiKey string
+	jsonOut bool
 )
 
 func cli() *client.Client {
@@ -26,13 +28,75 @@ func cli() *client.Client {
 	return client.New(apiURL, apiKey)
 }
 
-func resolveID(items []struct{ id string }, prefix string) string {
-	for _, item := range items {
-		if strings.HasPrefix(item.id, prefix) {
-			return item.id
+// resolveID resolves short ID prefix to full UUID by listing items
+func resolveMemoID(prefix string) string {
+	if len(prefix) >= 36 {
+		return prefix
+	}
+	memos, err := cli().ListMemos()
+	if err != nil {
+		return prefix
+	}
+	for _, m := range memos {
+		if strings.HasPrefix(m.ID, prefix) {
+			return m.ID
 		}
 	}
 	return prefix
+}
+
+func resolveTodoID(prefix string) string {
+	if len(prefix) >= 36 {
+		return prefix
+	}
+	todos, err := cli().ListTodos()
+	if err != nil {
+		return prefix
+	}
+	for _, t := range todos {
+		if strings.HasPrefix(t.ID, prefix) {
+			return t.ID
+		}
+	}
+	return prefix
+}
+
+func resolveEventID(prefix string) string {
+	if len(prefix) >= 36 {
+		return prefix
+	}
+	events, err := cli().ListEvents()
+	if err != nil {
+		return prefix
+	}
+	for _, e := range events {
+		if strings.HasPrefix(e.ID, prefix) {
+			return e.ID
+		}
+	}
+	return prefix
+}
+
+func resolveToolID(prefix string) string {
+	if len(prefix) >= 36 {
+		return prefix
+	}
+	tools, err := cli().ListTools()
+	if err != nil {
+		return prefix
+	}
+	for _, t := range tools {
+		if strings.HasPrefix(t.ID, prefix) {
+			return t.ID
+		}
+	}
+	return prefix
+}
+
+func printJSON(v any) {
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "  ")
+	enc.Encode(v)
 }
 
 func main() {
@@ -43,8 +107,9 @@ func main() {
 
 	root.PersistentFlags().StringVar(&apiURL, "api", "http://localhost:8080", "API base URL (or KONBU_API env)")
 	root.PersistentFlags().StringVar(&apiKey, "api-key", "", "API key (or KONBU_API_KEY env)")
+	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "Output as JSON")
 
-	root.AddCommand(memoCmd(), todoCmd(), eventCmd(), toolCmd(), searchCmd(), exportCmd(), importCmd())
+	root.AddCommand(memoCmd(), todoCmd(), eventCmd(), toolCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd())
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
@@ -63,6 +128,10 @@ func memoCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				printJSON(memos)
+				return nil
+			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 			fmt.Fprintln(w, "ID\tTITLE\tTAGS\tUPDATED")
 			for _, m := range memos {
@@ -73,6 +142,33 @@ func memoCmd() *cobra.Command {
 				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", m.ID[:8], m.Title, strings.Join(tags, ","), m.UpdatedAt[:10])
 			}
 			w.Flush()
+			return nil
+		},
+	})
+
+	memo.AddCommand(&cobra.Command{
+		Use: "show [id]", Short: "Show memo content",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveMemoID(args[0])
+			m, err := cli().GetMemo(id)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(m)
+				return nil
+			}
+			tags := make([]string, len(m.Tags))
+			for i, t := range m.Tags {
+				tags[i] = t.Name
+			}
+			fmt.Printf("# %s\n\n", m.Title)
+			if len(tags) > 0 {
+				fmt.Printf("Tags: %s\n", strings.Join(tags, ", "))
+			}
+			fmt.Printf("Updated: %s\n\n", m.UpdatedAt[:19])
+			fmt.Println(m.Content)
 			return nil
 		},
 	})
@@ -99,6 +195,10 @@ func memoCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				printJSON(m)
+				return nil
+			}
 			fmt.Printf("Created: %s (%s)\n", m.Title, m.ID[:8])
 			return nil
 		},
@@ -107,37 +207,11 @@ func memoCmd() *cobra.Command {
 	add.Flags().StringP("tags", "t", "", "Comma-separated tags")
 	memo.AddCommand(add)
 
-	memo.AddCommand(&cobra.Command{
-		Use: "show [id]", Short: "Show memo content",
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			id := args[0]
-			if len(id) < 36 {
-				memos, err := cli().ListMemos()
-				if err != nil {
-					return err
-				}
-				for _, m := range memos {
-					if strings.HasPrefix(m.ID, id) {
-						id = m.ID
-						break
-					}
-				}
-			}
-			m, err := cli().GetMemo(id)
-			if err != nil {
-				return err
-			}
-			fmt.Printf("# %s\n\n%s\n", m.Title, m.Content)
-			return nil
-		},
-	})
-
 	edit := &cobra.Command{
 		Use: "edit [id]", Short: "Update a memo",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			id := args[0]
+			id := resolveMemoID(args[0])
 			fields := map[string]any{}
 			if t, _ := cmd.Flags().GetString("title"); t != "" {
 				fields["title"] = t
@@ -159,6 +233,10 @@ func memoCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				printJSON(m)
+				return nil
+			}
 			fmt.Printf("Updated: %s\n", m.Title)
 			return nil
 		},
@@ -172,7 +250,12 @@ func memoCmd() *cobra.Command {
 		Use: "rm [id]", Short: "Delete a memo",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cli().DeleteMemo(args[0])
+			id := resolveMemoID(args[0])
+			if err := cli().DeleteMemo(id); err != nil {
+				return err
+			}
+			fmt.Println("Deleted.")
+			return nil
 		},
 	})
 
@@ -191,8 +274,12 @@ func todoCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				printJSON(todos)
+				return nil
+			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "ID\tSTATUS\tTITLE\tDUE")
+			fmt.Fprintln(w, "ID\tSTATUS\tTITLE\tDUE\tTAGS")
 			for _, t := range todos {
 				mark := "○"
 				if t.Status == "done" {
@@ -202,9 +289,48 @@ func todoCmd() *cobra.Command {
 				if t.DueDate != "" {
 					due = t.DueDate[:10]
 				}
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", t.ID[:8], mark, t.Title, due)
+				tags := make([]string, len(t.Tags))
+				for i, tag := range t.Tags {
+					tags[i] = tag.Name
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", t.ID[:8], mark, t.Title, due, strings.Join(tags, ","))
 			}
 			w.Flush()
+			return nil
+		},
+	})
+
+	todo.AddCommand(&cobra.Command{
+		Use: "show [id]", Short: "Show todo details",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveTodoID(args[0])
+			t, err := cli().GetTodo(id)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(t)
+				return nil
+			}
+			mark := "○ open"
+			if t.Status == "done" {
+				mark = "✓ done"
+			}
+			tags := make([]string, len(t.Tags))
+			for i, tag := range t.Tags {
+				tags[i] = tag.Name
+			}
+			fmt.Printf("[%s] %s\n", mark, t.Title)
+			if t.DueDate != "" {
+				fmt.Printf("Due: %s\n", t.DueDate[:10])
+			}
+			if len(tags) > 0 {
+				fmt.Printf("Tags: %s\n", strings.Join(tags, ", "))
+			}
+			if t.Description != "" {
+				fmt.Printf("\n%s\n", t.Description)
+			}
 			return nil
 		},
 	})
@@ -215,26 +341,81 @@ func todoCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			title := strings.Join(args, " ")
 			tagsStr, _ := cmd.Flags().GetString("tags")
-			var tags []string
+			due, _ := cmd.Flags().GetString("due")
+			desc, _ := cmd.Flags().GetString("desc")
+			body := map[string]any{"title": title}
 			if tagsStr != "" {
-				tags = strings.Split(tagsStr, ",")
+				body["tags"] = strings.Split(tagsStr, ",")
 			}
-			t, err := cli().CreateTodo(title, tags)
+			if due != "" {
+				body["due_date"] = due
+			}
+			if desc != "" {
+				body["description"] = desc
+			}
+			t, err := cli().CreateTodo(body)
 			if err != nil {
 				return err
+			}
+			if jsonOut {
+				printJSON(t)
+				return nil
 			}
 			fmt.Printf("Created: %s (%s)\n", t.Title, t.ID[:8])
 			return nil
 		},
 	}
 	add.Flags().StringP("tags", "t", "", "Comma-separated tags")
+	add.Flags().StringP("due", "d", "", "Due date (YYYY-MM-DD)")
+	add.Flags().String("desc", "", "Description/notes")
 	todo.AddCommand(add)
+
+	edit := &cobra.Command{
+		Use: "edit [id]", Short: "Update a todo",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveTodoID(args[0])
+			fields := map[string]any{}
+			if v, _ := cmd.Flags().GetString("title"); v != "" {
+				fields["title"] = v
+			}
+			if v, _ := cmd.Flags().GetString("desc"); v != "" {
+				fields["description"] = v
+			}
+			if v, _ := cmd.Flags().GetString("due"); v != "" {
+				fields["due_date"] = v
+			}
+			if v, _ := cmd.Flags().GetString("tags"); v != "" {
+				fields["tags"] = strings.Split(v, ",")
+			}
+			t, err := cli().UpdateTodo(id, fields)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(t)
+				return nil
+			}
+			fmt.Printf("Updated: %s\n", t.Title)
+			return nil
+		},
+	}
+	edit.Flags().String("title", "", "New title")
+	edit.Flags().String("desc", "", "New description/notes")
+	edit.Flags().StringP("due", "d", "", "Due date (YYYY-MM-DD)")
+	edit.Flags().StringP("tags", "t", "", "Comma-separated tags")
+	todo.AddCommand(edit)
 
 	todo.AddCommand(&cobra.Command{
 		Use: "done [id]", Short: "Mark todo as done",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cli().DoneTodo(args[0])
+			id := resolveTodoID(args[0])
+			if err := cli().DoneTodo(id); err != nil {
+				return err
+			}
+			fmt.Println("Done.")
+			return nil
 		},
 	})
 
@@ -242,7 +423,12 @@ func todoCmd() *cobra.Command {
 		Use: "reopen [id]", Short: "Reopen a todo",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cli().ReopenTodo(args[0])
+			id := resolveTodoID(args[0])
+			if err := cli().ReopenTodo(id); err != nil {
+				return err
+			}
+			fmt.Println("Reopened.")
+			return nil
 		},
 	})
 
@@ -250,12 +436,18 @@ func todoCmd() *cobra.Command {
 		Use: "rm [id]", Short: "Delete a todo",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cli().DeleteTodo(args[0])
+			id := resolveTodoID(args[0])
+			if err := cli().DeleteTodo(id); err != nil {
+				return err
+			}
+			fmt.Println("Deleted.")
+			return nil
 		},
 	})
 
 	return todo
 }
+
 
 // --- event ---
 
@@ -269,18 +461,68 @@ func eventCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				printJSON(events)
+				return nil
+			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "ID\tTITLE\tSTART\tALL_DAY")
+			fmt.Fprintln(w, "ID\tTITLE\tSTART\tEND\tALL_DAY")
 			for _, e := range events {
 				start := e.StartAt[:16]
+				end := "-"
 				allDay := ""
 				if e.AllDay {
 					allDay = "✓"
 					start = e.StartAt[:10]
 				}
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", e.ID[:8], e.Title, start, allDay)
+				if e.EndAt != nil && *e.EndAt != "" {
+					if e.AllDay {
+						end = (*e.EndAt)[:10]
+					} else {
+						end = (*e.EndAt)[:16]
+					}
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", e.ID[:8], e.Title, start, end, allDay)
 			}
 			w.Flush()
+			return nil
+		},
+	})
+
+	event.AddCommand(&cobra.Command{
+		Use: "show [id]", Short: "Show event details",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveEventID(args[0])
+			e, err := cli().GetEvent(id)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(e)
+				return nil
+			}
+			fmt.Printf("# %s\n\n", e.Title)
+			fmt.Printf("Start: %s\n", e.StartAt[:19])
+			if e.EndAt != nil && *e.EndAt != "" {
+				fmt.Printf("End:   %s\n", (*e.EndAt)[:19])
+			}
+			if e.AllDay {
+				fmt.Println("All day: yes")
+			}
+			if e.RecurrenceRule != nil && *e.RecurrenceRule != "" {
+				fmt.Printf("Recurrence: %s\n", *e.RecurrenceRule)
+			}
+			tags := make([]string, len(e.Tags))
+			for i, t := range e.Tags {
+				tags[i] = t.Name
+			}
+			if len(tags) > 0 {
+				fmt.Printf("Tags: %s\n", strings.Join(tags, ", "))
+			}
+			if e.Description != "" {
+				fmt.Printf("\n%s\n", e.Description)
+			}
 			return nil
 		},
 	})
@@ -314,6 +556,10 @@ func eventCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				printJSON(e)
+				return nil
+			}
 			fmt.Printf("Created: %s (%s)\n", e.Title, e.ID[:8])
 			return nil
 		},
@@ -324,11 +570,57 @@ func eventCmd() *cobra.Command {
 	add.Flags().Bool("all-day", false, "All day event")
 	event.AddCommand(add)
 
+	edit := &cobra.Command{
+		Use: "edit [id]", Short: "Update an event",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveEventID(args[0])
+			fields := map[string]any{}
+			if v, _ := cmd.Flags().GetString("title"); v != "" {
+				fields["title"] = v
+			}
+			if v, _ := cmd.Flags().GetString("start"); v != "" {
+				fields["start_at"] = v
+			}
+			if v, _ := cmd.Flags().GetString("end"); v != "" {
+				fields["end_at"] = v
+			}
+			if v, _ := cmd.Flags().GetString("desc"); v != "" {
+				fields["description"] = v
+			}
+			if cmd.Flags().Changed("all-day") {
+				v, _ := cmd.Flags().GetBool("all-day")
+				fields["all_day"] = v
+			}
+			e, err := cli().UpdateEvent(id, fields)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(e)
+				return nil
+			}
+			fmt.Printf("Updated: %s\n", e.Title)
+			return nil
+		},
+	}
+	edit.Flags().String("title", "", "New title")
+	edit.Flags().StringP("start", "s", "", "Start time (RFC3339)")
+	edit.Flags().StringP("end", "e", "", "End time (RFC3339)")
+	edit.Flags().StringP("desc", "d", "", "Description")
+	edit.Flags().Bool("all-day", false, "All day event")
+	event.AddCommand(edit)
+
 	event.AddCommand(&cobra.Command{
 		Use: "rm [id]", Short: "Delete an event",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cli().DeleteEvent(args[0])
+			id := resolveEventID(args[0])
+			if err := cli().DeleteEvent(id); err != nil {
+				return err
+			}
+			fmt.Println("Deleted.")
+			return nil
 		},
 	})
 
@@ -347,6 +639,10 @@ func toolCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				printJSON(tools)
+				return nil
+			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 			fmt.Fprintln(w, "ID\tNAME\tURL\tCATEGORY")
 			for _, t := range tools {
@@ -357,7 +653,7 @@ func toolCmd() *cobra.Command {
 		},
 	})
 
-	tool.AddCommand(&cobra.Command{
+	add := &cobra.Command{
 		Use: "add [name] [url]", Short: "Add a tool",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -365,20 +661,103 @@ func toolCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
+			if jsonOut {
+				printJSON(t)
+				return nil
+			}
 			fmt.Printf("Created: %s (%s)\n", t.Name, t.ID[:8])
 			return nil
 		},
-	})
+	}
+	tool.AddCommand(add)
+
+	edit := &cobra.Command{
+		Use: "edit [id]", Short: "Update a tool",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveToolID(args[0])
+			fields := map[string]any{}
+			if v, _ := cmd.Flags().GetString("name"); v != "" {
+				fields["name"] = v
+			}
+			if v, _ := cmd.Flags().GetString("url"); v != "" {
+				fields["url"] = v
+			}
+			if v, _ := cmd.Flags().GetString("icon"); v != "" {
+				fields["icon"] = v
+			}
+			if v, _ := cmd.Flags().GetString("category"); v != "" {
+				fields["category"] = v
+			}
+			t, err := cli().UpdateTool(id, fields)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(t)
+				return nil
+			}
+			fmt.Printf("Updated: %s\n", t.Name)
+			return nil
+		},
+	}
+	edit.Flags().String("name", "", "New name")
+	edit.Flags().String("url", "", "New URL")
+	edit.Flags().String("icon", "", "Icon (emoji or letter)")
+	edit.Flags().String("category", "", "Category")
+	tool.AddCommand(edit)
 
 	tool.AddCommand(&cobra.Command{
 		Use: "rm [id]", Short: "Delete a tool",
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return cli().DeleteTool(args[0])
+			id := resolveToolID(args[0])
+			if err := cli().DeleteTool(id); err != nil {
+				return err
+			}
+			fmt.Println("Deleted.")
+			return nil
 		},
 	})
 
 	return tool
+}
+
+// --- tag ---
+
+func tagCmd() *cobra.Command {
+	tag := &cobra.Command{Use: "tag", Short: "Manage tags"}
+
+	tag.AddCommand(&cobra.Command{
+		Use: "list", Short: "List tags",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			tags, err := cli().ListTags()
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(tags)
+				return nil
+			}
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(w, "ID\tNAME")
+			for _, t := range tags {
+				fmt.Fprintf(w, "%s\t%s\n", t.ID[:8], t.Name)
+			}
+			w.Flush()
+			return nil
+		},
+	})
+
+	tag.AddCommand(&cobra.Command{
+		Use: "rm [id]", Short: "Delete a tag",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return cli().DeleteTag(args[0])
+		},
+	})
+
+	return tag
 }
 
 // --- search ---
@@ -392,6 +771,10 @@ func searchCmd() *cobra.Command {
 			results, err := cli().Search(query)
 			if err != nil {
 				return err
+			}
+			if jsonOut {
+				printJSON(results)
+				return nil
 			}
 			if len(results) == 0 {
 				fmt.Println("No results found.")
@@ -410,6 +793,65 @@ func searchCmd() *cobra.Command {
 			return nil
 		},
 	}
+}
+
+// --- api-key ---
+
+func apiKeyCmd() *cobra.Command {
+	ak := &cobra.Command{Use: "api-key", Short: "Manage API keys"}
+
+	ak.AddCommand(&cobra.Command{
+		Use: "list", Short: "List API keys",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			keys, err := cli().ListAPIKeys()
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(keys)
+				return nil
+			}
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(w, "ID\tNAME\tCREATED")
+			for _, k := range keys {
+				fmt.Fprintf(w, "%s\t%s\t%s\n", k.ID[:8], k.Name, k.CreatedAt[:10])
+			}
+			w.Flush()
+			return nil
+		},
+	})
+
+	ak.AddCommand(&cobra.Command{
+		Use: "create [name]", Short: "Create an API key",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			k, err := cli().CreateAPIKey(args[0])
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(k)
+				return nil
+			}
+			fmt.Printf("Key: %s\n", k.Key)
+			fmt.Println("Save this key — it won't be shown again.")
+			return nil
+		},
+	})
+
+	ak.AddCommand(&cobra.Command{
+		Use: "rm [id]", Short: "Delete an API key",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := cli().DeleteAPIKey(args[0]); err != nil {
+				return err
+			}
+			fmt.Println("Deleted.")
+			return nil
+		},
+	})
+
+	return ak
 }
 
 // --- export ---

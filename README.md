@@ -4,19 +4,22 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">Self-hosted personal tool hub: memos, todos, calendar, and tool launcher in one place.</p>
+<p align="center">Self-hosted personal workspace: memos, todos, calendar, and tool launcher in one place.</p>
+
+<p align="center"><a href="README.ja.md">日本語</a> | English</p>
 
 ---
 
 ## Features
 
-- **Memos** -- Markdown and table-type notes with tagging, full-screen CodeMirror 6 editor, and live preview
-- **ToDo** -- Inline task creation, due dates, tag filtering, and detail panel
-- **Calendar** -- Monthly view with event creation and editing
-- **Tools** -- Bookmark launcher with automatic favicon fetching
-- **Cross-search** -- Full-text search across memos, todos, and events (pg_bigm)
-- **CLI** -- Manage memos, todos, and tools from the terminal
-- **Themes** -- 7 built-in color themes (Konbu, Notion, Solarized, Catppuccin Latte/Mocha, Nord, Linear)
+- **Memos** -- Markdown notes with tagging, CodeMirror 6 editor, and live preview
+- **ToDo** -- Inline task creation with due dates, tags, and notes
+- **Calendar** -- Monthly view with event CRUD and iCal import
+- **Tools** -- Bookmark launcher with categories and health checks
+- **Cross-search** -- Full-text search across all data (pg_bigm for Japanese)
+- **CLI** -- Full-featured CLI client for remote API access
+- **Export/Import** -- JSON export, Markdown ZIP export, iCal import
+- **Multi-user** -- Email/password authentication with API key support
 
 ## Quick Start
 
@@ -25,7 +28,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-Open `http://localhost:8080`. The dev compose file sets `DEV_USER=dev@local` to bypass authentication.
+Open `http://localhost:8080` and create your account. The dev compose file sets `DEV_USER=dev@local` to skip registration.
 
 ### Production (with Traefik)
 
@@ -34,20 +37,110 @@ Open `http://localhost:8080`. The dev compose file sets `DEV_USER=dev@local` to 
 docker compose -f docker-compose.prod.yml up -d
 ```
 
+### Native (without Docker)
+
+```bash
+# Prerequisites: Go 1.25+, Node.js 22+, PostgreSQL 16+
+
+# Build frontend
+cd web/frontend && npm ci && npm run build && cd ../..
+
+# Build server
+go build -o bin/server ./cmd/server
+
+# Run migrations
+psql $DATABASE_URL -f sql/migrations/0001_initial.up.sql
+psql $DATABASE_URL -f sql/migrations/0002_auth_password.up.sql
+psql $DATABASE_URL -f sql/migrations/0003_recurring_events.up.sql
+psql $DATABASE_URL -f sql/migrations/0004_tool_category.up.sql
+
+# Start
+DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
+```
+
 ## Configuration
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `DATABASE_URL` | Yes | -- | PostgreSQL connection string |
+| `SESSION_SECRET` | Yes | dev fallback | Session signing key |
 | `PORT` | No | `8080` | Server port |
-| `KONBU_USER` | Prod | -- | Login username |
-| `KONBU_PASS` | Prod | -- | Login password |
-| `SESSION_SECRET` | Prod | -- | Session signing key |
-| `ADMIN_EMAIL` | No | -- | Admin user email |
-| `ALLOWED_EMAILS` | No | `*` | Comma-separated allowed emails (`*` = all) |
-| `DEV_USER` | No | -- | Dev mode: bypass auth with this email |
-| `POSTGRES_PASSWORD` | Prod | -- | PostgreSQL password (prod compose) |
-| `KONBU_DOMAIN` | Prod | -- | Domain for Traefik routing (prod compose) |
+| `DEV_USER` | No | -- | Auto-login as this email (dev only) |
+
+### Docker Compose (prod) variables
+
+| Variable | Description |
+|---|---|
+| `POSTGRES_PASSWORD` | PostgreSQL password |
+| `KONBU_DOMAIN` | Domain for Traefik TLS routing |
+
+## CLI
+
+The CLI is a standalone client that connects to a remote konbu server via API. Server code is not included in the CLI binary.
+
+```bash
+go install github.com/krtw00/konbu/cmd/konbu@latest
+```
+
+### Setup
+
+```bash
+# Set environment variables (recommended: add to ~/.zshrc or ~/.bashrc)
+export KONBU_API=https://konbu.example.com
+export KONBU_API_KEY=your-api-key
+
+# Or pass as flags
+konbu --api https://... --api-key your-key memo list
+```
+
+Generate an API key in **Settings > Security** on the web UI.
+
+### Commands
+
+All commands support `--json` flag for machine-readable output.
+
+```
+konbu memo list                        # List memos
+konbu memo show <id>                   # Show memo content
+konbu memo add "title" -c "content"    # Create memo (-c - for stdin)
+konbu memo edit <id> --title "new"     # Update memo
+konbu memo rm <id>                     # Delete memo
+
+konbu todo list                        # List todos
+konbu todo show <id>                   # Show todo details
+konbu todo add "task" -t "tag1,tag2"   # Create todo
+konbu todo add "task" -d 2025-04-01    # Create with due date
+konbu todo edit <id> --desc "notes"    # Update todo
+konbu todo done <id>                   # Mark done
+konbu todo reopen <id>                 # Reopen
+konbu todo rm <id>                     # Delete
+
+konbu event list                       # List events
+konbu event show <id>                  # Show event details
+konbu event add "title" -s <RFC3339>   # Create event
+konbu event edit <id> --title "new"    # Update event
+konbu event rm <id>                    # Delete
+
+konbu tool list                        # List tools
+konbu tool add "name" "https://..."    # Add tool
+konbu tool edit <id> --category "Dev"  # Update tool
+konbu tool rm <id>                     # Delete
+
+konbu tag list                         # List tags
+konbu tag rm <id>                      # Delete tag
+
+konbu search "query"                   # Cross-search
+
+konbu api-key list                     # List API keys
+konbu api-key create "key-name"        # Create API key
+konbu api-key rm <id>                  # Delete API key
+
+konbu export json -o backup.json       # Export as JSON
+konbu export markdown -o backup.zip    # Export as Markdown ZIP
+konbu import ical calendar.ics         # Import iCal file
+```
+
+Short IDs (first 8 chars) can be used in place of full UUIDs.
 
 ## API
 
@@ -55,31 +148,17 @@ Base path: `/api/v1`
 
 | Resource | Endpoints |
 |---|---|
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` |
+| User | `GET/PUT /auth/me`, `GET/PUT /auth/settings`, `POST /auth/change-password` |
+| API Keys | `GET/POST /api-keys`, `DELETE /api-keys/:id` |
 | Memos | `GET/POST /memos`, `GET/PUT/DELETE /memos/:id` |
-| ToDos | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done` |
+| ToDos | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done`, `PATCH /todos/:id/reopen` |
 | Events | `GET/POST /events`, `GET/PUT/DELETE /events/:id` |
 | Tools | `GET/POST /tools`, `PUT/DELETE /tools/:id` |
 | Tags | `GET/POST /tags`, `PUT/DELETE /tags/:id` |
 | Search | `GET /search?q=...` |
-| Auth | `GET/PUT /auth/me`, `GET/POST/DELETE /api-keys` |
-
-See [docs/api.md](docs/api.md) for full specification.
-
-## CLI
-
-```bash
-go build -o bin/konbu ./cmd/konbu
-
-konbu memo list
-konbu memo add "title" -c "content"
-konbu todo list
-konbu todo add "task name"
-konbu todo done <id>
-konbu tool list
-konbu tool add "name" "https://..."
-```
-
-Set `KONBU_API` or use `--api` flag to point to your server.
+| Export | `GET /export/json`, `GET /export/markdown` |
+| Import | `POST /import/ical` |
 
 ## Development
 
@@ -87,11 +166,14 @@ Set `KONBU_API` or use `--api` flag to point to your server.
 # Start PostgreSQL
 docker compose up -d postgres
 
-# Run server
-go run ./cmd/server
+# Frontend dev server
+cd web/frontend && npm run dev
 
-# Generate repository code from SQL
-sqlc generate
+# Run server
+DEV_USER=dev@local go run ./cmd/server
+
+# Build CLI
+go build -o bin/konbu ./cmd/konbu
 
 # Run tests
 go test ./...
@@ -102,14 +184,16 @@ go test ./...
 ```
 cmd/
   server/       # API server
-  konbu/        # CLI
+  konbu/        # CLI client
 internal/
   handler/      # HTTP handlers
   service/      # Business logic
   repository/   # DB access (sqlc)
   middleware/    # Auth, logging
-web/static/     # Frontend (HTML/CSS/JS)
+  client/       # API client (used by CLI)
+web/frontend/   # React + Vite SPA
 sql/            # Schema and migrations
+docker/         # Dockerfile
 ```
 
 ## License
