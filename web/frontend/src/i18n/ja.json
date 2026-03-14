@@ -120,6 +120,14 @@
     "backToLogin": "ログイン",
     "registerDescription": "新しいアカウントを作成"
   },
+  "login": {
+    "heroTitle": "パーソナルワークスペース",
+    "heroDescription": "メモ・ToDo・カレンダー・ツールをひとつに。",
+    "featureMemos": "タグ付きMarkdownメモ & ライブプレビュー",
+    "featureTodos": "期限・ステータス管理付きタスク",
+    "featureCalendar": "月表示カレンダー & 予定管理",
+    "featureSearch": "すべてを横断して即座に検索"
+  },
   "settings": {
     "title": "設定",
     "profile": "プロフィール",

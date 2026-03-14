@@ -120,6 +120,14 @@
     "backToLogin": "Log in",
     "registerDescription": "Create a new account"
   },
+  "login": {
+    "heroTitle": "Your personal workspace",
+    "heroDescription": "Memos, todos, calendar, and tools — all in one place.",
+    "featureMemos": "Markdown notes with tags and live preview",
+    "featureTodos": "Tasks with due dates and status tracking",
+    "featureCalendar": "Monthly calendar with event management",
+    "featureSearch": "Search across everything instantly"
+  },
   "settings": {
     "title": "Settings",
     "profile": "Profile",
