@@ -113,11 +113,11 @@ func main() {
 			r.Mount("/export", exportH.Routes())
 			r.Mount("/import", importH.Routes())
 		})
+	})
 
-		// SPA fallback
-		r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "web/static/index.html")
-		})
+	// SPA fallback (unauthenticated — login page etc. must be accessible)
+	r.Get("/*", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/static/index.html")
 	})
 
 	addr := ":" + cfg.Port
