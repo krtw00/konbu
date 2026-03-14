@@ -11,6 +11,10 @@ type Config struct {
 	DevUser          string
 	SessionSecret    string
 	OpenRegistration bool
+	WebhookSecret    string
+	GoogleClientID   string
+	GoogleSecret     string
+	BaseURL          string
 }
 
 func Load() *Config {
@@ -33,5 +37,9 @@ func Load() *Config {
 		DevUser:          os.Getenv("DEV_USER"),
 		SessionSecret:    sessionSecret,
 		OpenRegistration: os.Getenv("OPEN_REGISTRATION") == "true",
+		WebhookSecret:    os.Getenv("WEBHOOK_SECRET"),
+		GoogleClientID:   os.Getenv("GOOGLE_CLIENT_ID"),
+		GoogleSecret:     os.Getenv("GOOGLE_CLIENT_SECRET"),
+		BaseURL:          os.Getenv("BASE_URL"),
 	}
 }

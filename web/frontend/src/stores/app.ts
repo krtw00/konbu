@@ -12,6 +12,7 @@ interface AppState {
   isLoading: boolean
   needsSetup: boolean
   openRegistration: boolean
+  googleAuth: boolean
   setPage: (page: Page) => void
   setCommandOpen: (open: boolean) => void
   setUser: (user: User) => void
@@ -28,6 +29,7 @@ export const useAppStore = create<AppState>((set) => ({
   isLoading: true,
   needsSetup: false,
   openRegistration: false,
+  googleAuth: false,
   setPage: (page) => set({ currentPage: page }),
   setCommandOpen: (open) => set({ commandOpen: open }),
   setUser: (user) => set({ user, isAuthenticated: true }),
@@ -40,6 +42,10 @@ export const useAppStore = create<AppState>((set) => ({
         return
       }
       set({ openRegistration: setup.data.open_registration })
+      try {
+        const providers = await api.providers()
+        set({ googleAuth: providers.data.google })
+      } catch { /* ignore */ }
       const me = await api.getMe()
       set({ user: me.data, isAuthenticated: true, isLoading: false, needsSetup: false })
     } catch {

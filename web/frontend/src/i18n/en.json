@@ -118,7 +118,8 @@
     "createAccount": "Create account",
     "haveAccount": "Already have an account?",
     "backToLogin": "Log in",
-    "registerDescription": "Create a new account"
+    "registerDescription": "Create a new account",
+    "googleLogin": "Continue with Google"
   },
   "login": {
     "heroTitle": "Your personal workspace",

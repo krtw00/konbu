@@ -188,6 +188,10 @@ func (s *AuthService) DeleteAccount(ctx context.Context, userID uuid.UUID, passw
 	return nil
 }
 
+func (s *AuthService) UpdatePlanByEmail(ctx context.Context, email, plan string) error {
+	return s.queries.UpdateUserPlanByEmail(ctx, email, plan)
+}
+
 func (s *AuthService) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	u, err := s.queries.GetUserByID(ctx, id)
 	if err != nil {

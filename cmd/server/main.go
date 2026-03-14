@@ -64,6 +64,10 @@ func main() {
 	r.Use(chimw.RealIP)
 	r.Use(middleware.Logging)
 
+	// Webhooks (unauthenticated, signature-verified)
+	webhookH := handler.NewWebhookHandler(authSvc, cfg.WebhookSecret)
+	r.Post("/webhooks/github-sponsors", webhookH.HandleGitHubSponsors)
+
 	// Health check (unauthenticated)
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -81,12 +85,16 @@ func main() {
 		http.ServeFile(w, r, "web/static/hero.png")
 	})
 
+	// OAuth
+	oauthH := handler.NewOAuthHandler(authSvc, cfg)
+
 	// Auth public endpoints (no session required)
 	r.Route("/api/v1/auth", func(r chi.Router) {
 		r.Post("/register", authH.HandleRegister)
 		r.Post("/login", authH.HandleLogin)
 		r.Post("/logout", authH.HandleLogout)
 		r.Get("/setup-status", authH.HandleSetupStatus)
+		r.Get("/providers", oauthH.HandleProviders)
 
 		// Authenticated endpoints under /auth
 		r.Group(func(r chi.Router) {
@@ -100,6 +108,10 @@ func main() {
 			r.Post("/delete-account", authH.HandleDeleteAccount)
 		})
 	})
+
+	// OAuth routes (outside /api/v1, no session)
+	r.Get("/auth/google/login", oauthH.HandleGoogleLogin)
+	r.Get("/auth/google/callback", oauthH.HandleGoogleCallback)
 
 	// Session-protected API routes
 	r.Group(func(r chi.Router) {

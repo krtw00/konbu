@@ -60,6 +60,7 @@ export const api = {
 
   // Auth
   setupStatus: () => request<{ data: { needs_setup: boolean; user_count: number; open_registration: boolean } }>('GET', '/auth/setup-status'),
+  providers: () => request<{ data: { google: boolean } }>('GET', '/auth/providers'),
   register: (body: { email: string; password: string; name: string }) =>
     request<{ data: import('@/types/api').User }>('POST', '/auth/register', body),
   login: (body: { email: string; password: string }) =>
