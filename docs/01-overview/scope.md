@@ -23,7 +23,7 @@ ai_summary: "konbuの対象範囲・対象外・前提条件・制約を定義"
 | 機能 | ToDo | ステータス管理、期限、タグ |
 | 機能 | カレンダー | 月表示、終日/時間指定、繰り返し、iCalインポート |
 | 機能 | ツールランチャー | ブックマーク管理、カテゴリ、favicon、ヘルスチェック |
-| 機能 | 横断検索 | pg_bigmによる日本語対応全文検索 |
+| 機能 | 横断検索 | pg_trgmによる全文検索 |
 | 機能 | CLI | 全リソースCRUD、JSON出力、短縮ID |
 | 機能 | Export/Import | JSON/Markdown ZIPエクスポート、iCalインポート |
 | ユーザー | 個人（クラウド / セルフホスト） | メール+パスワード認証、マルチユーザー対応 |
@@ -50,7 +50,7 @@ ai_summary: "konbuの対象範囲・対象外・前提条件・制約を定義"
 | 前提 | 説明 |
 |------|------|
 | セルフホスト環境 | Docker or ネイティブでサーバーを運用できる環境 |
-| PostgreSQL 16+ | pg_bigm拡張が利用可能なPostgreSQL |
+| PostgreSQL 16+ | pg_trgm拡張が利用可能なPostgreSQL |
 | リバースプロキシ | 本番環境ではTraefik/Caddy/nginx等でTLS終端 |
 
 ### クラウド版

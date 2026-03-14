@@ -98,7 +98,7 @@ flowchart TB
 | サーバー | VPS（既存インフラ活用） |
 | コンテナ | Docker Compose |
 | リバースプロキシ | Traefik（自動 HTTPS） |
-| DB | PostgreSQL 16+ (pg_bigm) |
+| DB | PostgreSQL 16+ (pg_trgm) |
 | バックアップ | pg_dump による定期バックアップ |
 
 ### スケールアウト（将来）
