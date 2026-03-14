@@ -79,6 +79,7 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `SESSION_SECRET` | Yes | dev fallback | Session signing key |
 | `PORT` | No | `8080` | Server port |
 | `DEV_USER` | No | -- | Auto-login as this email (dev only) |
+| `OPEN_REGISTRATION` | No | -- | Set `true` to allow anyone to register (for Cloud) |
 
 ### Docker Compose (prod) variables
 

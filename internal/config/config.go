@@ -6,10 +6,11 @@ import (
 )
 
 type Config struct {
-	DatabaseURL   string
-	Port          string
-	DevUser       string
-	SessionSecret string
+	DatabaseURL      string
+	Port             string
+	DevUser          string
+	SessionSecret    string
+	OpenRegistration bool
 }
 
 func Load() *Config {
@@ -27,9 +28,10 @@ func Load() *Config {
 	}
 
 	return &Config{
-		DatabaseURL:   os.Getenv("DATABASE_URL"),
-		Port:          port,
-		DevUser:       os.Getenv("DEV_USER"),
-		SessionSecret: sessionSecret,
+		DatabaseURL:      os.Getenv("DATABASE_URL"),
+		Port:             port,
+		DevUser:          os.Getenv("DEV_USER"),
+		SessionSecret:    sessionSecret,
+		OpenRegistration: os.Getenv("OPEN_REGISTRATION") == "true",
 	}
 }

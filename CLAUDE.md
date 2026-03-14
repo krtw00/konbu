@@ -167,6 +167,7 @@ go run ./cmd/server migrate down
 | `SESSION_SECRET` | Yes | `konbu-dev-secret-change-me` | セッション署名キー |
 | `PORT` | No | `8080` | API サーバーポート |
 | `DEV_USER` | No | — | 開発用自動ログインユーザー（メール形式） |
+| `OPEN_REGISTRATION` | No | — | `true` で誰でもアカウント作成可能（Cloud版向け） |
 
 ## やらないこと
 

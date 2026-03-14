@@ -11,6 +11,7 @@ interface AppState {
   isAuthenticated: boolean
   isLoading: boolean
   needsSetup: boolean
+  openRegistration: boolean
   setPage: (page: Page) => void
   setCommandOpen: (open: boolean) => void
   setUser: (user: User) => void
@@ -26,6 +27,7 @@ export const useAppStore = create<AppState>((set) => ({
   isAuthenticated: false,
   isLoading: true,
   needsSetup: false,
+  openRegistration: false,
   setPage: (page) => set({ currentPage: page }),
   setCommandOpen: (open) => set({ commandOpen: open }),
   setUser: (user) => set({ user, isAuthenticated: true }),
@@ -37,6 +39,7 @@ export const useAppStore = create<AppState>((set) => ({
         set({ needsSetup: true, isLoading: false })
         return
       }
+      set({ openRegistration: setup.data.open_registration })
       const me = await api.getMe()
       set({ user: me.data, isAuthenticated: true, isLoading: false, needsSetup: false })
     } catch {

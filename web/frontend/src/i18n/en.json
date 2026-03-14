@@ -113,7 +113,12 @@
     "registerButton": "Create Account",
     "loginError": "Invalid email or password",
     "setupTitle": "Welcome to konbu",
-    "setupDescription": "Create your admin account to get started"
+    "setupDescription": "Create your admin account to get started",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create account",
+    "haveAccount": "Already have an account?",
+    "backToLogin": "Log in",
+    "registerDescription": "Create a new account"
   },
   "settings": {
     "title": "Settings",
