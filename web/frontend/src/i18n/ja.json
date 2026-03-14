@@ -118,7 +118,8 @@
     "createAccount": "アカウント作成",
     "haveAccount": "アカウントをお持ちの方",
     "backToLogin": "ログイン",
-    "registerDescription": "新しいアカウントを作成"
+    "registerDescription": "新しいアカウントを作成",
+    "googleLogin": "Google でログイン"
   },
   "login": {
     "heroTitle": "パーソナルワークスペース",
