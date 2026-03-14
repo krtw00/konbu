@@ -99,6 +99,7 @@ function AppearanceTab() {
 
 function SecurityTab() {
   const { t } = useTranslation()
+  const { logout } = useAppStore()
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -109,6 +110,9 @@ function SecurityTab() {
   const [createdKey, setCreatedKey] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState('')
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
 
   useEffect(() => {
     api.listApiKeys().then((res) => setApiKeys(res.data)).catch(() => {})
@@ -265,6 +269,53 @@ function SecurityTab() {
               {t('settings.createKey')}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">{t('settings.deleteAccount')}</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-3">
+          <p className="text-sm text-muted-foreground">{t('settings.deleteAccountDescription')}</p>
+          {!deleteConfirm ? (
+            <Button variant="destructive" size="sm" onClick={() => setDeleteConfirm(true)}>
+              {t('settings.deleteAccount')}
+            </Button>
+          ) : (
+            <form onSubmit={async (e) => {
+              e.preventDefault()
+              setDeleteError('')
+              try {
+                await api.deleteAccount({ password: deletePassword })
+                await logout()
+              } catch (err) {
+                setDeleteError(err instanceof Error ? err.message : 'Error')
+              }
+            }} className="flex flex-col gap-3">
+              <Input
+                type="password"
+                placeholder={t('settings.deleteAccountConfirm')}
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                required
+                autoFocus
+              />
+              {deleteError && <p className="text-sm text-destructive">{deleteError}</p>}
+              <div className="flex gap-2">
+                <Button type="submit" variant="destructive" size="sm">
+                  {t('settings.deleteAccountButton')}
+                </Button>
+                <Button type="button" variant="outline" size="sm" onClick={() => {
+                  setDeleteConfirm(false)
+                  setDeletePassword('')
+                  setDeleteError('')
+                }}>
+                  {t('common.cancel')}
+                </Button>
+              </div>
+            </form>
+          )}
         </CardContent>
       </Card>
     </div>

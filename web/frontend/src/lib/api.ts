@@ -70,6 +70,8 @@ export const api = {
     request<{ data: import('@/types/api').User }>('PUT', '/auth/me', body),
   changePassword: (body: { old_password: string; new_password: string }) =>
     request<null>('POST', '/auth/change-password', body),
+  deleteAccount: (body: { password: string }) =>
+    request<null>('POST', '/auth/delete-account', body),
   getSettings: () => request<{ data: import('@/types/api').UserSettings }>('GET', '/auth/settings'),
   updateSettings: (body: import('@/types/api').UserSettings) =>
     request<{ data: import('@/types/api').UserSettings }>('PUT', '/auth/settings', body),

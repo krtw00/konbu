@@ -93,6 +93,7 @@ func main() {
 			r.Post("/change-password", authH.HandleChangePassword)
 			r.Get("/settings", authH.HandleGetSettings)
 			r.Put("/settings", authH.HandleUpdateSettings)
+			r.Post("/delete-account", authH.HandleDeleteAccount)
 		})
 	})
 

@@ -161,6 +161,32 @@ func (s *AuthService) GetOrCreateUser(ctx context.Context, email string) (*model
 	return toModelUser(u), nil
 }
 
+func (s *AuthService) DeleteAccount(ctx context.Context, userID uuid.UUID, password string) error {
+	user, err := s.queries.GetUserByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNoRows) {
+			return apperror.NotFound("user")
+		}
+		return apperror.Internal(err)
+	}
+
+	uwp, err := s.queries.GetUserByEmailWithPassword(ctx, user.Email)
+	if err != nil {
+		return apperror.Internal(err)
+	}
+
+	if uwp.PasswordHash != nil {
+		if err := bcrypt.CompareHashAndPassword([]byte(*uwp.PasswordHash), []byte(password)); err != nil {
+			return apperror.Unauthorized("password is incorrect")
+		}
+	}
+
+	if err := s.queries.DeleteUser(ctx, userID); err != nil {
+		return apperror.Internal(err)
+	}
+	return nil
+}
+
 func (s *AuthService) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	u, err := s.queries.GetUserByID(ctx, id)
 	if err != nil {
