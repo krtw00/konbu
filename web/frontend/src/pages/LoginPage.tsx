@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FileText, CheckSquare, Calendar, Search } from 'lucide-react'
+import heroImg from '@/assets/hero.png'
 
 export function LoginPage() {
   const { t } = useTranslation()
@@ -73,7 +74,7 @@ export function LoginPage() {
         </div>
         <div className="mt-4 w-full max-w-lg">
           <img
-            src="/hero.png"
+            src={heroImg}
             alt="konbu dashboard"
             className="rounded-lg shadow-lg border"
           />
