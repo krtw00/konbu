@@ -10,7 +10,7 @@
 -- =============================================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";   -- gen_random_uuid()
-CREATE EXTENSION IF NOT EXISTS "pg_bigm";    -- Japanese full-text search (2-gram)
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";    -- trigram full-text search
 
 -- =============================================================================
 -- Users
@@ -99,10 +99,10 @@ CREATE TABLE memo_rows (
 
 CREATE INDEX idx_memos_user_id ON memos(user_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_memos_user_type ON memos(user_id, type) WHERE deleted_at IS NULL;
-CREATE INDEX idx_memos_title_bigm ON memos USING gin (title gin_bigm_ops);
-CREATE INDEX idx_memos_content_bigm ON memos USING gin (content gin_bigm_ops);
+CREATE INDEX idx_memos_title_trgm ON memos USING gin (title gin_trgm_ops);
+CREATE INDEX idx_memos_content_trgm ON memos USING gin (content gin_trgm_ops);
 CREATE INDEX idx_memo_rows_memo_id ON memo_rows(memo_id, sort_order) WHERE deleted_at IS NULL;
-CREATE INDEX idx_memo_rows_data_bigm ON memo_rows USING gin ((row_data::text) gin_bigm_ops);
+CREATE INDEX idx_memo_rows_data_trgm ON memo_rows USING gin ((row_data::text) gin_trgm_ops);
 
 -- =============================================================================
 -- ToDos
@@ -129,7 +129,7 @@ CREATE TABLE todo_tags (
 CREATE INDEX idx_todos_user_id ON todos(user_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_todos_user_status ON todos(user_id, status) WHERE deleted_at IS NULL;
 CREATE INDEX idx_todos_due_date ON todos(user_id, due_date) WHERE deleted_at IS NULL;
-CREATE INDEX idx_todos_title_bigm ON todos USING gin (title gin_bigm_ops);
+CREATE INDEX idx_todos_title_trgm ON todos USING gin (title gin_trgm_ops);
 
 -- =============================================================================
 -- Calendar Events
@@ -156,7 +156,7 @@ CREATE TABLE calendar_event_tags (
 
 CREATE INDEX idx_calendar_events_user_id ON calendar_events(user_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_calendar_events_range ON calendar_events(user_id, start_at) WHERE deleted_at IS NULL;
-CREATE INDEX idx_calendar_events_title_bigm ON calendar_events USING gin (title gin_bigm_ops);
+CREATE INDEX idx_calendar_events_title_trgm ON calendar_events USING gin (title gin_trgm_ops);
 
 -- =============================================================================
 -- Tools (launcher links)

@@ -16,7 +16,7 @@
 - **ToDo** -- Inline task creation with due dates, tags, and notes
 - **Calendar** -- Monthly view with event CRUD and iCal import
 - **Tools** -- Bookmark launcher with categories and health checks
-- **Cross-search** -- Full-text search across all data (pg_bigm for Japanese)
+- **Cross-search** -- Full-text search across all data (pg_trgm)
 - **CLI** -- Full-featured CLI client for remote API access
 - **Export/Import** -- JSON export, Markdown ZIP export, iCal import
 - **Multi-user** -- Email/password authentication with API key support

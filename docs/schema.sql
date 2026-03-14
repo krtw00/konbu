@@ -10,7 +10,7 @@
 -- =============================================================================
 
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";   -- gen_random_uuid()
--- CREATE EXTENSION IF NOT EXISTS "pg_bigm"; -- 日本語全文検索（任意）
+CREATE EXTENSION IF NOT EXISTS "pg_trgm";    -- trigram full-text search
 
 -- =============================================================================
 -- Users

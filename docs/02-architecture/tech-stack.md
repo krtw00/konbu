@@ -31,7 +31,7 @@ flowchart TB
     end
 
     subgraph Infra[インフラ]
-        I1[PostgreSQL 16+ / pg_bigm]
+        I1[PostgreSQL 16+ / pg_trgm]
         I2[Docker マルチステージ / scratch]
         I3[Traefik]
     end
@@ -72,7 +72,7 @@ flowchart TB
 | 技術 | バージョン | 用途 |
 |------|------------|------|
 | PostgreSQL | 16+ | データ永続化 |
-| pg_bigm | latest | 2-gram日本語全文検索 |
+| pg_trgm | built-in | trigram全文検索（ILIKE高速化） |
 | pgcrypto | built-in | UUID生成 (gen_random_uuid) |
 
 ### インフラ・ホスティング
@@ -111,13 +111,13 @@ flowchart TB
 | 代替候補 | GORM, sqlx |
 | 不採用理由 | GORMはORM特有の抽象化漏れ。sqlxは型安全性が不足 |
 
-### PostgreSQL + pg_bigm
+### PostgreSQL + pg_trgm
 
 | 項目 | 内容 |
 |------|------|
-| 選定理由 | JSONB、GINインデックス、pg_bigmで日本語分かち書き不要の全文検索 |
+| 選定理由 | JSONB、GINインデックス、pg_trgmでILIKE検索を高速化。マネージドDB（Supabase等）で利用可能 |
 | 代替候補 | SQLite, MySQL |
-| 不採用理由 | SQLiteはJSONBと全文検索の機能が限定的。MySQLはpg_bigm相当がない |
+| 不採用理由 | SQLiteはJSONBと全文検索の機能が限定的。MySQLは同等のtrigram検索がない |
 
 ### React + Vite
 

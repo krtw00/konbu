@@ -190,7 +190,7 @@ erDiagram
 
 ## 全文検索
 
-pg_bigmを使った2-gram全文検索。
+pg_trgmを使ったtrigram全文検索。
 
 | 対象 | 検索カラム |
 |------|-----------|
@@ -198,7 +198,7 @@ pg_bigmを使った2-gram全文検索。
 | ToDo | title + description |
 | 予定 | title + description |
 
-`ILIKE`による部分一致検索をベースに、pg_bigmのGINインデックスで高速化。日本語の分かち書きなしで動作する。
+`ILIKE`による部分一致検索をベースに、pg_trgmのGINインデックスで高速化。マネージドDB（Supabase, Neon, RDS等）で利用可能。
 
 ---
 

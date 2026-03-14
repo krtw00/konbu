@@ -185,7 +185,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | `limit` | int | 20 | 取得件数（最大100） |
 | `offset` | int | 0 | オフセット |
 | `sort` | string | `created_at:desc` | ソート (`field:asc` or `field:desc`) |
-| `q` | string | -- | テキスト検索 (ILIKE + pg_bigm) |
+| `q` | string | -- | テキスト検索 (ILIKE + pg_trgm) |
 | `tag` | string | -- | タグ名で絞り込み |
 
 ---

@@ -30,7 +30,7 @@ flowchart TB
         end
 
         subgraph Data[データ層]
-            DB[(PostgreSQL 16+<br/>pg_bigm)]
+            DB[(PostgreSQL 16+<br/>pg_trgm)]
         end
 
         subgraph CLI[CLIクライアント]
@@ -61,7 +61,7 @@ flowchart TB
 | Repository | バックエンド | DBアクセス（sqlc生成コード + カスタムクエリ） | Go, sqlc |
 | CLI | クライアント | ターミナルからの全リソースCRUD | Go, cobra |
 | API Client | クライアント | CLI用HTTPクライアント | Go |
-| PostgreSQL | データ | データ永続化、全文検索 | PostgreSQL 16+, pg_bigm |
+| PostgreSQL | データ | データ永続化、全文検索 | PostgreSQL 16+, pg_trgm |
 
 ---
 
