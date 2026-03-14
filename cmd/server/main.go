@@ -76,6 +76,9 @@ func main() {
 	r.Get("/favicon.svg", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "web/static/favicon.svg")
 	})
+	r.Get("/hero.png", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/static/hero.png")
+	})
 
 	// Auth public endpoints (no session required)
 	r.Route("/api/v1/auth", func(r chi.Router) {
