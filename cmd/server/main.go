@@ -77,6 +77,7 @@ func main() {
 		http.ServeFile(w, r, "web/static/favicon.svg")
 	})
 	r.Get("/hero.png", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "image/png")
 		http.ServeFile(w, r, "web/static/hero.png")
 	})
 
