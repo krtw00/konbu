@@ -118,6 +118,12 @@ func (q *Queries) UpdateUserLocale(ctx context.Context, id uuid.UUID, locale str
 	return err
 }
 
+func (q *Queries) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx,
+		`UPDATE users SET deleted_at = now() WHERE id = $1 AND deleted_at IS NULL`, id)
+	return err
+}
+
 func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
 	row := q.db.QueryRowContext(ctx,
 		`SELECT count(*) FROM users WHERE deleted_at IS NULL`)

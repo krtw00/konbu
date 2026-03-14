@@ -156,6 +156,10 @@
     "import": "インポート",
     "importDescription": "外部サービスからデータを取り込みます",
     "importICal": "iCalファイル (.ics)",
-    "importSuccess": "インポートが完了しました"
+    "importSuccess": "インポートが完了しました",
+    "deleteAccount": "アカウント削除",
+    "deleteAccountDescription": "アカウントと全データを完全に削除します。この操作は取り消せません。",
+    "deleteAccountConfirm": "確認のためパスワードを入力してください",
+    "deleteAccountButton": "アカウントを削除する"
   }
 }

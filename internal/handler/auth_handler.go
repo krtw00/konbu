@@ -129,6 +129,32 @@ func (h *AuthHandler) HandleChangePassword(w http.ResponseWriter, r *http.Reques
 	writeData(w, map[string]string{"message": "password changed"})
 }
 
+func (h *AuthHandler) HandleDeleteAccount(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	if user == nil {
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{
+			"error": map[string]string{"code": "unauthorized", "message": "not logged in"},
+		})
+		return
+	}
+
+	var req struct {
+		Password string `json:"password"`
+	}
+	if err := decodeJSON(r, &req); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	if err := h.authSvc.DeleteAccount(r.Context(), user.ID, req.Password); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	middleware.ClearSessionCookie(w)
+	writeData(w, map[string]string{"message": "account deleted"})
+}
+
 func (h *AuthHandler) HandleGetMe(w http.ResponseWriter, r *http.Request) {
 	user := middleware.UserFromContext(r.Context())
 	writeData(w, user)
