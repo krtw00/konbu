@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Copy, Trash2, Plus, Key } from 'lucide-react'
+import { Copy, Trash2, Plus, Key, ExternalLink } from 'lucide-react'
 
 function ProfileTab() {
   const { t } = useTranslation()
@@ -38,6 +38,29 @@ function ProfileTab() {
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium">{t('settings.email')}</label>
         <Input value={user?.email ?? ''} disabled />
+      </div>
+      <Separator />
+      <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium">{t('settings.plan')}</label>
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium px-2 py-0.5 rounded bg-muted">
+            {user?.plan === 'sponsor' ? t('settings.planSponsor') : t('settings.planFree')}
+          </span>
+          {user?.plan !== 'sponsor' && (
+            <a
+              href="https://github.com/sponsors/krtw00"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              {t('settings.sponsorCTA')}
+              <ExternalLink size={14} />
+            </a>
+          )}
+        </div>
+        {user?.plan !== 'sponsor' && (
+          <p className="text-xs text-muted-foreground">{t('settings.sponsorDescription')}</p>
+        )}
       </div>
     </div>
   )
@@ -215,6 +238,20 @@ function SecurityTab() {
           <CardTitle>{t('settings.apiKeys')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
+          {useAppStore.getState().user?.plan !== 'sponsor' && (
+            <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
+              <p>{t('settings.apiKeysSponsorOnly')}</p>
+              <a
+                href="https://github.com/sponsors/krtw00"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 mt-2 text-primary hover:underline"
+              >
+                {t('settings.sponsorCTA')}
+                <ExternalLink size={14} />
+              </a>
+            </div>
+          )}
           {createdKey && (
             <div className="flex items-center gap-2 rounded-md bg-muted p-2 text-sm">
               <Key size={14} />

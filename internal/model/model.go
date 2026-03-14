@@ -14,6 +14,7 @@ type User struct {
 	Email        string           `json:"email"`
 	Name         string           `json:"name"`
 	IsAdmin      bool             `json:"is_admin"`
+	Plan         string           `json:"plan"`
 	UserSettings *json.RawMessage `json:"user_settings,omitempty"`
 	CreatedAt    time.Time        `json:"created_at"`
 	UpdatedAt    time.Time        `json:"updated_at"`
