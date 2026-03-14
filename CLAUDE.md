@@ -2,17 +2,17 @@
 
 ## プロジェクト概要
 
-konbu はセルフホスト型の個人ツール基盤。メモ・ToDo・カレンダー・ツールランチャーを
-REST API + Web UI + CLI で提供する。
+konbu はパーソナルワークスペース。メモ・ToDo・カレンダー・ツールランチャーを
+REST API + Web UI + CLI で提供する。OSS (MIT) + クラウド版の2形態。
 
 ## 技術スタック
 
-- 言語: Go 1.22+
+- バックエンド: Go 1.25+ / chi v5 / sqlc
+- フロントエンド: React 19 + TypeScript / Vite / shadcn/ui / Zustand
 - DB: PostgreSQL 16+（pg_bigm で日本語全文検索）
-- ルーター: echo or chi（後で確定）
-- SQL: sqlc でコード生成
 - CLI: cobra
 - コンテナ: Docker（マルチステージビルド、scratch ベース）
+- i18n: i18next（日本語・英語）
 
 ## ディレクトリ構成
 
@@ -47,9 +47,11 @@ konbu/
 │       ├── tools.sql
 │       └── search.sql
 ├── docs/
-│   ├── design.md        # 構想メモ
-│   ├── api.md           # REST API 仕様
-│   └── schema.sql       # DDL（参照用）
+│   ├── 00-index.md      # ドキュメントインデックス
+│   ├── 01-overview/     # 概要・目的・スコープ
+│   ├── 02-architecture/ # 設計・構成・技術スタック
+│   ├── 03-details/      # API・データモデル・UI・フロー
+│   └── schema.sql       # DDL参照用（全マイグレーション統合版）
 ├── docker/
 │   └── Dockerfile
 └── docker-compose.yml
@@ -170,6 +172,5 @@ go run ./cmd/server migrate down
 
 - gRPC（REST のみ）
 - GraphQL
-- WebSocket（ポータルには不要。WebSSH は別サービス）
+- WebSocket
 - ORM（sqlc でコード生成。手書き SQL を基本とする）
-- フロントエンドのフレームワーク選定（別途決定）
