@@ -93,6 +93,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*model
 		Email:     u.Email,
 		Name:      u.Name,
 		IsAdmin:   u.IsAdmin,
+		Plan:      u.Plan,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}, nil
@@ -226,10 +227,19 @@ func (s *AuthService) AuthenticateByAPIKey(ctx context.Context, rawKey string) (
 		Email:   ak.Email,
 		Name:    ak.UserName,
 		IsAdmin: ak.IsAdmin,
+		Plan:    ak.Plan,
 	}, nil
 }
 
 func (s *AuthService) CreateAPIKey(ctx context.Context, userID uuid.UUID, req model.CreateAPIKeyRequest) (*model.APIKey, error) {
+	user, err := s.queries.GetUserByID(ctx, userID)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	if user.Plan != "sponsor" {
+		return nil, apperror.Forbidden("API keys require a Sponsor plan")
+	}
+
 	rawKey, err := generateAPIKey()
 	if err != nil {
 		return nil, apperror.Internal(err)
@@ -284,6 +294,7 @@ func toModelUser(u repository.User) *model.User {
 		Email:     u.Email,
 		Name:      u.Name,
 		IsAdmin:   u.IsAdmin,
+		Plan:      u.Plan,
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}

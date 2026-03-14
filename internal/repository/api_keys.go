@@ -21,6 +21,7 @@ type APIKeyWithUser struct {
 	Email    string
 	UserName string
 	IsAdmin  bool
+	Plan     string
 }
 
 func (q *Queries) CreateAPIKey(ctx context.Context, userID uuid.UUID, name, keyHash string) (APIKey, error) {
@@ -58,13 +59,13 @@ func (q *Queries) ListAPIKeysByUserID(ctx context.Context, userID uuid.UUID) ([]
 func (q *Queries) GetAPIKeyByHash(ctx context.Context, keyHash string) (APIKeyWithUser, error) {
 	row := q.db.QueryRowContext(ctx,
 		`SELECT ak.id, ak.user_id, ak.name, ak.key_hash, ak.last_used_at, ak.created_at,
-		        u.email, u.name, u.is_admin
+		        u.email, u.name, u.is_admin, u.plan
 		 FROM api_keys ak
 		 JOIN users u ON u.id = ak.user_id AND u.deleted_at IS NULL
 		 WHERE ak.key_hash = $1 AND ak.deleted_at IS NULL`, keyHash)
 	var k APIKeyWithUser
 	err := row.Scan(&k.ID, &k.UserID, &k.Name, &k.KeyHash, &k.LastUsedAt, &k.CreatedAt,
-		&k.Email, &k.UserName, &k.IsAdmin)
+		&k.Email, &k.UserName, &k.IsAdmin, &k.Plan)
 	return k, err
 }
 

@@ -23,6 +23,7 @@ CREATE TABLE users (
     name          TEXT NOT NULL DEFAULT '',
     password_hash TEXT,
     is_admin      BOOLEAN NOT NULL DEFAULT FALSE,
+    plan          TEXT NOT NULL DEFAULT 'free',
     user_settings JSONB DEFAULT '{}'::jsonb,
     locale        TEXT DEFAULT 'en',
     created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
