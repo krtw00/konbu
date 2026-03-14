@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 )
 
@@ -20,6 +21,9 @@ func Load() *Config {
 	sessionSecret := os.Getenv("SESSION_SECRET")
 	if sessionSecret == "" {
 		sessionSecret = "konbu-dev-secret-change-me"
+		if os.Getenv("DEV_USER") == "" {
+			log.Println("WARNING: SESSION_SECRET is not set. Using insecure default. Set SESSION_SECRET in production.")
+		}
 	}
 
 	return &Config{

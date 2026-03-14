@@ -19,7 +19,7 @@
 
 ## Try It
 
-- **Cloud** -- Use instantly at [konbu.codenica.dev](https://konbu.codenica.dev) (free, no setup)
+- **Cloud** -- Use instantly at [konbu-cloud.codenica.dev](https://konbu-cloud.codenica.dev) (free, no setup)
 - **Self-hosted** -- Run on your own server with Docker (see below)
 
 ## Features

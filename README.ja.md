@@ -19,7 +19,7 @@
 
 ## 使ってみる
 
-- **クラウド版** -- [konbu.codenica.dev](https://konbu.codenica.dev) ですぐに使えます（無料・登録のみ）
+- **クラウド版** -- [konbu-cloud.codenica.dev](https://konbu-cloud.codenica.dev) ですぐに使えます（無料・登録のみ）
 - **セルフホスト** -- Docker で自分のサーバーに構築（下記参照）
 
 ## 機能
