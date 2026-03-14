@@ -79,6 +79,7 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `SESSION_SECRET` | Yes | 開発用フォールバック | セッション署名キー |
 | `PORT` | No | `8080` | サーバーポート |
 | `DEV_USER` | No | -- | 開発用自動ログイン（メール形式） |
+| `OPEN_REGISTRATION` | No | -- | `true` で誰でもアカウント作成可能（Cloud版向け） |
 
 ### Docker Compose（本番用）変数
 

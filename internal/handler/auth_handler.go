@@ -28,8 +28,9 @@ func (h *AuthHandler) HandleSetupStatus(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	writeData(w, map[string]interface{}{
-		"needs_setup": needsSetup,
-		"user_count":  userCount,
+		"needs_setup":       needsSetup,
+		"user_count":        userCount,
+		"open_registration": h.cfg.OpenRegistration,
 	})
 }
 
@@ -50,13 +51,13 @@ func (h *AuthHandler) HandleRegister(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !needsSetup {
+	if !needsSetup && !h.cfg.OpenRegistration {
 		user := middleware.UserFromContext(r.Context())
 		if user == nil || !user.IsAdmin {
 			writeJSON(w, http.StatusForbidden, map[string]interface{}{
 				"error": map[string]string{
 					"code":    "forbidden",
-					"message": "only admins can register new users",
+					"message": "registration is not open",
 				},
 			})
 			return

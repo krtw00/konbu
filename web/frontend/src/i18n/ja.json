@@ -113,7 +113,12 @@
     "registerButton": "アカウント作成",
     "loginError": "メールアドレスまたはパスワードが正しくありません",
     "setupTitle": "konbu へようこそ",
-    "setupDescription": "管理者アカウントを作成してください"
+    "setupDescription": "管理者アカウントを作成してください",
+    "noAccount": "アカウントをお持ちでない方",
+    "createAccount": "アカウント作成",
+    "haveAccount": "アカウントをお持ちの方",
+    "backToLogin": "ログイン",
+    "registerDescription": "新しいアカウントを作成"
   },
   "settings": {
     "title": "設定",

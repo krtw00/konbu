@@ -59,7 +59,7 @@ export const api = {
   search: (q: string, limit = 20) => request<{ data: import('@/types/api').SearchResult[] }>('GET', `/search?q=${encodeURIComponent(q)}&limit=${limit}`),
 
   // Auth
-  setupStatus: () => request<{ data: { needs_setup: boolean; user_count: number } }>('GET', '/auth/setup-status'),
+  setupStatus: () => request<{ data: { needs_setup: boolean; user_count: number; open_registration: boolean } }>('GET', '/auth/setup-status'),
   register: (body: { email: string; password: string; name: string }) =>
     request<{ data: import('@/types/api').User }>('POST', '/auth/register', body),
   login: (body: { email: string; password: string }) =>
