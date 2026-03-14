@@ -4,22 +4,34 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">Self-hosted personal workspace: memos, todos, calendar, and tool launcher in one place.</p>
+<p align="center">Personal workspace: memos, todos, calendar, and tool launcher in one place.</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <a href="https://github.com/krtw00/konbu/actions"><img src="https://github.com/krtw00/konbu/actions/workflows/deploy.yml/badge.svg" alt="Deploy"></a>
+</p>
 
 <p align="center"><a href="README.ja.md">日本語</a> | English</p>
 
+<p align="center"><img src="docs/screenshot.png" width="800" alt="konbu screenshot"></p>
+
 ---
+
+## Try It
+
+- **Cloud** -- Use instantly at [konbu.codenica.dev](https://konbu.codenica.dev) (free, no setup)
+- **Self-hosted** -- Run on your own server with Docker (see below)
 
 ## Features
 
-- **Memos** -- Markdown notes with tagging, CodeMirror 6 editor, and live preview
+- **Memos** -- Markdown notes with tagging, live preview
 - **ToDo** -- Inline task creation with due dates, tags, and notes
 - **Calendar** -- Monthly view with event CRUD and iCal import
 - **Tools** -- Bookmark launcher with categories and health checks
-- **Cross-search** -- Full-text search across all data (pg_trgm)
+- **Cross-search** -- Full-text search across all data
 - **CLI** -- Full-featured CLI client for remote API access
 - **Export/Import** -- JSON export, Markdown ZIP export, iCal import
-- **Multi-user** -- Email/password authentication with API key support
+- **i18n** -- English and Japanese
 
 ## Quick Start
 
@@ -53,6 +65,7 @@ psql $DATABASE_URL -f sql/migrations/0001_initial.up.sql
 psql $DATABASE_URL -f sql/migrations/0002_auth_password.up.sql
 psql $DATABASE_URL -f sql/migrations/0003_recurring_events.up.sql
 psql $DATABASE_URL -f sql/migrations/0004_tool_category.up.sql
+psql $DATABASE_URL -f sql/migrations/0005_trgm_search.up.sql
 
 # Start
 DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
@@ -195,6 +208,10 @@ web/frontend/   # React + Vite SPA
 sql/            # Schema and migrations
 docker/         # Dockerfile
 ```
+
+## Sponsors
+
+If you find konbu useful, consider [sponsoring](https://github.com/sponsors/krtw00) the project.
 
 ## License
 

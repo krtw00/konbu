@@ -4,22 +4,34 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">セルフホスト型パーソナルワークスペース。メモ・ToDo・カレンダー・ツールランチャーをひとつに。</p>
+<p align="center">パーソナルワークスペース。メモ・ToDo・カレンダー・ツールランチャーをひとつに。</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+  <a href="https://github.com/krtw00/konbu/actions"><img src="https://github.com/krtw00/konbu/actions/workflows/deploy.yml/badge.svg" alt="Deploy"></a>
+</p>
 
 <p align="center">日本語 | <a href="README.md">English</a></p>
 
+<p align="center"><img src="docs/screenshot.png" width="800" alt="konbu スクリーンショット"></p>
+
 ---
+
+## 使ってみる
+
+- **クラウド版** -- [konbu.codenica.dev](https://konbu.codenica.dev) ですぐに使えます（無料・登録のみ）
+- **セルフホスト** -- Docker で自分のサーバーに構築（下記参照）
 
 ## 機能
 
-- **メモ** -- Markdown対応、CodeMirror 6エディタ、ライブプレビュー、タグ管理
+- **メモ** -- Markdown対応、ライブプレビュー、タグ管理
 - **ToDo** -- インライン作成、期限設定、タグフィルタ、ノート付き
 - **カレンダー** -- 月表示、予定の作成・編集、iCalインポート
 - **ツール** -- ブックマークランチャー、カテゴリ分類、ヘルスチェック
-- **横断検索** -- メモ・ToDo・予定をまたいだ全文検索（pg_trgm）
+- **横断検索** -- メモ・ToDo・予定をまたいだ全文検索
 - **CLI** -- リモートAPI経由で全機能にアクセスできるCLIクライアント
 - **エクスポート/インポート** -- JSON・Markdown ZIP出力、iCal取り込み
-- **マルチユーザー** -- メール/パスワード認証、APIキー対応
+- **多言語対応** -- 日本語・英語
 
 ## クイックスタート
 
@@ -53,6 +65,7 @@ psql $DATABASE_URL -f sql/migrations/0001_initial.up.sql
 psql $DATABASE_URL -f sql/migrations/0002_auth_password.up.sql
 psql $DATABASE_URL -f sql/migrations/0003_recurring_events.up.sql
 psql $DATABASE_URL -f sql/migrations/0004_tool_category.up.sql
+psql $DATABASE_URL -f sql/migrations/0005_trgm_search.up.sql
 
 # 起動
 DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
@@ -195,6 +208,10 @@ web/frontend/   # React + Vite SPA
 sql/            # スキーマ・マイグレーション
 docker/         # Dockerfile
 ```
+
+## スポンサー
+
+konbuが役に立ったら、[スポンサー](https://github.com/sponsors/krtw00)でプロジェクトを支援できます。
 
 ## ライセンス
 
