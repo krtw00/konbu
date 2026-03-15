@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/krtw00/konbu/internal/client"
+	"github.com/krtw00/konbu/internal/mcp"
 	"github.com/spf13/cobra"
 )
 
@@ -109,7 +110,7 @@ func main() {
 	root.PersistentFlags().StringVar(&apiKey, "api-key", "", "API key (or KONBU_API_KEY env)")
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "Output as JSON")
 
-	root.AddCommand(memoCmd(), todoCmd(), eventCmd(), toolCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd())
+	root.AddCommand(memoCmd(), todoCmd(), eventCmd(), toolCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
@@ -916,4 +917,16 @@ func importCmd() *cobra.Command {
 	})
 
 	return imp
+}
+
+// --- mcp ---
+
+func mcpCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "mcp",
+		Short: "Start MCP (Model Context Protocol) server on stdio",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return mcp.Run(cli())
+		},
+	}
 }
