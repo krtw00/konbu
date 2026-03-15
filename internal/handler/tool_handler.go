@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/krtw00/konbu/internal/apperror"
 	"github.com/krtw00/konbu/internal/middleware"
 	"github.com/krtw00/konbu/internal/model"
 	"github.com/krtw00/konbu/internal/service"
@@ -25,6 +26,7 @@ func (h *ToolHandler) Routes() chi.Router {
 	r.Post("/", h.create)
 	r.Post("/refresh-icons", h.refreshIcons)
 	r.Post("/health-check", h.healthCheck)
+	r.Get("/favicon", h.favicon)
 	r.Put("/reorder", h.reorder)
 	r.Put("/{id}", h.update)
 	r.Delete("/{id}", h.delete)
@@ -113,6 +115,16 @@ func (h *ToolHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeData(w, results)
+}
+
+func (h *ToolHandler) favicon(w http.ResponseWriter, r *http.Request) {
+	url := r.URL.Query().Get("url")
+	if url == "" {
+		writeError(w, apperror.BadRequest("url is required"))
+		return
+	}
+	icon := service.FetchFavicon(url)
+	writeData(w, map[string]string{"icon": icon})
 }
 
 func (h *ToolHandler) reorder(w http.ResponseWriter, r *http.Request) {

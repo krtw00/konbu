@@ -50,6 +50,7 @@ export const api = {
   updateTool: (id: string, body: { name: string; url: string; category?: string }) =>
     request<{ data: import('@/types/api').Tool }>('PUT', `/tools/${id}`, body),
   deleteTool: (id: string) => request<null>('DELETE', `/tools/${id}`),
+  fetchFavicon: (url: string) => request<{ data: { icon: string } }>('GET', `/tools/favicon?url=${encodeURIComponent(url)}`),
   healthCheckTools: () => request<{ data: { id: string; url: string; alive: boolean; status: number }[] }>('POST', '/tools/health-check'),
 
   // Tags

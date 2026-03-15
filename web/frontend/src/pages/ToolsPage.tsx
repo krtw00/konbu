@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useCache } from '@/hooks/useCache'
@@ -25,14 +25,37 @@ export function ToolsPage() {
   const [formName, setFormName] = useState('')
   const [formUrl, setFormUrl] = useState('')
   const [formCategory, setFormCategory] = useState('')
+  const [faviconPreview, setFaviconPreview] = useState('')
+  const [faviconLoading, setFaviconLoading] = useState(false)
   const [healthMap, setHealthMap] = useState<Map<string, HealthResult>>(new Map())
   const [healthLoading, setHealthLoading] = useState(false)
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    if (!formUrl || !formUrl.startsWith('http')) {
+      setFaviconPreview('')
+      return
+    }
+    setFaviconLoading(true)
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const r = await api.fetchFavicon(formUrl)
+        setFaviconPreview(r.data?.icon || '')
+      } catch {
+        setFaviconPreview('')
+      }
+      setFaviconLoading(false)
+    }, 500)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [formUrl])
 
   function openCreateDialog() {
     setEditingTool(null)
     setFormName('')
     setFormUrl('')
     setFormCategory('')
+    setFaviconPreview('')
     setDialogOpen(true)
   }
 
@@ -41,6 +64,7 @@ export function ToolsPage() {
     setFormName(tool.name)
     setFormUrl(tool.url)
     setFormCategory(tool.category || '')
+    setFaviconPreview(tool.icon || '')
     setDialogOpen(true)
   }
 
@@ -185,12 +209,23 @@ export function ToolsPage() {
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-sm font-medium">{t('tools.name')}</label>
-              <Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder={t('tools.name')} className="mt-1" />
+              <label className="text-sm font-medium">{t('tools.url')}</label>
+              <div className="flex items-center gap-2 mt-1">
+                <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+                  {faviconLoading ? (
+                    <Loader2 size={16} className="animate-spin text-muted-foreground" />
+                  ) : faviconPreview ? (
+                    <img src={faviconPreview} alt="" className="w-6 h-6 rounded object-contain" />
+                  ) : (
+                    <div className="w-6 h-6 rounded bg-muted" />
+                  )}
+                </div>
+                <Input value={formUrl} onChange={(e) => setFormUrl(e.target.value)} placeholder="https://..." className="flex-1" />
+              </div>
             </div>
             <div>
-              <label className="text-sm font-medium">{t('tools.url')}</label>
-              <Input value={formUrl} onChange={(e) => setFormUrl(e.target.value)} placeholder="https://..." className="mt-1" />
+              <label className="text-sm font-medium">{t('tools.name')}</label>
+              <Input value={formName} onChange={(e) => setFormName(e.target.value)} placeholder={t('tools.name')} className="mt-1" />
             </div>
             <div>
               <label className="text-sm font-medium">{t('tools.category')}</label>
