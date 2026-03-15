@@ -173,6 +173,21 @@
     "deleteAccount": "Delete Account",
     "deleteAccountDescription": "Permanently delete your account and all data. This cannot be undone.",
     "deleteAccountConfirm": "Enter your password to confirm",
-    "deleteAccountButton": "Delete my account"
+    "deleteAccountButton": "Delete my account",
+    "ai": "AI",
+    "aiProvider": "AI Provider",
+    "aiApiKey": "API Key",
+    "aiKeySaved": "Key saved",
+    "aiKeyPlaceholder": "sk-... or sk-ant-..."
+  },
+  "chat": {
+    "title": "AI Chat",
+    "sessions": "History",
+    "newSession": "New Conversation",
+    "noSessions": "No conversations yet",
+    "placeholder": "Ask AI anything about your workspace",
+    "inputPlaceholder": "Type a message…",
+    "sponsorRequired": "AI Chat requires a Sponsor plan",
+    "noApiKey": "Set up your LLM API key in Settings"
   }
 }

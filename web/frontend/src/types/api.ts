@@ -80,6 +80,34 @@ export interface ApiKey {
   last_used_at: string | null
 }
 
+export interface ChatSession {
+  id: string
+  title: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant' | 'system' | 'tool'
+  content: string
+  tool_calls?: { id: string; name: string; arguments: string }[]
+  tool_call_id?: string
+  created_at: string
+}
+
+export interface ChatSessionDetail extends ChatSession {
+  messages: ChatMessage[]
+}
+
+export interface AIChatConfig {
+  provider: string
+  openai_key_masked?: string
+  anthropic_key_masked?: string
+  openai_key?: string
+  anthropic_key?: string
+}
+
 export interface ListResponse<T> {
   data: T[]
   total: number

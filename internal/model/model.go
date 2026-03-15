@@ -217,6 +217,45 @@ type SearchResult struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+// --- Chat ---
+
+type ChatSession struct {
+	ID        uuid.UUID `json:"id"`
+	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type ChatMessage struct {
+	ID           uuid.UUID        `json:"id"`
+	Role         string           `json:"role"`
+	Content      string           `json:"content"`
+	ToolCalls    *json.RawMessage `json:"tool_calls,omitempty"`
+	ToolCallID   string           `json:"tool_call_id,omitempty"`
+	CreatedAt    time.Time        `json:"created_at"`
+}
+
+type ChatSessionDetail struct {
+	ChatSession
+	Messages []ChatMessage `json:"messages"`
+}
+
+type SendMessageRequest struct {
+	Content string `json:"content"`
+}
+
+type UpdateSessionRequest struct {
+	Title string `json:"title"`
+}
+
+type AIChatConfig struct {
+	Provider           string `json:"provider"`
+	OpenAIKeyMasked    string `json:"openai_key_masked,omitempty"`
+	AnthropicKeyMasked string `json:"anthropic_key_masked,omitempty"`
+	OpenAIKey          string `json:"openai_key,omitempty"`
+	AnthropicKey       string `json:"anthropic_key,omitempty"`
+}
+
 func DefaultListParams() ListParams {
 	return ListParams{
 		Limit: 20,

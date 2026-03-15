@@ -83,4 +83,13 @@ export const api = {
   createApiKey: (body: { name: string }) =>
     request<{ data: import('@/types/api').ApiKey }>('POST', '/api-keys', body),
   deleteApiKey: (id: string) => request<null>('DELETE', `/api-keys/${id}`),
+
+  // Chat
+  listChatSessions: () => request<{ data: import('@/types/api').ChatSession[] }>('GET', '/chat/sessions'),
+  createChatSession: () => request<{ data: import('@/types/api').ChatSession }>('POST', '/chat/sessions'),
+  getChatSession: (id: string) => request<{ data: import('@/types/api').ChatSessionDetail }>('GET', `/chat/sessions/${id}`),
+  updateChatSession: (id: string, body: { title: string }) => request<null>('PUT', `/chat/sessions/${id}`, body),
+  deleteChatSession: (id: string) => request<null>('DELETE', `/chat/sessions/${id}`),
+  getChatConfig: () => request<{ data: import('@/types/api').AIChatConfig }>('GET', '/chat/config'),
+  updateChatConfig: (body: import('@/types/api').AIChatConfig) => request<{ data: import('@/types/api').AIChatConfig }>('PUT', '/chat/config', body),
 }
