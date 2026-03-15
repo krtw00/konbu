@@ -437,6 +437,86 @@ function DataTab() {
   )
 }
 
+function AITab() {
+  const { t } = useTranslation()
+  const [provider, setProvider] = useState('openai')
+  const [openaiKey, setOpenaiKey] = useState('')
+  const [anthropicKey, setAnthropicKey] = useState('')
+  const [openaiMasked, setOpenaiMasked] = useState('')
+  const [anthropicMasked, setAnthropicMasked] = useState('')
+  const [saved, setSaved] = useState(false)
+
+  useEffect(() => {
+    api.getChatConfig().then(r => {
+      const cfg = r.data
+      if (cfg.provider) setProvider(cfg.provider)
+      if (cfg.openai_key_masked) setOpenaiMasked(cfg.openai_key_masked)
+      if (cfg.anthropic_key_masked) setAnthropicMasked(cfg.anthropic_key_masked)
+    }).catch(() => {})
+  }, [])
+
+  async function handleSave() {
+    await api.updateChatConfig({
+      provider,
+      openai_key: openaiKey || undefined,
+      anthropic_key: anthropicKey || undefined,
+    })
+    setOpenaiKey('')
+    setAnthropicKey('')
+    const r = await api.getChatConfig()
+    if (r.data.openai_key_masked) setOpenaiMasked(r.data.openai_key_masked)
+    if (r.data.anthropic_key_masked) setAnthropicMasked(r.data.anthropic_key_masked)
+    setSaved(true)
+    setTimeout(() => setSaved(false), 2000)
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">{t('settings.ai')}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">{t('settings.aiProvider')}</label>
+          <select
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            value={provider}
+            onChange={e => setProvider(e.target.value)}
+          >
+            <option value="openai">OpenAI (GPT-4o)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+          </select>
+        </div>
+        <Separator />
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">OpenAI API Key</label>
+          {openaiMasked && <p className="text-xs text-muted-foreground">{openaiMasked}</p>}
+          <Input
+            type="password"
+            value={openaiKey}
+            onChange={e => setOpenaiKey(e.target.value)}
+            placeholder={t('settings.aiKeyPlaceholder')}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-sm font-medium">Anthropic API Key</label>
+          {anthropicMasked && <p className="text-xs text-muted-foreground">{anthropicMasked}</p>}
+          <Input
+            type="password"
+            value={anthropicKey}
+            onChange={e => setAnthropicKey(e.target.value)}
+            placeholder={t('settings.aiKeyPlaceholder')}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleSave}>{t('common.save')}</Button>
+          {saved && <span className="text-sm text-green-600">{t('settings.aiKeySaved')}</span>}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export function SettingsPage() {
   const { t } = useTranslation()
 
@@ -449,6 +529,7 @@ export function SettingsPage() {
           <TabsTrigger value="appearance">{t('settings.appearance')}</TabsTrigger>
           <TabsTrigger value="security">{t('settings.security')}</TabsTrigger>
           <TabsTrigger value="data">{t('settings.data')}</TabsTrigger>
+          <TabsTrigger value="ai">{t('settings.ai')}</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="mt-4">
           <ProfileTab />
@@ -461,6 +542,9 @@ export function SettingsPage() {
         </TabsContent>
         <TabsContent value="data" className="mt-4">
           <DataTab />
+        </TabsContent>
+        <TabsContent value="ai" className="mt-4">
+          <AITab />
         </TabsContent>
       </Tabs>
     </div>

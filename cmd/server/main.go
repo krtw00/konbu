@@ -50,6 +50,7 @@ func main() {
 	searchSvc := service.NewSearchService(db)
 
 	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc, toolSvc)
+	chatSvc := service.NewChatService(db, cfg, memoSvc, todoSvc, eventSvc, searchSvc)
 
 	// Background tasks
 	toolSvc.StartIconRefreshLoop(6 * time.Hour)
@@ -65,6 +66,7 @@ func main() {
 	searchH := handler.NewSearchHandler(searchSvc)
 	exportH := handler.NewExportHandler(exportSvc)
 	importH := handler.NewImportHandler(eventSvc)
+	chatH := handler.NewChatHandler(chatSvc)
 
 	// Router
 	r := chi.NewRouter()
@@ -137,6 +139,7 @@ func main() {
 			r.Get("/search", searchH.HandleSearch)
 			r.Mount("/export", exportH.Routes())
 			r.Mount("/import", importH.Routes())
+			r.Mount("/chat", chatH.Routes())
 		})
 	})
 

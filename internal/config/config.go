@@ -15,6 +15,7 @@ type Config struct {
 	GoogleClientID   string
 	GoogleSecret     string
 	BaseURL          string
+	AIEncryptionKey  string
 }
 
 func Load() *Config {
@@ -41,5 +42,6 @@ func Load() *Config {
 		GoogleClientID:   os.Getenv("GOOGLE_CLIENT_ID"),
 		GoogleSecret:     os.Getenv("GOOGLE_CLIENT_SECRET"),
 		BaseURL:          os.Getenv("BASE_URL"),
+		AIEncryptionKey:  os.Getenv("AI_ENCRYPTION_KEY"),
 	}
 }

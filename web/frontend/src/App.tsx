@@ -3,6 +3,7 @@ import { useAppStore } from '@/stores/app'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileHeader } from '@/components/layout/MobileHeader'
 import { CommandPalette } from '@/components/CommandPalette'
+import { ChatPanel } from '@/components/ChatPanel'
 import { HomePage } from '@/pages/HomePage'
 import { MemosPage } from '@/pages/MemosPage'
 import { MemoEditPage } from '@/pages/MemoEditPage'
@@ -75,6 +76,7 @@ function App() {
         )}
       </div>
       <CommandPalette onOpenMemo={handleEditMemo} />
+      <ChatPanel />
     </div>
   )
 }

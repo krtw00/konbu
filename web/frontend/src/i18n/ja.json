@@ -173,6 +173,21 @@
     "deleteAccount": "アカウント削除",
     "deleteAccountDescription": "アカウントと全データを完全に削除します。この操作は取り消せません。",
     "deleteAccountConfirm": "確認のためパスワードを入力してください",
-    "deleteAccountButton": "アカウントを削除する"
+    "deleteAccountButton": "アカウントを削除する",
+    "ai": "AI",
+    "aiProvider": "AIプロバイダ",
+    "aiApiKey": "APIキー",
+    "aiKeySaved": "キーが保存されました",
+    "aiKeyPlaceholder": "sk-... または sk-ant-..."
+  },
+  "chat": {
+    "title": "AI チャット",
+    "sessions": "履歴",
+    "newSession": "新しい会話",
+    "noSessions": "会話履歴はありません",
+    "placeholder": "AIに話しかけてみましょう",
+    "inputPlaceholder": "メッセージを入力…",
+    "sponsorRequired": "AI チャットは Sponsor プランが必要です",
+    "noApiKey": "設定画面で LLM の API キーを設定してください"
   }
 }
