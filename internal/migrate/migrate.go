@@ -33,6 +33,27 @@ func Run(db *sql.DB, migrationsDir string) error {
 		applied[v] = true
 	}
 
+	// Baseline: if schema_migrations is empty but tables exist, mark existing migrations as applied
+	if len(applied) == 0 {
+		var exists bool
+		db.QueryRow("SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'users')").Scan(&exists)
+		if exists {
+			// DB was set up before auto-migrate was added; baseline all existing migrations
+			baselineFiles, _ := os.ReadDir(migrationsDir)
+			for _, e := range baselineFiles {
+				if strings.HasSuffix(e.Name(), ".up.sql") {
+					v := strings.TrimSuffix(e.Name(), ".up.sql")
+					// Only baseline migrations before 0007 (chat is the first new one)
+					if v < "0007" {
+						db.Exec("INSERT INTO schema_migrations (version) VALUES ($1) ON CONFLICT DO NOTHING", v)
+						applied[v] = true
+						log.Printf("migration baselined: %s", e.Name())
+					}
+				}
+			}
+		}
+	}
+
 	// Find .up.sql files
 	entries, err := os.ReadDir(migrationsDir)
 	if err != nil {
