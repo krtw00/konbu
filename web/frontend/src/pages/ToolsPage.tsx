@@ -24,7 +24,6 @@ export function ToolsPage() {
   const [editingTool, setEditingTool] = useState<Tool | null>(null)
   const [formName, setFormName] = useState('')
   const [formUrl, setFormUrl] = useState('')
-  const [formIcon, setFormIcon] = useState('')
   const [formCategory, setFormCategory] = useState('')
   const [healthMap, setHealthMap] = useState<Map<string, HealthResult>>(new Map())
   const [healthLoading, setHealthLoading] = useState(false)
@@ -33,7 +32,6 @@ export function ToolsPage() {
     setEditingTool(null)
     setFormName('')
     setFormUrl('')
-    setFormIcon('')
     setFormCategory('')
     setDialogOpen(true)
   }
@@ -42,13 +40,12 @@ export function ToolsPage() {
     setEditingTool(tool)
     setFormName(tool.name)
     setFormUrl(tool.url)
-    setFormIcon(tool.icon)
     setFormCategory(tool.category || '')
     setDialogOpen(true)
   }
 
   async function saveTool() {
-    const body = { name: formName, url: formUrl, icon: formIcon, category: formCategory || undefined }
+    const body = { name: formName, url: formUrl, category: formCategory || undefined }
     if (editingTool) {
       await api.updateTool(editingTool.id, body)
     } else {
@@ -194,10 +191,6 @@ export function ToolsPage() {
             <div>
               <label className="text-sm font-medium">{t('tools.url')}</label>
               <Input value={formUrl} onChange={(e) => setFormUrl(e.target.value)} placeholder="https://..." className="mt-1" />
-            </div>
-            <div>
-              <label className="text-sm font-medium">{t('tools.icon')}</label>
-              <Input value={formIcon} onChange={(e) => setFormIcon(e.target.value)} placeholder={t('tools.iconPlaceholder')} className="mt-1" />
             </div>
             <div>
               <label className="text-sm font-medium">{t('tools.category')}</label>

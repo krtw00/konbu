@@ -51,6 +51,9 @@ func main() {
 
 	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc, toolSvc)
 
+	// Background tasks
+	toolSvc.StartIconRefreshLoop(6 * time.Hour)
+
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc, cfg)
 	apiKeyH := handler.NewAPIKeyHandler(authSvc)

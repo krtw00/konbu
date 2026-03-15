@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -42,9 +43,9 @@ func (s *ToolService) CreateTool(ctx context.Context, userID uuid.UUID, req mode
 		return nil, apperror.BadRequest("name and url are required")
 	}
 
-	// Auto-fetch favicon if not provided
-	icon := req.Icon
-	if icon == "" && req.URL != "" {
+	// Auto-fetch favicon
+	icon := ""
+	if req.URL != "" {
 		icon = FetchFavicon(req.URL)
 	}
 
@@ -71,7 +72,15 @@ func (s *ToolService) UpdateTool(ctx context.Context, id, userID uuid.UUID, req 
 		return nil, apperror.Internal(err)
 	}
 
-	t, err := s.queries.UpdateTool(ctx, id, userID, req.Name, req.URL, req.Icon, req.Category, existing.SortOrder)
+	// Re-fetch favicon if URL changed or icon is missing
+	icon := existing.Icon
+	if req.URL != existing.URL || icon == "" {
+		if req.URL != "" {
+			icon = FetchFavicon(req.URL)
+		}
+	}
+
+	t, err := s.queries.UpdateTool(ctx, id, userID, req.Name, req.URL, icon, req.Category, existing.SortOrder)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -98,6 +107,40 @@ func (s *ToolService) RefreshToolIcons(ctx context.Context, userID uuid.UUID) (i
 		count++
 	}
 	return count, nil
+}
+
+func (s *ToolService) RefreshEmptyIcons(ctx context.Context) (int, error) {
+	rows, err := s.queries.ListToolsWithEmptyIcon(ctx)
+	if err != nil {
+		return 0, err
+	}
+	count := 0
+	for _, r := range rows {
+		icon := FetchFavicon(r.URL)
+		if icon == "" {
+			continue
+		}
+		s.queries.UpdateTool(ctx, r.ID, r.UserID, r.Name, r.URL, icon, r.Category, r.SortOrder)
+		count++
+	}
+	return count, nil
+}
+
+func (s *ToolService) StartIconRefreshLoop(interval time.Duration) {
+	go func() {
+		ticker := time.NewTicker(interval)
+		defer ticker.Stop()
+		for range ticker.C {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+			count, err := s.RefreshEmptyIcons(ctx)
+			if err != nil {
+				log.Printf("icon refresh error: %v", err)
+			} else if count > 0 {
+				log.Printf("icon refresh: updated %d tools", count)
+			}
+			cancel()
+		}
+	}()
 }
 
 func (s *ToolService) DeleteTool(ctx context.Context, id, userID uuid.UUID) error {

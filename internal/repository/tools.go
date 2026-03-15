@@ -85,6 +85,25 @@ func (q *Queries) UpdateToolSortOrder(ctx context.Context, id, userID uuid.UUID,
 	return err
 }
 
+func (q *Queries) ListToolsWithEmptyIcon(ctx context.Context) ([]Tool, error) {
+	rows, err := q.db.QueryContext(ctx,
+		`SELECT `+toolCols+` FROM tools WHERE icon = '' AND url != '' AND deleted_at IS NULL`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tools []Tool
+	for rows.Next() {
+		t, err := scanTool(rows)
+		if err != nil {
+			return nil, err
+		}
+		tools = append(tools, t)
+	}
+	return tools, rows.Err()
+}
+
 func (q *Queries) MaxToolSortOrder(ctx context.Context, userID uuid.UUID) (int, error) {
 	row := q.db.QueryRowContext(ctx,
 		`SELECT COALESCE(MAX(sort_order), 0) FROM tools WHERE user_id = $1 AND deleted_at IS NULL`,

@@ -80,8 +80,6 @@
     "newTool": "New Tool",
     "name": "Name",
     "url": "URL",
-    "icon": "Icon",
-    "iconPlaceholder": "Emoji or letter",
     "confirmDelete": "Delete \"{{name}}\"?",
     "editTool": "Edit Tool",
     "category": "Category",
