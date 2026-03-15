@@ -48,9 +48,9 @@ func FetchFavicon(rawURL string) string {
 		return data
 	}
 
-	// 3) Try Google Favicons API
+	// 3) Try Google Favicons API (accepts non-200 since it returns image even on 404)
 	googleURL := fmt.Sprintf("https://www.google.com/s2/favicons?domain=%s&sz=32", u.Hostname())
-	if data := fetchImageAsDataURI(client, googleURL); data != "" {
+	if data := fetchImageAsDataURIAnyStatus(client, googleURL); data != "" {
 		return data
 	}
 
@@ -105,6 +105,32 @@ func resolveURL(base *url.URL, href string) string {
 	return fmt.Sprintf("%s://%s/%s", base.Scheme, base.Host, href)
 }
 
+func fetchImageAsDataURIAnyStatus(client *http.Client, imgURL string) string {
+	req, err := http.NewRequest("GET", imgURL, nil)
+	if err != nil {
+		return ""
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; konbu/1.0)")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return ""
+	}
+	defer resp.Body.Close()
+
+	ct := resp.Header.Get("Content-Type")
+	if !strings.HasPrefix(ct, "image/") {
+		return ""
+	}
+
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 512*1024))
+	if err != nil || len(data) == 0 {
+		return ""
+	}
+
+	return fmt.Sprintf("data:%s;base64,%s", ct, base64.StdEncoding.EncodeToString(data))
+}
+
 func fetchImageAsDataURI(client *http.Client, imgURL string) string {
 	req, err := http.NewRequest("GET", imgURL, nil)
 	if err != nil {
@@ -124,14 +150,19 @@ func fetchImageAsDataURI(client *http.Client, imgURL string) string {
 
 	ct := resp.Header.Get("Content-Type")
 	if !strings.HasPrefix(ct, "image/") {
-		// Try to detect from URL
-		if strings.HasSuffix(imgURL, ".svg") {
+		// Try to detect from URL path (strip query params)
+		path := imgURL
+		if i := strings.Index(path, "?"); i != -1 {
+			path = path[:i]
+		}
+		switch {
+		case strings.HasSuffix(path, ".svg"):
 			ct = "image/svg+xml"
-		} else if strings.HasSuffix(imgURL, ".png") {
+		case strings.HasSuffix(path, ".png"):
 			ct = "image/png"
-		} else if strings.HasSuffix(imgURL, ".ico") {
+		case strings.HasSuffix(path, ".ico"):
 			ct = "image/x-icon"
-		} else {
+		default:
 			return ""
 		}
 	}
