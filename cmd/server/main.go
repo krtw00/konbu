@@ -98,9 +98,12 @@ func main() {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
-	// Static files (unauthenticated)
+	// Static files (unauthenticated, immutable hashed assets)
 	staticDir := http.Dir("web/static")
-	r.Handle("/assets/*", http.FileServer(staticDir))
+	r.Handle("/assets/*", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "public, max-age=31536000, immutable")
+		http.FileServer(staticDir).ServeHTTP(w, r)
+	}))
 	r.Get("/favicon.svg", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "web/static/favicon.svg")
 	})

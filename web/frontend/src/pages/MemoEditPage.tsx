@@ -6,6 +6,13 @@ import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import Editor from '@monaco-editor/react'
 import type * as Monaco from 'monaco-editor'
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
+
+if (!window.MonacoEnvironment) {
+  window.MonacoEnvironment = {
+    getWorker: () => new editorWorker(),
+  }
+}
 import { renderMarkdown } from '@/lib/markdown'
 import { registerMarkdownFeatures } from '@/lib/monaco-markdown'
 import { ArrowLeft, Tag, Trash2, Eye, EyeOff, Bold, Italic, Strikethrough, Code, Link, List, ListOrdered, CheckSquare, Heading1, Heading2, Heading3, Quote, Minus, Table, ImageIcon } from 'lucide-react'
