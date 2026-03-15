@@ -36,18 +36,20 @@ export const useAppStore = create<AppState>((set) => ({
   clearUser: () => set({ user: null, isAuthenticated: false }),
   checkAuth: async () => {
     try {
-      const setup = await api.setupStatus()
+      const [setup, providers, me] = await Promise.all([
+        api.setupStatus(),
+        api.providers().catch(() => ({ data: { google: false } })),
+        api.getMe().catch(() => null),
+      ])
       if (setup.data.needs_setup) {
-        set({ needsSetup: true, isLoading: false })
+        set({ needsSetup: true, isLoading: false, openRegistration: setup.data.open_registration, googleAuth: providers.data.google })
         return
       }
-      set({ openRegistration: setup.data.open_registration })
-      try {
-        const providers = await api.providers()
-        set({ googleAuth: providers.data.google })
-      } catch { /* ignore */ }
-      const me = await api.getMe()
-      set({ user: me.data, isAuthenticated: true, isLoading: false, needsSetup: false })
+      if (me) {
+        set({ user: me.data, isAuthenticated: true, isLoading: false, needsSetup: false, openRegistration: setup.data.open_registration, googleAuth: providers.data.google })
+      } else {
+        set({ user: null, isAuthenticated: false, isLoading: false, openRegistration: setup.data.open_registration, googleAuth: providers.data.google })
+      }
     } catch {
       set({ user: null, isAuthenticated: false, isLoading: false })
     }
