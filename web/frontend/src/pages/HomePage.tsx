@@ -1,11 +1,12 @@
-import { useEffect, useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { useCache } from '@/hooks/useCache'
 import { relativeTime, formatTime, dueFmt } from '@/lib/date'
 import { useAppStore } from '@/stores/app'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { GripVertical } from 'lucide-react'
-import type { Memo, Todo, CalendarEvent } from '@/types/api'
+import type { Todo, CalendarEvent } from '@/types/api'
 
 interface HomePageProps {
   onEditMemo: (id: string) => void
@@ -15,41 +16,28 @@ const DEFAULT_ORDER = ['schedule', 'todos', 'memos']
 
 export function HomePage({ onEditMemo }: HomePageProps) {
   const { t, i18n } = useTranslation()
-  const [events, setEvents] = useState<CalendarEvent[]>([])
-  const [todos, setTodos] = useState<Todo[]>([])
-  const [memos, setMemos] = useState<Memo[]>([])
-  const [widgetOrder, setWidgetOrder] = useState<string[]>(DEFAULT_ORDER)
+  const fetchHome = () => Promise.all([
+    api.listEvents(10),
+    api.listTodos(100),
+    api.listMemos(6),
+    api.getSettings().catch(() => null),
+  ]).then(([evR, tdR, mmR, sR]) => {
+    const today = new Date().toDateString()
+    return {
+      events: (evR.data || []).filter((e: CalendarEvent) => new Date(e.start_at).toDateString() === today),
+      todos: (tdR.data || []).filter((t: Todo) => t.status === 'open'),
+      memos: mmR.data || [],
+      widgetOrder: sR?.data?.widget_order || DEFAULT_ORDER,
+    }
+  })
+  const { data: homeData, refresh: loadHome } = useCache('home', fetchHome, 15000)
+  const events = homeData?.events || []
+  const todos = homeData?.todos || []
+  const memos = homeData?.memos || []
+  const [widgetOrder, setWidgetOrder] = useState<string[]>(homeData?.widgetOrder || DEFAULT_ORDER)
   const setPage = useAppStore((s) => s.setPage)
   const dragItem = useRef<number | null>(null)
   const dragOver = useRef<number | null>(null)
-
-  useEffect(() => {
-    loadHome()
-    loadSettings()
-  }, [])
-
-  async function loadHome() {
-    const [evR, tdR, mmR] = await Promise.all([
-      api.listEvents(10),
-      api.listTodos(100),
-      api.listMemos(6),
-    ])
-    const today = new Date().toDateString()
-    setEvents((evR.data || []).filter((e) => new Date(e.start_at).toDateString() === today))
-    setTodos((tdR.data || []).filter((t) => t.status === 'open'))
-    setMemos(mmR.data || [])
-  }
-
-  async function loadSettings() {
-    try {
-      const r = await api.getSettings()
-      if (r.data?.widget_order?.length) {
-        setWidgetOrder(r.data.widget_order)
-      }
-    } catch {
-      // ignore
-    }
-  }
 
   function handleDragStart(idx: number) {
     dragItem.current = idx

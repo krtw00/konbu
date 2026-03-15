@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { useCache } from '@/hooks/useCache'
 import { dateKey, formatTime } from '@/lib/date'
 import { getHolidays } from '@/lib/holidays'
 import { Button } from '@/components/ui/button'
@@ -25,23 +26,18 @@ export function CalendarPage() {
   const { t, i18n } = useTranslation()
   const [year, setYear] = useState(() => new Date().getFullYear())
   const [month, setMonth] = useState(() => new Date().getMonth())
-  const [events, setEvents] = useState<CalendarEvent[]>([])
+  const fetchCalendar = () => Promise.all([api.listEvents(100), api.getSettings().catch(() => null)]).then(([r, sRes]) => ({
+    events: r.data || [] as CalendarEvent[],
+    firstDay: sRes?.data?.first_day_of_week ?? 0,
+  }))
+  const { data: calData, refresh: load } = useCache('calendar', fetchCalendar)
+  const events = calData?.events || []
   const [selectedDay, setSelectedDay] = useState<[number, number, number] | null>(null)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [newRecurrence, setNewRecurrence] = useState('')
-  const [firstDayOfWeek, setFirstDayOfWeek] = useState(0)
+  const [firstDayOfWeek] = useState(calData?.firstDay ?? 0)
 
   const holidays = useMemo(() => getHolidays(year), [year])
-
-  const load = useCallback(async () => {
-    const [r, sRes] = await Promise.all([api.listEvents(100), api.getSettings().catch(() => null)])
-    setEvents(r.data || [])
-    if (sRes?.data?.first_day_of_week !== undefined) {
-      setFirstDayOfWeek(sRes.data.first_day_of_week)
-    }
-  }, [])
-
-  useEffect(() => { load() }, [load])
 
   // Expand recurring events for the visible month
   const expandedEvents = useMemo(() => {
