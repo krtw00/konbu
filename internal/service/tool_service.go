@@ -119,6 +119,7 @@ func (s *ToolService) RefreshEmptyIcons(ctx context.Context) (int, error) {
 	for _, r := range rows {
 		icon := FetchFavicon(r.URL)
 		if icon == "" {
+			log.Printf("icon refresh: failed to fetch favicon for %s", r.URL)
 			continue
 		}
 		s.queries.UpdateTool(ctx, r.ID, r.UserID, r.Name, r.URL, icon, r.Category, r.SortOrder)
