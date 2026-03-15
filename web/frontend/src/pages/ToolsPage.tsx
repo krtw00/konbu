@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { useCache } from '@/hooks/useCache'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
@@ -16,7 +17,9 @@ interface HealthResult {
 
 export function ToolsPage() {
   const { t } = useTranslation()
-  const [tools, setTools] = useState<Tool[]>([])
+  const fetchTools = () => api.listTools().then(r => r.data || [] as Tool[])
+  const { data: tools_, refresh: load } = useCache('tools', fetchTools)
+  const tools = tools_ || []
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTool, setEditingTool] = useState<Tool | null>(null)
   const [formName, setFormName] = useState('')
@@ -25,13 +28,6 @@ export function ToolsPage() {
   const [formCategory, setFormCategory] = useState('')
   const [healthMap, setHealthMap] = useState<Map<string, HealthResult>>(new Map())
   const [healthLoading, setHealthLoading] = useState(false)
-
-  const load = useCallback(async () => {
-    const r = await api.listTools()
-    setTools(r.data || [])
-  }, [])
-
-  useEffect(() => { load() }, [load])
 
   function openCreateDialog() {
     setEditingTool(null)

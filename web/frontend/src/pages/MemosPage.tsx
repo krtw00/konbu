@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { useCache } from '@/hooks/useCache'
 import { relativeTime } from '@/lib/date'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,19 +15,13 @@ interface MemosPageProps {
 
 export function MemosPage({ onEditMemo }: MemosPageProps) {
   const { t } = useTranslation()
-  const [memos, setMemos] = useState<Memo[]>([])
-  const [, setAllTags] = useState<string[]>([])
+  const fetchMemos = () => Promise.all([api.listMemos(), api.listTags()]).then(([r, t]) => ({
+    memos: r.data || [] as Memo[],
+    tags: (t.data || []).map((tag: Tag) => tag.name),
+  }))
+  const { data: memosData, refresh: loadMemos } = useCache('memos', fetchMemos)
+  const memos = memosData?.memos || []
   const [tagFilter, setTagFilter] = useState<string | null>(null)
-
-  const loadMemos = useCallback(async () => {
-    const [r, t] = await Promise.all([api.listMemos(), api.listTags()])
-    setMemos(r.data || [])
-    setAllTags((t.data || []).map((tag: Tag) => tag.name))
-  }, [])
-
-  useEffect(() => {
-    loadMemos()
-  }, [loadMemos])
 
   const filtered = tagFilter
     ? memos.filter((m) => m.tags?.some((t) => t.name === tagFilter))

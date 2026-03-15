@@ -1,6 +1,7 @@
-import { useEffect, useState, useCallback, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { useCache } from '@/hooks/useCache'
 import { dueFmt, dateDelta, nextMonday } from '@/lib/date'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,20 +13,16 @@ import type { Todo, Tag } from '@/types/api'
 
 export function TodosPage() {
   const { t } = useTranslation()
-  const [todos, setTodos] = useState<Todo[]>([])
+  const fetchTodos = () => Promise.all([api.listTodos(), api.listTags()]).then(([r, tRes]) => ({
+    todos: r.data || [] as Todo[],
+    tags: (tRes.data || []).map((tag: Tag) => tag.name),
+  }))
+  const { data: todosData, refresh: load } = useCache('todos', fetchTodos)
+  const todos = todosData?.todos || []
   const [filter, setFilter] = useState<'open' | 'done' | 'all'>('open')
-  const [, setAllTags] = useState<string[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
-
-  const load = useCallback(async () => {
-    const [r, tRes] = await Promise.all([api.listTodos(), api.listTags()])
-    setTodos(r.data || [])
-    setAllTags((tRes.data || []).map((tag: Tag) => tag.name))
-  }, [])
-
-  useEffect(() => { load() }, [load])
 
   const filtered = filter === 'all'
     ? todos
