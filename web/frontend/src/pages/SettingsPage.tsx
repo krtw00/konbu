@@ -48,7 +48,7 @@ function ProfileTab() {
           </span>
           {user?.plan !== 'sponsor' && (
             <a
-              href="https://github.com/sponsors/krtw00"
+              href="https://ko-fi.com/codenica000"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
@@ -242,7 +242,7 @@ function SecurityTab() {
             <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
               <p>{t('settings.apiKeysSponsorOnly')}</p>
               <a
-                href="https://github.com/sponsors/krtw00"
+                href="https://ko-fi.com/codenica000"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 mt-2 text-primary hover:underline"
