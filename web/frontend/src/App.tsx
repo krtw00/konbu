@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, lazy, Suspense } from 'react'
 import { useAppStore } from '@/stores/app'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileHeader } from '@/components/layout/MobileHeader'
@@ -6,13 +6,14 @@ import { CommandPalette } from '@/components/CommandPalette'
 import { ChatPanel } from '@/components/ChatPanel'
 import { HomePage } from '@/pages/HomePage'
 import { MemosPage } from '@/pages/MemosPage'
-import { MemoEditPage } from '@/pages/MemoEditPage'
 import { TodosPage } from '@/pages/TodosPage'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { ToolsPage } from '@/pages/ToolsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { SetupPage } from '@/pages/SetupPage'
+
+const MemoEditPage = lazy(() => import('@/pages/MemoEditPage').then(m => ({ default: m.MemoEditPage })))
 
 function App() {
   const { currentPage, setPage, isAuthenticated, isLoading, needsSetup, checkAuth } = useAppStore()
@@ -60,7 +61,9 @@ function App() {
         <MobileHeader />
         {currentPage === 'memo-edit' && editingMemoId ? (
           <main className="flex-1 overflow-hidden">
-            <MemoEditPage memoId={editingMemoId} onClose={handleCloseMemoEdit} />
+            <Suspense fallback={<div className="flex-1" />}>
+              <MemoEditPage memoId={editingMemoId} onClose={handleCloseMemoEdit} />
+            </Suspense>
           </main>
         ) : (
           <main className="flex-1 overflow-auto">
