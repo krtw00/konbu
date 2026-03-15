@@ -128,19 +128,24 @@ func (s *ToolService) RefreshEmptyIcons(ctx context.Context) (int, error) {
 
 func (s *ToolService) StartIconRefreshLoop(interval time.Duration) {
 	go func() {
+		s.runIconRefresh()
 		ticker := time.NewTicker(interval)
 		defer ticker.Stop()
 		for range ticker.C {
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
-			count, err := s.RefreshEmptyIcons(ctx)
-			if err != nil {
-				log.Printf("icon refresh error: %v", err)
-			} else if count > 0 {
-				log.Printf("icon refresh: updated %d tools", count)
-			}
-			cancel()
+			s.runIconRefresh()
 		}
 	}()
+}
+
+func (s *ToolService) runIconRefresh() {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	count, err := s.RefreshEmptyIcons(ctx)
+	if err != nil {
+		log.Printf("icon refresh error: %v", err)
+	} else if count > 0 {
+		log.Printf("icon refresh: updated %d tools", count)
+	}
 }
 
 func (s *ToolService) DeleteTool(ctx context.Context, id, userID uuid.UUID) error {
