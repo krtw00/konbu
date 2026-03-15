@@ -114,6 +114,7 @@ func (s *ToolService) RefreshEmptyIcons(ctx context.Context) (int, error) {
 	if err != nil {
 		return 0, err
 	}
+	log.Printf("icon refresh: found %d tools with empty icon", len(rows))
 	count := 0
 	for _, r := range rows {
 		icon := FetchFavicon(r.URL)
@@ -143,7 +144,7 @@ func (s *ToolService) runIconRefresh() {
 	count, err := s.RefreshEmptyIcons(ctx)
 	if err != nil {
 		log.Printf("icon refresh error: %v", err)
-	} else if count > 0 {
+	} else {
 		log.Printf("icon refresh: updated %d tools", count)
 	}
 }
