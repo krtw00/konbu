@@ -16,6 +16,11 @@ type Config struct {
 	GoogleSecret     string
 	BaseURL          string
 	AIEncryptionKey  string
+	R2AccessKeyID    string
+	R2SecretAccessKey string
+	R2Endpoint       string
+	R2Bucket         string
+	R2PublicURL      string
 }
 
 func Load() *Config {
@@ -32,6 +37,15 @@ func Load() *Config {
 		}
 	}
 
+	r2Endpoint := os.Getenv("R2_ENDPOINT")
+	if r2Endpoint == "" {
+		r2Endpoint = "https://7a4bdd42ddce5841858a7d6fe6119430.r2.cloudflarestorage.com"
+	}
+	r2Bucket := os.Getenv("R2_BUCKET")
+	if r2Bucket == "" {
+		r2Bucket = "konbu-attachments"
+	}
+
 	return &Config{
 		DatabaseURL:      os.Getenv("DATABASE_URL"),
 		Port:             port,
@@ -43,5 +57,10 @@ func Load() *Config {
 		GoogleSecret:     os.Getenv("GOOGLE_CLIENT_SECRET"),
 		BaseURL:          os.Getenv("BASE_URL"),
 		AIEncryptionKey:  os.Getenv("AI_ENCRYPTION_KEY"),
+		R2AccessKeyID:    os.Getenv("R2_ACCESS_KEY_ID"),
+		R2SecretAccessKey: os.Getenv("R2_SECRET_ACCESS_KEY"),
+		R2Endpoint:       r2Endpoint,
+		R2Bucket:         r2Bucket,
+		R2PublicURL:      os.Getenv("R2_PUBLIC_URL"),
 	}
 }

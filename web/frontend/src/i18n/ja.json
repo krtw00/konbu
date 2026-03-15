@@ -180,6 +180,13 @@
     "aiKeySaved": "キーが保存されました",
     "aiKeyPlaceholder": "sk-... または sk-ant-..."
   },
+  "attachment": {
+    "upload": "画像をアップロード",
+    "uploading": "アップロード中…",
+    "tooLarge": "ファイルサイズが大きすぎます（上限5MB）",
+    "error": "アップロードに失敗しました",
+    "sponsorRequired": "画像添付はスポンサープランが必要です"
+  },
   "chat": {
     "title": "AI チャット",
     "sessions": "履歴",
