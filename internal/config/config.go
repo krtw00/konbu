@@ -21,6 +21,7 @@ type Config struct {
 	R2Endpoint       string
 	R2Bucket         string
 	R2PublicURL      string
+	KofiToken        string
 }
 
 func Load() *Config {
@@ -62,5 +63,6 @@ func Load() *Config {
 		R2Endpoint:       r2Endpoint,
 		R2Bucket:         r2Bucket,
 		R2PublicURL:      os.Getenv("R2_PUBLIC_URL"),
+		KofiToken:        os.Getenv("KOFI_TOKEN"),
 	}
 }

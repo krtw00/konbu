@@ -91,8 +91,9 @@ func main() {
 	r.Use(middleware.Logging)
 
 	// Webhooks (unauthenticated, signature-verified)
-	webhookH := handler.NewWebhookHandler(authSvc, cfg.WebhookSecret)
+	webhookH := handler.NewWebhookHandler(authSvc, cfg.WebhookSecret, cfg.KofiToken)
 	r.Post("/webhooks/github-sponsors", webhookH.HandleGitHubSponsors)
+	r.Post("/webhooks/kofi", webhookH.HandleKofi)
 
 	// Health check (unauthenticated)
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
