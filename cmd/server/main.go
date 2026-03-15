@@ -51,6 +51,7 @@ func main() {
 	}
 
 	// Services
+	r2Svc := service.NewR2Service(cfg)
 	authSvc := service.NewAuthService(db, cfg)
 	tagSvc := service.NewTagService(db)
 	toolSvc := service.NewToolService(db)
@@ -77,6 +78,7 @@ func main() {
 	exportH := handler.NewExportHandler(exportSvc)
 	importH := handler.NewImportHandler(eventSvc)
 	chatH := handler.NewChatHandler(chatSvc)
+	attachH := handler.NewAttachmentHandler(r2Svc)
 
 	// Rate limiters
 	apiLimiter := middleware.NewRateLimiter(100, time.Minute)
@@ -97,6 +99,9 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok"}`))
 	})
+
+	// Attachment serving (unauthenticated, for Markdown image display)
+	r.Get("/api/v1/attachments/*", attachH.Serve)
 
 	// Static files (unauthenticated, immutable hashed assets)
 	staticDir := http.Dir("web/static")
@@ -159,6 +164,7 @@ func main() {
 			r.Mount("/export", exportH.Routes())
 			r.Mount("/import", importH.Routes())
 			r.Mount("/chat", chatH.Routes())
+			r.Mount("/attachments", attachH.UploadRoutes())
 		})
 	})
 

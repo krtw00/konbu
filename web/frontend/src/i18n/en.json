@@ -180,6 +180,13 @@
     "aiKeySaved": "Key saved",
     "aiKeyPlaceholder": "sk-... or sk-ant-..."
   },
+  "attachment": {
+    "upload": "Upload image",
+    "uploading": "Uploading…",
+    "tooLarge": "File too large (max 5MB)",
+    "error": "Upload failed",
+    "sponsorRequired": "Image attachments require a Sponsor plan"
+  },
   "chat": {
     "title": "AI Chat",
     "sessions": "History",

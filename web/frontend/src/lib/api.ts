@@ -92,4 +92,14 @@ export const api = {
   deleteChatSession: (id: string) => request<null>('DELETE', `/chat/sessions/${id}`),
   getChatConfig: () => request<{ data: import('@/types/api').AIChatConfig }>('GET', '/chat/config'),
   updateChatConfig: (body: import('@/types/api').AIChatConfig) => request<{ data: import('@/types/api').AIChatConfig }>('PUT', '/chat/config', body),
+
+  // Attachments
+  uploadAttachment: async (file: File): Promise<{ data: { url: string } }> => {
+    const form = new FormData()
+    form.append('file', file)
+    const res = await fetch(BASE + '/attachments', { method: 'POST', body: form })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error?.message || 'Upload failed')
+    return data
+  },
 }

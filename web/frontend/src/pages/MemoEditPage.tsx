@@ -90,6 +90,28 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
     onClose()
   }
 
+  const [uploading, setUploading] = useState(false)
+
+  async function handleImageUpload(file: File) {
+    if (!file.type.startsWith('image/')) return
+    if (file.size > 5 * 1024 * 1024) {
+      setStatus(t('attachment.tooLarge'))
+      return
+    }
+    setUploading(true)
+    setStatus(t('attachment.uploading'))
+    try {
+      const res = await api.uploadAttachment(file)
+      insertText(`![${file.name}](${res.data.url})`)
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : t('attachment.error')
+      setStatus(msg)
+    } finally {
+      setUploading(false)
+      setTimeout(() => setStatus(''), 3000)
+    }
+  }
+
   function insertText(text: string) {
     const ed = editorRef.current
     if (!ed) return
@@ -224,7 +246,13 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Blockquote" onClick={() => insertLinePrefix('> ')}><Quote size={13} /></Button>
         <div className="w-px h-4 bg-border mx-0.5" />
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Link" onClick={() => insertText('[text](url)')}><Link size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Image" onClick={() => insertText('![alt](url)')}><ImageIcon size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title={t('attachment.upload')} onClick={() => {
+          const input = document.createElement('input')
+          input.type = 'file'
+          input.accept = 'image/*'
+          input.onchange = () => { if (input.files?.[0]) handleImageUpload(input.files[0]) }
+          input.click()
+        }} disabled={uploading}><ImageIcon size={13} /></Button>
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Table" onClick={() => insertText('| Header | Header |\n| --- | --- |\n| Cell | Cell |')}><Table size={13} /></Button>
         <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Horizontal rule" onClick={() => insertText('\n---\n')}><Minus size={13} /></Button>
         <div className="flex-1" />
@@ -250,6 +278,32 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
             onMount={(editor: Monaco.editor.IStandaloneCodeEditor, monaco: typeof Monaco) => {
               editorRef.current = editor
               registerMarkdownFeatures(monaco, editor)
+
+              const domNode = editor.getDomNode()
+              if (domNode) {
+                domNode.addEventListener('dragover', (e) => { e.preventDefault() })
+                domNode.addEventListener('drop', (e) => {
+                  e.preventDefault()
+                  const files = e.dataTransfer?.files
+                  if (files?.length) {
+                    for (const f of Array.from(files)) {
+                      if (f.type.startsWith('image/')) handleImageUpload(f)
+                    }
+                  }
+                })
+                domNode.addEventListener('paste', (e) => {
+                  const items = e.clipboardData?.items
+                  if (!items) return
+                  for (const item of Array.from(items)) {
+                    if (item.type.startsWith('image/')) {
+                      e.preventDefault()
+                      const file = item.getAsFile()
+                      if (file) handleImageUpload(file)
+                      break
+                    }
+                  }
+                })
+              }
             }}
             options={{
               minimap: { enabled: true, scale: 1 },
