@@ -78,6 +78,10 @@ func main() {
 	importH := handler.NewImportHandler(eventSvc)
 	chatH := handler.NewChatHandler(chatSvc)
 
+	// Rate limiters
+	apiLimiter := middleware.NewRateLimiter(100, time.Minute)
+	authLimiter := middleware.NewRateLimiter(10, time.Minute)
+
 	// Router
 	r := chi.NewRouter()
 	r.Use(chimw.Recoverer)
@@ -110,6 +114,7 @@ func main() {
 
 	// Auth public endpoints (no session required)
 	r.Route("/api/v1/auth", func(r chi.Router) {
+		r.Use(authLimiter.Middleware)
 		r.Post("/register", authH.HandleRegister)
 		r.Post("/login", authH.HandleLogin)
 		r.Post("/logout", authH.HandleLogout)
@@ -139,6 +144,7 @@ func main() {
 
 		r.Route("/api/v1", func(r chi.Router) {
 			r.Use(middleware.Auth(authSvc, cfg))
+			r.Use(apiLimiter.Middleware)
 
 			r.Mount("/api-keys", apiKeyH.Routes())
 			r.Mount("/tags", tagH.Routes())
