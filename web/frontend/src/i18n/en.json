@@ -196,5 +196,11 @@
     "inputPlaceholder": "Type a message…",
     "sponsorRequired": "AI Chat requires a Sponsor plan",
     "noApiKey": "Set up your LLM API key in Settings"
+  },
+  "upgrade": {
+    "chat": "AI Chat is a Supporter-only feature",
+    "attachment": "Image attachments are a Supporter-only feature",
+    "apiKey": "API Keys are a Supporter-only feature",
+    "cta": "Become a Supporter"
   }
 }

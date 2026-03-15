@@ -5,6 +5,7 @@ import { useAppStore } from '@/stores/app'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { MessageCircle, X, Send, Plus, Trash2, Loader2 } from 'lucide-react'
+import { UpgradePrompt } from '@/components/UpgradePrompt'
 
 export function ChatPanel() {
   const { t } = useTranslation()
@@ -104,9 +105,7 @@ export function ChatPanel() {
           {/* Messages area */}
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             {!isSponsor ? (
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground">{t('chat.sponsorRequired')}</p>
-              </div>
+              <UpgradePrompt feature="chat" />
             ) : messages.length === 0 && !isStreaming ? (
               <div className="text-center py-8">
                 <MessageCircle size={32} className="mx-auto mb-2 text-muted-foreground" />
