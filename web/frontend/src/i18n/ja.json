@@ -196,5 +196,11 @@
     "inputPlaceholder": "メッセージを入力…",
     "sponsorRequired": "AI チャットは Sponsor プランが必要です",
     "noApiKey": "設定画面で LLM の API キーを設定してください"
+  },
+  "upgrade": {
+    "chat": "AI チャットはサポーター限定機能です",
+    "attachment": "画像添付はサポーター限定機能です",
+    "apiKey": "API キーはサポーター限定機能です",
+    "cta": "サポーターになる"
   }
 }
