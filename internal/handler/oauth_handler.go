@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -101,7 +102,7 @@ func (h *OAuthHandler) HandleGoogleCallback(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	user, err := h.authSvc.GetOrCreateUser(r.Context(), userInfo.Email)
+	user, err := h.authSvc.GetOrCreateUser(r.Context(), strings.ToLower(userInfo.Email))
 	if err != nil {
 		http.Error(w, "failed to create user", http.StatusInternalServerError)
 		return
