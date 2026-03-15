@@ -36,6 +36,10 @@ export function useCache<T>(key: string, fetcher: () => Promise<T>, maxAge = 300
   return { data, loading, refresh }
 }
 
+export function prefetchCache<T>(key: string, fetcher: () => Promise<T>) {
+  fetcher().then(data => cache.set(key, { data, ts: Date.now() })).catch(() => {})
+}
+
 export function invalidateCache(prefix?: string) {
   if (prefix) {
     for (const key of cache.keys()) {
