@@ -15,6 +15,7 @@ import (
 	"github.com/krtw00/konbu/internal/config"
 	"github.com/krtw00/konbu/internal/handler"
 	"github.com/krtw00/konbu/internal/middleware"
+	"github.com/krtw00/konbu/internal/migrate"
 	"github.com/krtw00/konbu/internal/service"
 )
 
@@ -38,6 +39,15 @@ func main() {
 
 	if err := db.Ping(); err != nil {
 		log.Fatalf("failed to ping database: %v", err)
+	}
+
+	// Auto-migrate
+	migrationsDir := "sql/migrations"
+	if _, err := os.Stat("/migrations"); err == nil {
+		migrationsDir = "/migrations"
+	}
+	if err := migrate.Run(db, migrationsDir); err != nil {
+		log.Fatalf("migration failed: %v", err)
 	}
 
 	// Services
