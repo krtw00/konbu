@@ -80,8 +80,6 @@
     "newTool": "ツールを追加",
     "name": "名前",
     "url": "URL",
-    "icon": "アイコン",
-    "iconPlaceholder": "絵文字または文字",
     "confirmDelete": "「{{name}}」を削除しますか？",
     "editTool": "ツールを編集",
     "category": "カテゴリ",

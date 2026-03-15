@@ -45,9 +45,9 @@ export const api = {
 
   // Tools
   listTools: () => request<{ data: import('@/types/api').Tool[] }>('GET', '/tools'),
-  createTool: (body: { name: string; url: string; icon: string; category?: string }) =>
+  createTool: (body: { name: string; url: string; category?: string }) =>
     request<{ data: import('@/types/api').Tool }>('POST', '/tools', body),
-  updateTool: (id: string, body: { name: string; url: string; icon: string; category?: string }) =>
+  updateTool: (id: string, body: { name: string; url: string; category?: string }) =>
     request<{ data: import('@/types/api').Tool }>('PUT', `/tools/${id}`, body),
   deleteTool: (id: string) => request<null>('DELETE', `/tools/${id}`),
   healthCheckTools: () => request<{ data: { id: string; url: string; alive: boolean; status: number }[] }>('POST', '/tools/health-check'),

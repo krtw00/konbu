@@ -177,14 +177,12 @@ type Tool struct {
 type CreateToolRequest struct {
 	Name     string `json:"name"`
 	URL      string `json:"url"`
-	Icon     string `json:"icon"`
 	Category string `json:"category"`
 }
 
 type UpdateToolRequest struct {
 	Name     string `json:"name"`
 	URL      string `json:"url"`
-	Icon     string `json:"icon"`
 	Category string `json:"category"`
 }
 
