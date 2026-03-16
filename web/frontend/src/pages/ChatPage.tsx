@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next'
 import { useChatStore } from '@/stores/chat'
 import { useAppStore } from '@/stores/app'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Send, Plus, Trash2, Loader2, MessageCircle } from 'lucide-react'
 import { UpgradePrompt } from '@/components/UpgradePrompt'
 
@@ -96,7 +95,7 @@ export function ChatPage() {
             </div>
           ) : (
             <>
-              {messages.map(msg => (
+              {messages.filter(msg => msg.role === 'user' || (msg.role === 'assistant' && msg.content)).map(msg => (
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[70%] rounded-lg px-3 py-2 text-sm whitespace-pre-wrap ${
                     msg.role === 'user'
@@ -129,14 +128,17 @@ export function ChatPage() {
 
         {/* Input */}
         <div className="p-4 border-t border-border">
-          <div className="flex gap-2 max-w-3xl mx-auto">
-            <Input
+          <div className="flex gap-2 max-w-3xl mx-auto items-end">
+            <textarea
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder={t('chat.inputPlaceholder')}
               disabled={isStreaming}
-              className="flex-1"
+              rows={1}
+              className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              style={{ maxHeight: '120px', minHeight: '38px' }}
+              onInput={e => { const el = e.target as HTMLTextAreaElement; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px' }}
             />
             <Button onClick={handleSend} disabled={!input.trim() || isStreaming}>
               <Send size={16} />
