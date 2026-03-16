@@ -94,7 +94,7 @@ type SSEEvent struct {
 }
 
 func (s *ChatService) SendMessage(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID, content string, user *model.User) (<-chan SSEEvent, error) {
-	if user.Plan != "sponsor" && !user.IsAdmin {
+	if user.Plan != "sponsor" && !user.IsAdmin && s.cfg.DefaultAIAPIKey == "" {
 		return nil, apperror.Forbidden("AI chat requires a Sponsor plan")
 	}
 
@@ -284,21 +284,22 @@ func (s *ChatService) getAIKey(ctx context.Context, userID uuid.UUID) (string, s
 	}
 
 	aiKeys, _ := settings["ai_keys"].(map[string]interface{})
-	if aiKeys == nil {
-		return "", "", apperror.BadRequest("AI API key is not configured. Please set it in Settings.")
+	if aiKeys != nil {
+		encrypted, _ := aiKeys[provider].(string)
+		if encrypted != "" {
+			apiKey, err := Decrypt(encrypted, s.cfg.AIEncryptionKey)
+			if err == nil {
+				return provider, apiKey, nil
+			}
+		}
 	}
 
-	encrypted, _ := aiKeys[provider].(string)
-	if encrypted == "" {
-		return "", "", apperror.BadRequest(fmt.Sprintf("API key for %s is not configured", provider))
+	// Fallback to server default key
+	if s.cfg.DefaultAIAPIKey != "" {
+		return s.cfg.DefaultAIProvider, s.cfg.DefaultAIAPIKey, nil
 	}
 
-	apiKey, err := Decrypt(encrypted, s.cfg.AIEncryptionKey)
-	if err != nil {
-		return "", "", apperror.Internal(fmt.Errorf("decrypt API key: %w", err))
-	}
-
-	return provider, apiKey, nil
+	return "", "", apperror.BadRequest("AI API key is not configured. Please set it in Settings.")
 }
 
 func (s *ChatService) GetAIConfig(ctx context.Context, userID uuid.UUID) (*model.AIChatConfig, error) {

@@ -21,7 +21,16 @@ type Config struct {
 	R2Endpoint       string
 	R2Bucket         string
 	R2PublicURL      string
-	KofiToken        string
+	KofiToken          string
+	DefaultAIProvider  string
+	DefaultAIAPIKey    string
+}
+
+func getEnvDefault(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
 
 func Load() *Config {
@@ -62,7 +71,9 @@ func Load() *Config {
 		R2SecretAccessKey: os.Getenv("R2_SECRET_ACCESS_KEY"),
 		R2Endpoint:       r2Endpoint,
 		R2Bucket:         r2Bucket,
-		R2PublicURL:      os.Getenv("R2_PUBLIC_URL"),
-		KofiToken:        os.Getenv("KOFI_TOKEN"),
+		R2PublicURL:        os.Getenv("R2_PUBLIC_URL"),
+		KofiToken:          os.Getenv("KOFI_TOKEN"),
+		DefaultAIProvider:  getEnvDefault("DEFAULT_AI_PROVIDER", "openai"),
+		DefaultAIAPIKey:    os.Getenv("DEFAULT_AI_API_KEY"),
 	}
 }
