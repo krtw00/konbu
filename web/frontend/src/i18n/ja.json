@@ -170,12 +170,12 @@
     "planSponsor": "Sponsor",
     "sponsorCTA": "サポーターになる",
     "sponsorDescription": "サポーターになると API キー・CLI・AI チャットが使えるようになります。",
-    "sponsorActiveTitle": "サポーター特典（有効）",
-    "upgradeTitle": "サポーターになると使える機能",
-    "upgradeFeatureChat": "AI チャット — 自然言語でデータ操作",
-    "upgradeFeatureImage": "画像添付 — メモにドラッグ&ドロップで貼り付け",
-    "upgradeFeatureApi": "API / CLI / MCP — 外部ツールとの連携",
-    "upgradeEmailNote": "konbu に登録したメールアドレスと同じメールで支払うと自動で有効化されます。",
+    "sponsorActiveTitle": "サポーター特典が有効です",
+    "upgradeTitle": "もっと便利に使いませんか？",
+    "upgradeFeatureChat": "AI アシスタント — 「明日の予定を教えて」と話しかけるだけ",
+    "upgradeFeatureImage": "画像の貼り付け — 写真やスクリーンショットをメモに保存",
+    "upgradeFeatureApi": "他のアプリとの連携 — お気に入りのツールと繋げる",
+    "upgradeEmailNote": "konbu と同じメールアドレスでお支払いいただくと、すぐに使えるようになります。",
     "apiKeysSponsorOnly": "API キーはスポンサー向け機能です。プロジェクトをスポンサーすると CLI や AI 連携が使えるようになります。",
     "deleteAccount": "アカウント削除",
     "deleteAccountDescription": "アカウントと全データを完全に削除します。この操作は取り消せません。",
@@ -205,9 +205,9 @@
     "noApiKey": "設定画面で LLM の API キーを設定してください"
   },
   "upgrade": {
-    "chat": "AI チャットはサポーター限定機能です",
-    "attachment": "画像添付はサポーター限定機能です",
-    "apiKey": "API キーはサポーター限定機能です",
-    "cta": "サポーターになる"
+    "chat": "AI アシスタントはサポーター向けの機能です。設定画面からサポーターになれます。",
+    "attachment": "画像の貼り付けはサポーター向けの機能です。設定画面からサポーターになれます。",
+    "apiKey": "アプリ連携はサポーター向けの機能です。設定画面からサポーターになれます。",
+    "cta": "くわしく見る"
   }
 }

@@ -170,12 +170,12 @@
     "planSponsor": "Sponsor",
     "sponsorCTA": "Become a Supporter",
     "sponsorDescription": "Unlock API keys, CLI access, and AI chat by becoming a supporter.",
-    "sponsorActiveTitle": "Supporter features (active)",
-    "upgradeTitle": "Supporter features",
-    "upgradeFeatureChat": "AI Chat — manage your data with natural language",
-    "upgradeFeatureImage": "Image attachments — drag & drop images into memos",
-    "upgradeFeatureApi": "API / CLI / MCP — integrate with external tools",
-    "upgradeEmailNote": "Pay with the same email you registered with to activate automatically.",
+    "sponsorActiveTitle": "Your supporter features are active",
+    "upgradeTitle": "Unlock more features",
+    "upgradeFeatureChat": "AI Assistant — just ask \"What's on my schedule tomorrow?\"",
+    "upgradeFeatureImage": "Image attachments — save photos and screenshots to your memos",
+    "upgradeFeatureApi": "App integrations — connect with your favorite tools",
+    "upgradeEmailNote": "Use the same email as your konbu account to activate instantly.",
     "apiKeysSponsorOnly": "API keys are available for Sponsors. Sponsor the project to unlock CLI and AI integrations.",
     "deleteAccount": "Delete Account",
     "deleteAccountDescription": "Permanently delete your account and all data. This cannot be undone.",
@@ -205,9 +205,9 @@
     "noApiKey": "Set up your LLM API key in Settings"
   },
   "upgrade": {
-    "chat": "AI Chat is a Supporter-only feature",
-    "attachment": "Image attachments are a Supporter-only feature",
-    "apiKey": "API Keys are a Supporter-only feature",
-    "cta": "Become a Supporter"
+    "chat": "AI Assistant is available for supporters. You can become one in Settings.",
+    "attachment": "Image attachments are available for supporters. You can become one in Settings.",
+    "apiKey": "App integrations are available for supporters. You can become one in Settings.",
+    "cta": "Learn more"
   }
 }
