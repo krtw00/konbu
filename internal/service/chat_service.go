@@ -239,6 +239,7 @@ func (s *ChatService) buildLLMMessages(dbMessages []repository.ChatMessage) []LL
 	now := time.Now().Format("2006-01-02 15:04:05 MST")
 	systemPrompt := fmt.Sprintf(`あなたはkonbuのAIアシスタントです。ユーザーのメモ、ToDo、カレンダーの操作を手伝います。
 ツールを使ってデータの検索・作成・更新・削除ができます。
+web_searchツールでインターネット検索、web_fetchツールでWebページの内容取得ができます。
 ユーザーの意図を理解し、適切なツールを呼び出してください。
 ユーザーの言語に合わせて応答してください。
 現在の日時: %s`, now)
