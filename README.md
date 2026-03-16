@@ -4,7 +4,7 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">Personal workspace with AI chat — manage memos, todos, and calendar by just talking to it.</p>
+<p align="center">Manage memos, todos, calendar, and bookmarks<br>in one place — with AI and cross-search.</p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
@@ -22,14 +22,18 @@
 - **Cloud** -- Use instantly at [konbu-cloud.codenica.dev](https://konbu-cloud.codenica.dev) (free, no setup)
 - **Self-hosted** -- Run on your own server with Docker (see below)
 
+## Why konbu?
+
+Memos, tasks, calendar, and bookmarks are usually scattered across separate apps. Information gets fragmented, and "where did I write that?" becomes a daily frustration. konbu brings everything into one place with cross-search and AI chat.
+
 ## Features
 
+- **Cross-search** -- Full-text search across memos, todos, events, and bookmarks. No more "where was that?"
 - **AI Chat** -- "Add groceries to my todo" "What's my schedule tomorrow?" — manage everything with natural language (free tier included)
 - **Memos** -- Markdown notes with tagging, live preview
 - **ToDo** -- Inline task creation with due dates, tags, and notes
 - **Calendar** -- Monthly view with event CRUD and iCal import
-- **Tools** -- Bookmark launcher with categories and drag-and-drop reordering
-- **Cross-search** -- Full-text search across all data
+- **Bookmarks** -- Site management with categories and drag-and-drop reordering
 - **CLI & MCP** -- Full-featured CLI client and MCP server for AI agent integration
 - **Export/Import** -- JSON export, Markdown ZIP export, iCal import
 - **i18n** -- English and Japanese
@@ -210,6 +214,13 @@ web/frontend/   # React + Vite SPA
 sql/            # Schema and migrations
 docker/         # Dockerfile
 ```
+
+## Roadmap
+
+- Reminder notifications (email, browser)
+- Mobile UI improvements
+- CI test coverage
+- AI chat enhancements (context improvements, new model support)
 
 ## Sponsors
 
