@@ -158,6 +158,14 @@ export const useChatStore = create<ChatState>((set, get) => ({
         streamingContent: '',
         toolStatus: null,
       }))
+      // Reload messages from DB to get the full history including tool results
+      const sessionId2 = get().currentSessionId
+      if (sessionId2) {
+        try {
+          const r = await api.getChatSession(sessionId2)
+          set({ messages: r.data?.messages || [] })
+        } catch { /* ignore */ }
+      }
       await loadSessions()
     } catch {
       set({ isStreaming: false, streamingContent: '', toolStatus: null })
