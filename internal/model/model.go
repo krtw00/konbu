@@ -210,11 +210,29 @@ type ListParams struct {
 // --- Search ---
 
 type SearchResult struct {
-	Type      string    `json:"type"`
-	ID        uuid.UUID `json:"id"`
-	Title     string    `json:"title"`
-	Snippet   string    `json:"snippet"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Type       string    `json:"type"`
+	ID         uuid.UUID `json:"id"`
+	Title      string    `json:"title"`
+	Snippet    string    `json:"snippet"`
+	Tags       []string  `json:"tags"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	Similarity float64   `json:"similarity,omitempty"`
+}
+
+type SearchResponse struct {
+	Data        []SearchResult `json:"data"`
+	Total       int            `json:"total"`
+	Suggestions []SearchResult `json:"suggestions"`
+}
+
+type SearchParams struct {
+	Query  string
+	Types  []string
+	Tag    string
+	From   *time.Time
+	To     *time.Time
+	Limit  int
+	Offset int
 }
 
 // --- Chat ---

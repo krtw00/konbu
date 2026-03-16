@@ -45,11 +45,29 @@ export interface Tool {
 }
 
 export interface SearchResult {
-  type: 'memo' | 'todo' | 'event'
+  type: 'memo' | 'todo' | 'event' | 'tool'
   id: string
   title: string
   snippet: string
+  tags: string[]
   updated_at: string
+  similarity?: number
+}
+
+export interface SearchResponse {
+  data: SearchResult[]
+  total: number
+  suggestions: SearchResult[]
+}
+
+export interface SearchParams {
+  q: string
+  limit?: number
+  offset?: number
+  type?: string
+  tag?: string
+  from?: string
+  to?: string
 }
 
 export interface Tag {

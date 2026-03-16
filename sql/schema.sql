@@ -176,6 +176,8 @@ CREATE TABLE tools (
 );
 
 CREATE INDEX idx_tools_user_id ON tools(user_id, sort_order) WHERE deleted_at IS NULL;
+CREATE INDEX idx_tools_name_trgm ON tools USING gin (name gin_trgm_ops);
+CREATE INDEX idx_tools_url_trgm ON tools USING gin (url gin_trgm_ops);
 
 -- =============================================================================
 -- Chat Sessions & Messages

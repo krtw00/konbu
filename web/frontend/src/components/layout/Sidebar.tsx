@@ -8,6 +8,7 @@ const navItems = [
   { page: 'todos' as const, icon: CheckSquare, labelKey: 'nav.todo' },
   { page: 'calendar' as const, icon: Calendar, labelKey: 'nav.calendar' },
   { page: 'tools' as const, icon: Monitor, labelKey: 'nav.tools' },
+  { page: 'search' as const, icon: Search, labelKey: 'nav.search' },
   { page: 'chat' as const, icon: MessageCircle, labelKey: 'nav.chat' },
 ]
 

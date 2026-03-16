@@ -52,11 +52,12 @@ function prefetchHomeData() {
   })))
 }
 
-type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'chat' | 'settings'
+type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'chat' | 'settings' | 'search'
 
 interface AppState {
   currentPage: Page
   commandOpen: boolean
+  searchQuery: string
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
@@ -66,6 +67,7 @@ interface AppState {
   theme: Theme
   setPage: (page: Page) => void
   setCommandOpen: (open: boolean) => void
+  setSearchQuery: (q: string) => void
   setUser: (user: User) => void
   clearUser: () => void
   checkAuth: () => Promise<void>
@@ -76,6 +78,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   currentPage: 'home',
   commandOpen: false,
+  searchQuery: '',
   user: null,
   isAuthenticated: false,
   isLoading: true,
@@ -85,6 +88,7 @@ export const useAppStore = create<AppState>((set) => ({
   theme: initTheme(),
   setPage: (page) => set({ currentPage: page }),
   setCommandOpen: (open) => set({ commandOpen: open }),
+  setSearchQuery: (q) => set({ searchQuery: q }),
   setUser: (user) => set({ user, isAuthenticated: true }),
   clearUser: () => set({ user: null, isAuthenticated: false }),
   checkAuth: async () => {
