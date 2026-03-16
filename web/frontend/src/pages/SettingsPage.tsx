@@ -43,23 +43,27 @@ function ProfileTab() {
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium">{t('settings.plan')}</label>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-medium px-2 py-0.5 rounded bg-muted">
-            {user?.plan === 'sponsor' ? t('settings.planSponsor') : t('settings.planFree')}
+          <span className={`text-sm font-medium px-2 py-0.5 rounded ${user?.plan === 'sponsor' || user?.is_admin ? 'bg-primary/10 text-primary' : 'bg-muted'}`}>
+            {user?.plan === 'sponsor' || user?.is_admin ? t('settings.planSponsor') : t('settings.planFree')}
           </span>
-          {user?.plan !== 'sponsor' && !user?.is_admin && (
-            <a
-              href="https://ko-fi.com/codenica000"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
-            >
-              {t('settings.sponsorCTA')}
-              <ExternalLink size={14} />
-            </a>
-          )}
         </div>
         {user?.plan !== 'sponsor' && !user?.is_admin && (
-          <p className="text-xs text-muted-foreground">{t('settings.sponsorDescription')}</p>
+          <div className="mt-2 p-4 rounded-lg border border-border bg-card">
+            <h3 className="font-semibold text-sm mb-2">{t('settings.upgradeTitle')}</h3>
+            <ul className="text-sm text-muted-foreground space-y-1 mb-3">
+              <li>• {t('settings.upgradeFeatureChat')}</li>
+              <li>• {t('settings.upgradeFeatureImage')}</li>
+              <li>• {t('settings.upgradeFeatureApi')}</li>
+            </ul>
+            <p className="text-xs text-muted-foreground mb-3">{t('settings.upgradeEmailNote')}</p>
+            <iframe
+              id="kofiframe"
+              src="https://ko-fi.com/codenica000/?hidefeed=true&widget=true&embed=true"
+              className="w-full border-0 rounded-lg"
+              style={{ height: '712px' }}
+              title="Ko-fi"
+            />
+          </div>
         )}
       </div>
     </div>
