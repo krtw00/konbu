@@ -47,18 +47,25 @@ export function dueFmt(dueDate: string | null): { text: string; className: strin
   return { text: due.toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' }), className: '' }
 }
 
-/** Convert a datetime-local value ("YYYY-MM-DDTHH:mm") to ISO 8601 UTC string for API */
+const pad2 = (n: number) => String(n).padStart(2, '0')
+
+/** Convert a datetime-local value ("YYYY-MM-DDTHH:mm") to ISO 8601 with timezone offset for API */
 export function localToISO(local: string): string {
   if (!local) return ''
-  return new Date(local).toISOString()
+  const d = new Date(local)
+  const off = -d.getTimezoneOffset()
+  const sign = off >= 0 ? '+' : '-'
+  const absOff = Math.abs(off)
+  const oh = pad2(Math.floor(absOff / 60))
+  const om = pad2(absOff % 60)
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:00${sign}${oh}:${om}`
 }
 
-/** Convert an ISO 8601 UTC string to datetime-local value ("YYYY-MM-DDTHH:mm") */
+/** Convert an ISO 8601 string to datetime-local value ("YYYY-MM-DDTHH:mm") */
 export function isoToLocal(iso: string): string {
   if (!iso) return ''
   const d = new Date(iso)
-  const pad = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`
 }
 
 export function dateDelta(n: number): string {
