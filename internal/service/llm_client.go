@@ -47,20 +47,47 @@ type Usage struct {
 	OutputTokens int `json:"output_tokens"`
 }
 
-func NewLLMProvider(provider, apiKey string) LLMProvider {
+type LLMOptions struct {
+	Endpoint string
+	Model    string
+}
+
+func NewLLMProvider(provider, apiKey string, opts *LLMOptions) LLMProvider {
 	switch provider {
 	case "anthropic":
-		return &anthropicProvider{apiKey: apiKey, client: &http.Client{}}
+		endpoint := "https://api.anthropic.com/v1/messages"
+		model := "claude-sonnet-4-20250514"
+		if opts != nil {
+			if opts.Endpoint != "" {
+				endpoint = opts.Endpoint
+			}
+			if opts.Model != "" {
+				model = opts.Model
+			}
+		}
+		return &anthropicProvider{apiKey: apiKey, endpoint: endpoint, model: model, client: &http.Client{}}
 	default:
-		return &openaiProvider{apiKey: apiKey, client: &http.Client{}}
+		endpoint := "https://api.openai.com/v1/chat/completions"
+		model := "gpt-4o"
+		if opts != nil {
+			if opts.Endpoint != "" {
+				endpoint = opts.Endpoint
+			}
+			if opts.Model != "" {
+				model = opts.Model
+			}
+		}
+		return &openaiProvider{apiKey: apiKey, endpoint: endpoint, model: model, client: &http.Client{}}
 	}
 }
 
 // --- OpenAI ---
 
 type openaiProvider struct {
-	apiKey string
-	client *http.Client
+	apiKey   string
+	endpoint string
+	model    string
+	client   *http.Client
 }
 
 type openaiRequest struct {
@@ -139,7 +166,7 @@ func (p *openaiProvider) ChatStream(ctx context.Context, messages []LLMMessage, 
 	}
 
 	reqBody := openaiRequest{
-		Model:    "gpt-4o",
+		Model:    p.model,
 		Messages: oaiMessages,
 		Stream:   true,
 		Tools:    oaiTools,
@@ -151,7 +178,7 @@ func (p *openaiProvider) ChatStream(ctx context.Context, messages []LLMMessage, 
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.openai.com/v1/chat/completions", bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, p.endpoint, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
@@ -265,8 +292,10 @@ func (p *openaiProvider) parseSSE(resp *http.Response, ch chan<- StreamEvent) {
 // --- Anthropic ---
 
 type anthropicProvider struct {
-	apiKey string
-	client *http.Client
+	apiKey   string
+	endpoint string
+	model    string
+	client   *http.Client
 }
 
 type anthropicRequest struct {
@@ -353,7 +382,7 @@ func (p *anthropicProvider) ChatStream(ctx context.Context, messages []LLMMessag
 	}
 
 	reqBody := anthropicRequest{
-		Model:     "claude-sonnet-4-20250514",
+		Model:     p.model,
 		MaxTokens: 4096,
 		System:    systemPrompt,
 		Messages:  antMessages,
@@ -366,7 +395,7 @@ func (p *anthropicProvider) ChatStream(ctx context.Context, messages []LLMMessag
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://api.anthropic.com/v1/messages", bytes.NewReader(body))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, p.endpoint, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
