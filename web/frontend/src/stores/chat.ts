@@ -100,6 +100,8 @@ export const useChatStore = create<ChatState>((set, get) => ({
       const decoder = new TextDecoder()
       let buffer = ''
       let fullContent = ''
+      let currentEvent = ''
+      let errorOccurred = false
 
       while (true) {
         const { done, value } = await reader.read()
@@ -111,31 +113,38 @@ export const useChatStore = create<ChatState>((set, get) => ({
 
         for (const line of lines) {
           if (line.startsWith('event: ')) {
-            const eventType = line.slice(7).trim()
-            if (eventType === 'done') {
-              // handled below
-            }
+            currentEvent = line.slice(7).trim()
           } else if (line.startsWith('data: ')) {
             const data = line.slice(6)
             try {
               const parsed = JSON.parse(data)
-              if (parsed.content !== undefined) {
-                fullContent += parsed.content
-                set({ streamingContent: fullContent })
-              }
-              if (parsed.tool_name) {
-                set({ toolStatus: parsed.tool_name })
-              }
-              if (parsed.tool_result !== undefined) {
+
+              if (currentEvent === 'error') {
+                const errMsg: ChatMessage = {
+                  id: crypto.randomUUID(),
+                  role: 'assistant',
+                  content: parsed.message || 'Error',
+                  created_at: new Date().toISOString(),
+                }
+                set(s => ({ messages: [...s.messages, errMsg], isStreaming: false, streamingContent: '', toolStatus: null }))
+                errorOccurred = true
+              } else if (currentEvent === 'text_delta') {
+                if (parsed.content !== undefined) {
+                  fullContent += parsed.content
+                  set({ streamingContent: fullContent })
+                }
+              } else if (currentEvent === 'tool_call') {
+                if (parsed.tool_name) set({ toolStatus: parsed.tool_name })
+              } else if (currentEvent === 'tool_result') {
                 set({ toolStatus: null })
               }
-              if (parsed.done) {
-                // final
-              }
             } catch { /* not json, ignore */ }
+            currentEvent = ''
           }
         }
       }
+
+      if (errorOccurred) return
 
       const assistantMsg: ChatMessage = {
         id: crypto.randomUUID(),
