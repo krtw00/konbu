@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/google/uuid"
@@ -214,6 +217,28 @@ var KonbuTools = []ToolDefinition{
 			"required": []string{"id"},
 		},
 	},
+	{
+		Name:        "web_search",
+		Description: "インターネットでWeb検索する。最新情報の調査や質問への回答に使う",
+		Parameters: jsonSchema{
+			"type": "object",
+			"properties": jsonSchema{
+				"query": jsonSchema{"type": "string", "description": "検索キーワード"},
+			},
+			"required": []string{"query"},
+		},
+	},
+	{
+		Name:        "web_fetch",
+		Description: "指定したURLのWebページの内容を取得する。Webクリップやページの要約に使う",
+		Parameters: jsonSchema{
+			"type": "object",
+			"properties": jsonSchema{
+				"url": jsonSchema{"type": "string", "description": "取得するURL"},
+			},
+			"required": []string{"url"},
+		},
+	},
 }
 
 type ToolExecutor struct {
@@ -274,6 +299,10 @@ func (e *ToolExecutor) Execute(ctx context.Context, userID uuid.UUID, toolName, 
 		return e.execUpdateEvent(ctx, userID, args)
 	case "delete_event":
 		return e.execDeleteEvent(ctx, userID, args)
+	case "web_search":
+		return e.execWebSearch(ctx, args)
+	case "web_fetch":
+		return e.execWebFetch(ctx, args)
 	default:
 		return toolError(fmt.Sprintf("unknown tool: %s", toolName)), nil
 	}
@@ -626,4 +655,123 @@ func toJSON(v interface{}) (string, error) {
 func toolError(msg string) string {
 	b, _ := json.Marshal(map[string]string{"error": msg})
 	return string(b)
+}
+
+// --- web_search ---
+
+var searxngInstances = []string{
+	"https://search.sapti.me",
+	"https://searx.be",
+	"https://search.bus-hit.me",
+}
+
+func (e *ToolExecutor) execWebSearch(_ context.Context, args map[string]interface{}) (string, error) {
+	query, _ := args["query"].(string)
+	if query == "" {
+		return toolError("query is required"), nil
+	}
+
+	client := &http.Client{Timeout: 10 * time.Second}
+
+	for _, instance := range searxngInstances {
+		u := fmt.Sprintf("%s/search?q=%s&format=json&categories=general&language=auto", instance, url.QueryEscape(query))
+		req, err := http.NewRequest("GET", u, nil)
+		if err != nil {
+			continue
+		}
+		req.Header.Set("User-Agent", "konbu/1.0")
+
+		resp, err := client.Do(req)
+		if err != nil {
+			continue
+		}
+
+		body, err := io.ReadAll(io.LimitReader(resp.Body, 512*1024))
+		resp.Body.Close()
+		if resp.StatusCode != 200 || err != nil {
+			continue
+		}
+
+		var result struct {
+			Results []struct {
+				Title   string `json:"title"`
+				URL     string `json:"url"`
+				Content string `json:"content"`
+			} `json:"results"`
+		}
+		if err := json.Unmarshal(body, &result); err != nil {
+			continue
+		}
+
+		// Return top 5 results
+		limit := 5
+		if len(result.Results) < limit {
+			limit = len(result.Results)
+		}
+		results := result.Results[:limit]
+		b, _ := json.Marshal(results)
+		return string(b), nil
+	}
+
+	return toolError("web search failed: all instances unavailable"), nil
+}
+
+// --- web_fetch ---
+
+func (e *ToolExecutor) execWebFetch(_ context.Context, args map[string]interface{}) (string, error) {
+	rawURL, _ := args["url"].(string)
+	if rawURL == "" {
+		return toolError("url is required"), nil
+	}
+
+	client := &http.Client{Timeout: 15 * time.Second}
+	req, err := http.NewRequest("GET", rawURL, nil)
+	if err != nil {
+		return toolError("invalid url: " + err.Error()), nil
+	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; konbu/1.0)")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return toolError("fetch failed: " + err.Error()), nil
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return toolError(fmt.Sprintf("fetch failed: HTTP %d", resp.StatusCode)), nil
+	}
+
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 256*1024))
+	if err != nil {
+		return toolError("read failed: " + err.Error()), nil
+	}
+
+	text := string(body)
+	// Strip HTML tags for readability
+	text = stripHTML(text)
+
+	// Truncate to 4000 chars for LLM context
+	if len([]rune(text)) > 4000 {
+		text = string([]rune(text)[:4000]) + "\n...(truncated)"
+	}
+
+	b, _ := json.Marshal(map[string]string{"url": rawURL, "content": text})
+	return string(b), nil
+}
+
+func stripHTML(s string) string {
+	var result []byte
+	inTag := false
+	for i := 0; i < len(s); i++ {
+		switch {
+		case s[i] == '<':
+			inTag = true
+		case s[i] == '>':
+			inTag = false
+			result = append(result, ' ')
+		case !inTag:
+			result = append(result, s[i])
+		}
+	}
+	return string(result)
 }
