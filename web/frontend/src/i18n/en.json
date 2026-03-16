@@ -161,6 +161,8 @@
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
+    "themeColorful": "Colorful",
+    "themeColorfulDark": "Colorful Dark",
     "changePassword": "Change Password",
     "oldPassword": "Current password",
     "newPassword": "New password",
