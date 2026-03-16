@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
-import { useCache } from '@/hooks/useCache'
+import { useCache, invalidateCache } from '@/hooks/useCache'
 import { relativeTime, formatTime, dueFmt } from '@/lib/date'
 import { useAppStore } from '@/stores/app'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,7 +17,7 @@ const DEFAULT_ORDER = ['schedule', 'todos', 'memos']
 
 export function HomePage({ onEditMemo }: HomePageProps) {
   const { t, i18n } = useTranslation()
-  const fetchHome = () => Promise.all([
+  const fetchHome = useCallback(() => Promise.all([
     api.listEvents(10),
     api.listTodos(100),
     api.listMemos(6),
@@ -30,8 +30,8 @@ export function HomePage({ onEditMemo }: HomePageProps) {
       memos: mmR.data || [],
       widgetOrder: sR?.data?.widget_order || DEFAULT_ORDER,
     }
-  })
-  const { data: homeData, refresh: loadHome } = useCache('home', fetchHome, 15000)
+  }), [])
+  const { data: homeData } = useCache('home', fetchHome)
   const events = homeData?.events || []
   const todos = homeData?.todos || []
   const memos = homeData?.memos || []
@@ -122,7 +122,7 @@ export function HomePage({ onEditMemo }: HomePageProps) {
                       onClick={async (e) => {
                         e.stopPropagation()
                         await api.doneTodo(t_.id)
-                        loadHome()
+                        invalidateCache('home', 'todos')
                       }}
                     />
                     <span className="flex-1 truncate">{t_.title}</span>

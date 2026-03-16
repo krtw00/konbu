@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
+import { invalidateCache } from '@/hooks/useCache'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -49,18 +50,26 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
     load()
   }, [memoId])
 
+  const titleRef = useRef(title)
+  const contentRef = useRef(content)
+  const tagsRef = useRef(tags)
+  titleRef.current = title
+  contentRef.current = content
+  tagsRef.current = tags
+
   const save = useCallback(async (ti?: string, c?: string, tg?: string[]) => {
-    const saveTitle = ti ?? title
-    const saveContent = c ?? content
-    const saveTags = tg ?? tags
+    const saveTitle = ti ?? titleRef.current
+    const saveContent = c ?? contentRef.current
+    const saveTags = tg ?? tagsRef.current
     try {
       await api.updateMemo(memoId, { title: saveTitle, content: saveContent, tags: saveTags })
+      invalidateCache('memos', 'home')
       setStatus(t('memoEdit.saved'))
       setTimeout(() => setStatus(''), 2000)
     } catch {
       setStatus(t('memoEdit.errorSaving'))
     }
-  }, [memoId, title, content, tags, t])
+  }, [memoId, t])
 
   function scheduleAutosave(newTitle?: string, newContent?: string) {
     setStatus(t('memoEdit.editing'))

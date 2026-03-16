@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
-import { useCache } from '@/hooks/useCache'
+import { useCache, invalidateCache } from '@/hooks/useCache'
 import { dueFmt, dateDelta, nextMonday } from '@/lib/date'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,23 +13,24 @@ import type { Todo, Tag } from '@/types/api'
 
 export function TodosPage() {
   const { t } = useTranslation()
-  const fetchTodos = () => Promise.all([api.listTodos(), api.listTags()]).then(([r, tRes]) => ({
+  const fetchTodos = useCallback(() => Promise.all([api.listTodos(), api.listTags()]).then(([r, tRes]) => ({
     todos: r.data || [] as Todo[],
     tags: (tRes.data || []).map((tag: Tag) => tag.name),
-  }))
-  const { data: todosData, refresh: load } = useCache('todos', fetchTodos)
+  })), [])
+  const { data: todosData } = useCache('todos', fetchTodos)
   const todos = todosData?.todos || []
   const [filter, setFilter] = useState<'open' | 'done' | 'all'>('open')
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  let adding = false
 
   const filtered = filter === 'all'
     ? todos
     : todos.filter((todo) => (filter === 'done' ? todo.status === 'done' : todo.status === 'open'))
 
   async function handleAdd(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key !== 'Enter') return
+    if (e.key !== 'Enter' || adding) return
     let title = (e.target as HTMLInputElement).value.trim()
     if (!title) return
     let dueDate: string | null = null
@@ -49,14 +50,19 @@ export function TodosPage() {
     if (!title) return
 
     ;(e.target as HTMLInputElement).value = ''
-    await api.createTodo({ title, due_date: dueDate, tags: hashTags })
-    load()
+    adding = true
+    try {
+      await api.createTodo({ title, due_date: dueDate, tags: hashTags })
+      invalidateCache('todos', 'home')
+    } finally {
+      adding = false
+    }
   }
 
   async function toggleDone(todo: Todo) {
     if (todo.status === 'done') await api.reopenTodo(todo.id)
     else await api.doneTodo(todo.id)
-    load()
+    invalidateCache('todos', 'home')
   }
 
   async function selectTodo(id: string) {
@@ -74,7 +80,7 @@ export function TodosPage() {
       due_date: selectedTodo.due_date,
       tags: selectedTodo.tags?.map((tag) => tag.name) || [],
     })
-    load()
+    invalidateCache('todos', 'home')
   }
 
   async function deleteDetail() {
@@ -82,7 +88,7 @@ export function TodosPage() {
     await api.deleteTodo(selectedTodo.id)
     setSelectedId(null)
     setSelectedTodo(null)
-    load()
+    invalidateCache('todos', 'home')
   }
 
   return (
