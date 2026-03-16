@@ -253,6 +253,8 @@ export function CalendarPage() {
         </div>
 
         {selectedDay && (
+          <>
+          {/* Desktop: side panel */}
           <div className="hidden md:block w-72 shrink-0 border-l border-border pl-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-medium text-sm">
@@ -361,6 +363,95 @@ export function CalendarPage() {
               </>
             )}
           </div>
+          {/* Mobile: bottom sheet */}
+          <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+            <div className="absolute inset-0 bg-black/30" onClick={() => { setSelectedDay(null); setEditingEvent(null) }} />
+            <div className="relative bg-background rounded-t-2xl border-t border-border p-4 space-y-3 max-h-[80vh] overflow-auto">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-sm">
+                  {new Date(selectedDay[0], selectedDay[1], selectedDay[2]).toLocaleDateString(locale, {
+                    month: 'long', day: 'numeric', weekday: 'short',
+                  })}
+                </span>
+                <button className="text-muted-foreground hover:text-foreground p-1" onClick={() => { setSelectedDay(null); setEditingEvent(null) }}>
+                  x
+                </button>
+              </div>
+
+              {editingEvent ? (
+                <div className="space-y-2">
+                  <Input
+                    value={editingEvent.title}
+                    onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
+                    className="font-medium"
+                  />
+                  <div>
+                    <label className="text-xs text-muted-foreground">{t('calendar.start')}</label>
+                    <Input
+                      type="datetime-local"
+                      value={editingEvent.start_at ? new Date(editingEvent.start_at).toISOString().slice(0, 16) : ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, start_at: new Date(e.target.value).toISOString() })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
+                    <Input
+                      type="datetime-local"
+                      value={editingEvent.end_at ? new Date(editingEvent.end_at).toISOString().slice(0, 16) : ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">{t('calendar.description')}</label>
+                    <Textarea
+                      value={editingEvent.description || ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="destructive" size="sm" onClick={() => deleteEvent(editingEvent.id)}>{t('common.delete')}</Button>
+                    <div className="flex-1" />
+                    <Button size="sm" onClick={saveEvent}>{t('common.save')}</Button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-1.5">
+                    {dk && eventsForDay(dk).length === 0 && (
+                      <p className="text-sm text-muted-foreground">{t('calendar.noEvents')}</p>
+                    )}
+                    {dk && eventsForDay(dk).map((ev, idx) => (
+                      <div
+                        key={`m-${ev.id}-${idx}`}
+                        onClick={() => setEditingEvent(ev)}
+                        className="text-sm p-2 rounded hover:bg-accent/50 cursor-pointer"
+                      >
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          {ev.recurrence_rule && <Repeat size={10} />}
+                          {ev.all_day ? t('common.allDay') : `${formatTime(ev.start_at)}${ev.end_at ? ' – ' + formatTime(ev.end_at) : ''}`}
+                        </div>
+                        <div>{ev.title}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-border pt-3 space-y-2">
+                    <div className="text-xs text-muted-foreground font-medium">{t('calendar.newEvent')}</div>
+                    <Input id="new-ev-title-m" placeholder={t('calendar.eventTitle')} />
+                    <div className="flex flex-col gap-2">
+                      <Input id="new-ev-start-m" type="datetime-local" defaultValue={dk + 'T09:00'} />
+                      <Input id="new-ev-end-m" type="datetime-local" defaultValue={dk + 'T10:00'} />
+                    </div>
+                    <Textarea id="new-ev-desc-m" placeholder={t('calendar.descriptionPlaceholder')} />
+                    <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk)}>{t('common.add')}</Button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          </>
         )}
       </div>
     </div>
