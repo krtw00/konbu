@@ -47,7 +47,22 @@ function ProfileTab() {
             {user?.plan === 'sponsor' || user?.is_admin ? t('settings.planSponsor') : t('settings.planFree')}
           </span>
         </div>
-        {user?.plan !== 'sponsor' && !user?.is_admin && (
+        {(user?.plan === 'sponsor' || user?.is_admin) ? (
+          <div className="mt-2 p-4 rounded-lg border border-primary/20 bg-primary/5">
+            <h3 className="font-semibold text-sm mb-2">{t('settings.sponsorActiveTitle')}</h3>
+            <ul className="text-sm text-muted-foreground space-y-1.5">
+              <li className="flex items-center gap-2">
+                <span className="text-primary">✓</span> {t('settings.upgradeFeatureChat')}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-primary">✓</span> {t('settings.upgradeFeatureImage')}
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="text-primary">✓</span> {t('settings.upgradeFeatureApi')}
+              </li>
+            </ul>
+          </div>
+        ) : (
           <div className="mt-2 p-4 rounded-lg border border-border bg-card">
             <h3 className="font-semibold text-sm mb-2">{t('settings.upgradeTitle')}</h3>
             <ul className="text-sm text-muted-foreground space-y-1 mb-3">
