@@ -33,7 +33,7 @@ Memos, tasks, calendar, and bookmarks are usually scattered across separate apps
 - **Memos** -- Markdown notes with tagging, live preview
 - **ToDo** -- Inline task creation with due dates, tags, and notes
 - **Calendar** -- Monthly view with event CRUD and iCal import
-- **Bookmarks** -- Site management with categories and drag-and-drop reordering
+- **Tools** -- Site launcher with categories and drag-and-drop reordering
 - **CLI & MCP** -- Full-featured CLI client and MCP server for AI agent integration
 - **Export/Import** -- JSON export, Markdown ZIP export, iCal import
 - **i18n** -- English and Japanese
