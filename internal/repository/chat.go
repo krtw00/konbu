@@ -102,6 +102,17 @@ func (q *Queries) CreateChatMessage(ctx context.Context, sessionID uuid.UUID, ro
 	return m, err
 }
 
+func (q *Queries) CountUserMessagesThisMonth(ctx context.Context, userID uuid.UUID) (int, error) {
+	var count int
+	err := q.db.QueryRowContext(ctx,
+		`SELECT COUNT(*) FROM chat_messages m
+		 JOIN chat_sessions s ON s.id = m.session_id
+		 WHERE s.user_id = $1 AND m.role = 'user'
+		 AND m.created_at >= date_trunc('month', now())`,
+		userID).Scan(&count)
+	return count, err
+}
+
 func (q *Queries) ListChatMessagesBySessionID(ctx context.Context, sessionID uuid.UUID) ([]ChatMessage, error) {
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT id, session_id, role, content, COALESCE(tool_calls, 'null'::jsonb), tool_call_id, provider, model, input_tokens, output_tokens, created_at
