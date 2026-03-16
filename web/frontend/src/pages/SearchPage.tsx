@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { FileText, CheckSquare, Calendar, Monitor, Search, ChevronLeft, ChevronRight, SlidersHorizontal, Lightbulb, X } from 'lucide-react'
+import { sectionColors } from '@/lib/colors'
 import type { SearchResult, SearchResponse, Tag } from '@/types/api'
 
 interface SearchPageProps {
@@ -227,7 +228,7 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
                 onClick={() => handleSelect(item)}
                 className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-left transition-colors hover:bg-accent"
               >
-                <Icon size={16} className="shrink-0 text-muted-foreground" />
+                <Icon size={16} className={`shrink-0 ${sectionColors[item.type] || 'text-muted-foreground'}`} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-muted-foreground w-12">{t(`command.${item.type}`) || item.type}</span>
@@ -274,7 +275,7 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
                   onClick={() => handleSelect(item)}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent"
                 >
-                  <Icon size={14} className="text-muted-foreground" />
+                  <Icon size={14} className={sectionColors[item.type] || 'text-muted-foreground'} />
                   <span className="text-xs text-muted-foreground w-10">{t(`command.${item.type}`) || item.type}</span>
                   <span className="truncate">{item.title}</span>
                 </button>

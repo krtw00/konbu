@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
+import { sectionColors } from '@/lib/colors'
 import { Home, FileText, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
 
 const navItems = [
@@ -26,23 +27,27 @@ export function Sidebar() {
         {!collapsed && <span className="font-semibold text-sm text-sidebar-foreground">konbu</span>}
       </div>
       <div className={`flex-1 flex flex-col gap-0.5 ${collapsed ? 'px-1' : 'px-2'}`}>
-        {navItems.map(({ page, icon: Icon, labelKey }) => (
-          <button
-            key={page}
-            onClick={() => setPage(page)}
-            title={collapsed ? t(labelKey) : undefined}
-            className={`flex items-center rounded-md text-sm transition-colors ${
-              collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'
-            } ${
-              currentPage === page || (currentPage === 'memo-edit' && page === 'memos')
-                ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50'
-            }`}
-          >
-            <Icon size={18} />
-            {!collapsed && <span>{t(labelKey)}</span>}
-          </button>
-        ))}
+        {navItems.map(({ page, icon: Icon, labelKey }) => {
+          const isActive = currentPage === page || (currentPage === 'memo-edit' && page === 'memos')
+          const iconColor = sectionColors[page] || 'text-muted-foreground'
+          return (
+            <button
+              key={page}
+              onClick={() => setPage(page)}
+              title={collapsed ? t(labelKey) : undefined}
+              className={`flex items-center rounded-md text-sm transition-colors ${
+                collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'
+              } ${
+                isActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50'
+              }`}
+            >
+              <Icon size={18} className={iconColor} />
+              {!collapsed && <span>{t(labelKey)}</span>}
+            </button>
+          )
+        })}
       </div>
       <div className={`pb-4 flex flex-col gap-0.5 ${collapsed ? 'px-1' : 'px-2'}`}>
         <button
@@ -52,7 +57,7 @@ export function Sidebar() {
             collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'
           }`}
         >
-          <Search size={18} />
+          <Search size={18} className="text-muted-foreground" />
           {!collapsed && (
             <>
               <span>{t('common.search')}</span>
@@ -73,7 +78,7 @@ export function Sidebar() {
               : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50'
           }`}
         >
-          <Settings size={18} />
+          <Settings size={18} className={sectionColors.settings} />
           {!collapsed && <span>{t('nav.settings')}</span>}
         </button>
         <button
@@ -83,7 +88,7 @@ export function Sidebar() {
             collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'
           }`}
         >
-          <LogOut size={18} />
+          <LogOut size={18} className="text-muted-foreground" />
           {!collapsed && <span>{t('settings.logout')}</span>}
         </button>
       </div>
