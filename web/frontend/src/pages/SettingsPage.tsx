@@ -601,12 +601,12 @@ export function SettingsPage() {
     <div>
       <h1 className="text-lg font-semibold mb-4">{t('settings.title')}</h1>
       <Tabs defaultValue="profile">
-        <TabsList className="w-full overflow-x-auto flex-nowrap justify-start">
-          <TabsTrigger value="profile" className="shrink-0 text-xs sm:text-sm">{t('settings.profile')}</TabsTrigger>
-          <TabsTrigger value="appearance" className="shrink-0 text-xs sm:text-sm">{t('settings.appearance')}</TabsTrigger>
-          <TabsTrigger value="security" className="shrink-0 text-xs sm:text-sm">{t('settings.security')}</TabsTrigger>
-          <TabsTrigger value="data" className="shrink-0 text-xs sm:text-sm">{t('settings.data')}</TabsTrigger>
-          <TabsTrigger value="ai" className="shrink-0 text-xs sm:text-sm">{t('settings.ai')}</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-5">
+          <TabsTrigger value="profile" className="text-xs sm:text-sm">{t('settings.profile')}</TabsTrigger>
+          <TabsTrigger value="appearance" className="text-xs sm:text-sm">{t('settings.appearance')}</TabsTrigger>
+          <TabsTrigger value="security" className="text-xs sm:text-sm">{t('settings.security')}</TabsTrigger>
+          <TabsTrigger value="data" className="text-xs sm:text-sm">{t('settings.data')}</TabsTrigger>
+          <TabsTrigger value="ai" className="text-xs sm:text-sm">{t('settings.ai')}</TabsTrigger>
         </TabsList>
         <TabsContent value="profile" className="mt-4">
           <ProfileTab />
