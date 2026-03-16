@@ -3,6 +3,28 @@ import type { User, CalendarEvent, Todo } from '@/types/api'
 import { api } from '@/lib/api'
 import { prefetchCache } from '@/hooks/useCache'
 
+type Theme = 'light' | 'dark' | 'system'
+
+function getSystemDark() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+}
+
+function applyTheme(theme: Theme) {
+  const isDark = theme === 'dark' || (theme === 'system' && getSystemDark())
+  document.documentElement.classList.toggle('dark', isDark)
+}
+
+function initTheme(): Theme {
+  const stored = localStorage.getItem('konbu-theme') as Theme | null
+  const theme = stored && ['light', 'dark', 'system'].includes(stored) ? stored : 'system'
+  applyTheme(theme)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    const current = (localStorage.getItem('konbu-theme') || 'system') as Theme
+    if (current === 'system') applyTheme('system')
+  })
+  return theme
+}
+
 const DEFAULT_ORDER = ['schedule', 'todos', 'memos']
 
 function prefetchHomeData() {
@@ -41,12 +63,14 @@ interface AppState {
   needsSetup: boolean
   openRegistration: boolean
   googleAuth: boolean
+  theme: Theme
   setPage: (page: Page) => void
   setCommandOpen: (open: boolean) => void
   setUser: (user: User) => void
   clearUser: () => void
   checkAuth: () => Promise<void>
   logout: () => Promise<void>
+  setTheme: (theme: Theme) => void
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -58,6 +82,7 @@ export const useAppStore = create<AppState>((set) => ({
   needsSetup: false,
   openRegistration: false,
   googleAuth: false,
+  theme: initTheme(),
   setPage: (page) => set({ currentPage: page }),
   setCommandOpen: (open) => set({ commandOpen: open }),
   setUser: (user) => set({ user, isAuthenticated: true }),
@@ -90,5 +115,10 @@ export const useAppStore = create<AppState>((set) => ({
       // ignore
     }
     set({ user: null, isAuthenticated: false, currentPage: 'home' })
+  },
+  setTheme: (theme) => {
+    localStorage.setItem('konbu-theme', theme)
+    applyTheme(theme)
+    set({ theme })
   },
 }))

@@ -144,6 +144,9 @@
     "language": "Language",
     "theme": "Theme",
     "themeDefault": "konbu (default)",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
     "changePassword": "Change Password",
     "oldPassword": "Current password",
     "newPassword": "New password",
@@ -191,7 +194,10 @@
     "aiProvider": "AI Provider",
     "aiApiKey": "API Key",
     "aiKeySaved": "Key saved",
-    "aiKeyPlaceholder": "sk-... or sk-ant-..."
+    "aiKeyPlaceholder": "sk-... or sk-ant-...",
+    "icalUrl": "iCal URL",
+    "icalDescription": "Add to Google Calendar, Apple Calendar, or other apps",
+    "icalCopied": "URL copied"
   },
   "attachment": {
     "upload": "Upload image",

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Copy, Trash2, Plus, Key, ExternalLink } from 'lucide-react'
+import { Copy, Trash2, Plus, Key, ExternalLink, Sun, Moon, Monitor, Calendar } from 'lucide-react'
 
 function ProfileTab() {
   const { t } = useTranslation()
@@ -87,6 +87,7 @@ function ProfileTab() {
 
 function AppearanceTab() {
   const { t, i18n } = useTranslation()
+  const { theme, setTheme } = useAppStore()
   const [firstDayOfWeek, setFirstDayOfWeek] = useState(0)
 
   useEffect(() => {
@@ -106,6 +107,12 @@ function AppearanceTab() {
       // ignore
     }
   }
+
+  const themeOptions = [
+    { value: 'light' as const, label: t('settings.themeLight'), icon: Sun },
+    { value: 'dark' as const, label: t('settings.themeDark'), icon: Moon },
+    { value: 'system' as const, label: t('settings.themeSystem'), icon: Monitor },
+  ]
 
   return (
     <div className="flex flex-col gap-4">
@@ -133,7 +140,20 @@ function AppearanceTab() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium">{t('settings.theme')}</label>
-        <Input value={t('settings.themeDefault')} disabled />
+        <div className="flex gap-2">
+          {themeOptions.map(({ value, label, icon: Icon }) => (
+            <Button
+              key={value}
+              variant={theme === value ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTheme(value)}
+              className="flex-1 gap-1.5"
+            >
+              <Icon size={14} />
+              {label}
+            </Button>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -383,6 +403,12 @@ function DataTab() {
   const [importing, setImporting] = useState(false)
   const [importMsg, setImportMsg] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([])
+  const [icalCopied, setIcalCopied] = useState(false)
+
+  useEffect(() => {
+    api.listApiKeys().then((res) => setApiKeys(res.data)).catch(() => {})
+  }, [])
 
   function downloadExport(format: 'json' | 'markdown') {
     const url = `/api/v1/export/${format}`
@@ -452,6 +478,38 @@ function DataTab() {
           {importMsg && <p className="text-sm text-green-600">{importMsg}</p>}
         </CardContent>
       </Card>
+
+      {apiKeys.length > 0 && (() => {
+        const icalUrl = `${window.location.origin}/api/v1/calendar.ics?token=YOUR_API_KEY`
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar size={16} />
+                {t('settings.icalUrl')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-3">
+              <p className="text-sm text-muted-foreground">{t('settings.icalDescription')}</p>
+              <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
+                <code className="flex-1 break-all text-xs">{icalUrl}</code>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={async () => {
+                    await navigator.clipboard.writeText(icalUrl)
+                    setIcalCopied(true)
+                    setTimeout(() => setIcalCopied(false), 2000)
+                  }}
+                >
+                  <Copy size={14} />
+                </Button>
+              </div>
+              {icalCopied && <p className="text-sm text-green-600">{t('settings.icalCopied')}</p>}
+            </CardContent>
+          </Card>
+        )
+      })()}
     </div>
   )
 }
