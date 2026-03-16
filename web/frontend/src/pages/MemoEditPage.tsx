@@ -31,7 +31,7 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
   const [tags, setTags] = useState<string[]>([])
   const [allTags, setAllTags] = useState<string[]>([])
   const [status, setStatus] = useState('')
-  const [showPreview, setShowPreview] = useState(false)
+  const [showPreview, setShowPreview] = useState(true)
   const editorRef = useRef<Monaco.editor.IStandaloneCodeEditor | null>(null)
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -44,6 +44,7 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
       setContent(m.content)
       setTags(m.tags?.map((tag) => tag.name) || [])
       setAllTags((tRes.data || []).map((tag) => tag.name))
+      setShowPreview(!(m.content === '' && m.title === ''))
     }
     load()
   }, [memoId])
@@ -263,7 +264,7 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
           onClick={() => setShowPreview((v) => !v)}
         >
           {showPreview ? <EyeOff size={14} /> : <Eye size={14} />}
-          {showPreview ? 'Preview OFF' : 'Preview'}
+          {showPreview ? t('memoEdit.hidePreview') : t('memoEdit.showPreview')}
         </Button>
       </div>
 
@@ -340,13 +341,13 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
         )}
       </div>
 
-      {/* Mobile: fullscreen overlay */}
+      {/* Mobile: fullscreen preview (default) or editor */}
       {showPreview && (
         <div className="md:hidden absolute inset-0 z-50 bg-background flex flex-col">
           <div className="flex items-center gap-2 px-3 py-2 border-b border-border shrink-0">
-            <span className="text-sm font-medium flex-1">Preview</span>
+            <span className="text-sm font-medium flex-1">{title || t('common.untitled')}</span>
             <Button variant="outline" size="sm" className="h-7 px-3 text-xs" onClick={() => setShowPreview(false)}>
-              Close
+              {t('memoEdit.edit')}
             </Button>
           </div>
           <div

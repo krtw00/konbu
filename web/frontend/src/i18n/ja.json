@@ -47,7 +47,10 @@
     "saved": "保存済み",
     "errorSaving": "保存に失敗しました",
     "editing": "編集中...",
-    "confirmDelete": "このメモを削除しますか？"
+    "confirmDelete": "このメモを削除しますか？",
+    "edit": "編集",
+    "hidePreview": "プレビューを隠す",
+    "showPreview": "プレビュー"
   },
   "todos": {
     "title": "ToDo",
