@@ -27,7 +27,7 @@ func (h *AttachmentHandler) UploadRoutes() chi.Router {
 
 func (h *AttachmentHandler) upload(w http.ResponseWriter, r *http.Request) {
 	user := middleware.UserFromContext(r.Context())
-	if user.Plan != "sponsor" {
+	if user.Plan != "sponsor" && !user.IsAdmin {
 		writeError(w, apperror.Forbidden("attachments require a sponsor plan"))
 		return
 	}

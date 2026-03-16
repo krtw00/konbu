@@ -31,7 +31,7 @@ export function ChatPanel() {
 
   if (!user) return null
 
-  const isSponsor = user.plan === 'sponsor'
+  const isSponsor = user.plan === 'sponsor' || user.is_admin
 
   function handleSend() {
     if (!input.trim() || isStreaming) return

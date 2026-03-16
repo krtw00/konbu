@@ -94,7 +94,7 @@ type SSEEvent struct {
 }
 
 func (s *ChatService) SendMessage(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID, content string, user *model.User) (<-chan SSEEvent, error) {
-	if user.Plan != "sponsor" {
+	if user.Plan != "sponsor" && !user.IsAdmin {
 		return nil, apperror.Forbidden("AI chat requires a Sponsor plan")
 	}
 
