@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { Calendar as CalendarIcon, Check } from 'lucide-react'
+import { Calendar as CalendarIcon, Check, X } from 'lucide-react'
 import type { Todo, Tag } from '@/types/api'
 
 export function TodosPage() {
