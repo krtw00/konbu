@@ -127,13 +127,13 @@ export function TodosPage() {
                   >
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleDone(todo) }}
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                         todo.status === 'done'
                           ? 'bg-primary border-primary text-primary-foreground'
                           : 'border-muted-foreground/40 hover:border-primary'
                       }`}
                     >
-                      {todo.status === 'done' && <Check size={12} />}
+                      {todo.status === 'done' && <Check size={14} />}
                     </button>
                     <div className="flex-1 min-w-0">
                       <div className={`text-sm ${todo.status === 'done' ? 'line-through text-muted-foreground' : ''}`}>
@@ -166,7 +166,7 @@ export function TodosPage() {
                 {selectedTodo.status === 'done' ? t('todos.completed') : t('common.open')}
               </span>
               <button className="text-muted-foreground hover:text-foreground" onClick={() => { setSelectedId(null); setSelectedTodo(null) }}>
-                x
+                <X size={16} />
               </button>
             </div>
             <Input
@@ -201,6 +201,55 @@ export function TodosPage() {
               <Button variant="destructive" size="sm" onClick={deleteDetail}>{t('common.delete')}</Button>
               <div className="flex-1" />
               <Button size="sm" onClick={() => { saveDetail(); setSelectedId(null); setSelectedTodo(null) }}>{t('common.done')}</Button>
+            </div>
+          </div>
+        )}
+
+        {selectedTodo && (
+          <div className="md:hidden fixed inset-0 z-50">
+            <div className="absolute inset-0 bg-black/40" onClick={() => { setSelectedId(null); setSelectedTodo(null) }} />
+            <div className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl p-4 space-y-3 max-h-[70vh] overflow-y-auto shadow-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">
+                  {selectedTodo.status === 'done' ? t('todos.completed') : t('common.open')}
+                </span>
+                <button className="text-muted-foreground hover:text-foreground p-1" onClick={() => { setSelectedId(null); setSelectedTodo(null) }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <Input
+                value={selectedTodo.title}
+                onChange={(e) => setSelectedTodo({ ...selectedTodo, title: e.target.value })}
+                onBlur={saveDetail}
+                className="font-medium"
+              />
+              <div>
+                <label className="text-xs text-muted-foreground">{t('todos.notes')}</label>
+                <Textarea
+                  value={selectedTodo.description || ''}
+                  onChange={(e) => setSelectedTodo({ ...selectedTodo, description: e.target.value })}
+                  onBlur={saveDetail}
+                  placeholder={t('todos.addNotes')}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">{t('todos.dueDate')}</label>
+                <Input
+                  type="date"
+                  value={selectedTodo.due_date || ''}
+                  onChange={(e) => {
+                    setSelectedTodo({ ...selectedTodo, due_date: e.target.value || null })
+                    setTimeout(saveDetail, 0)
+                  }}
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button variant="destructive" size="sm" onClick={deleteDetail}>{t('common.delete')}</Button>
+                <div className="flex-1" />
+                <Button size="sm" onClick={() => { saveDetail(); setSelectedId(null); setSelectedTodo(null) }}>{t('common.done')}</Button>
+              </div>
             </div>
           </div>
         )}
