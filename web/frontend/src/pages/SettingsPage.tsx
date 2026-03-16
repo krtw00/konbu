@@ -46,7 +46,7 @@ function ProfileTab() {
           <span className="text-sm font-medium px-2 py-0.5 rounded bg-muted">
             {user?.plan === 'sponsor' ? t('settings.planSponsor') : t('settings.planFree')}
           </span>
-          {user?.plan !== 'sponsor' && (
+          {user?.plan !== 'sponsor' && !user?.is_admin && (
             <a
               href="https://ko-fi.com/codenica000"
               target="_blank"
@@ -58,7 +58,7 @@ function ProfileTab() {
             </a>
           )}
         </div>
-        {user?.plan !== 'sponsor' && (
+        {user?.plan !== 'sponsor' && !user?.is_admin && (
           <p className="text-xs text-muted-foreground">{t('settings.sponsorDescription')}</p>
         )}
       </div>
@@ -238,7 +238,7 @@ function SecurityTab() {
           <CardTitle>{t('settings.apiKeys')}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          {useAppStore.getState().user?.plan !== 'sponsor' && (
+          {useAppStore.getState().user?.plan !== 'sponsor' && !useAppStore.getState().user?.is_admin && (
             <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
               <p>{t('settings.apiKeysSponsorOnly')}</p>
               <a

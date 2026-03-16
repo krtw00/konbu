@@ -240,7 +240,7 @@ func (s *AuthService) CreateAPIKey(ctx context.Context, userID uuid.UUID, req mo
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
-	if user.Plan != "sponsor" {
+	if user.Plan != "sponsor" && !user.IsAdmin {
 		return nil, apperror.Forbidden("API keys require a Sponsor plan")
 	}
 
