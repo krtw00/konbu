@@ -170,6 +170,7 @@
     "planSponsor": "Sponsor",
     "sponsorCTA": "サポーターになる",
     "sponsorDescription": "サポーターになると API キー・CLI・AI チャットが使えるようになります。",
+    "sponsorActiveTitle": "サポーター特典（有効）",
     "upgradeTitle": "サポーターになると使える機能",
     "upgradeFeatureChat": "AI チャット — 自然言語でデータ操作",
     "upgradeFeatureImage": "画像添付 — メモにドラッグ&ドロップで貼り付け",
