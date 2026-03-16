@@ -3,7 +3,7 @@ import { useAppStore } from '@/stores/app'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { MobileHeader } from '@/components/layout/MobileHeader'
 import { CommandPalette } from '@/components/CommandPalette'
-import { ChatPanel } from '@/components/ChatPanel'
+import { ChatPage } from '@/pages/ChatPage'
 import { HomePage } from '@/pages/HomePage'
 import { MemosPage } from '@/pages/MemosPage'
 import { TodosPage } from '@/pages/TodosPage'
@@ -65,6 +65,10 @@ function App() {
               <MemoEditPage memoId={editingMemoId} onClose={handleCloseMemoEdit} />
             </Suspense>
           </main>
+        ) : currentPage === 'chat' ? (
+          <main className="flex-1 overflow-hidden">
+            <ChatPage />
+          </main>
         ) : (
           <main className="flex-1 overflow-auto">
             <div className="max-w-5xl mx-auto p-4 md:p-6">
@@ -79,7 +83,6 @@ function App() {
         )}
       </div>
       <CommandPalette onOpenMemo={handleEditMemo} />
-      <ChatPanel />
     </div>
   )
 }
