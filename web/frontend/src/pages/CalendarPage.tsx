@@ -644,13 +644,13 @@ export function CalendarPage() {
 
             <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
               {daysHeader.map((d, i) => (
-                <div key={d} className={`bg-muted/50 text-center text-xs font-medium py-1.5 ${headerDayColor(i)}`}>
+                <div key={d} className={`bg-muted/50 text-center text-xs font-medium py-1 ${headerDayColor(i)}`}>
                   {d}
                 </div>
               ))}
               {Array.from({ length: startPad }, (_, i) => (
-                <div key={`p${i}`} className="bg-background p-1 min-h-20 text-muted-foreground/40">
-                  <span className="text-xs">{prevLastDate - startPad + 1 + i}</span>
+                <div key={`p${i}`} className="bg-background px-1 py-0.5 min-h-14 text-muted-foreground/40">
+                  <span className="text-xs leading-none">{prevLastDate - startPad + 1 + i}</span>
                 </div>
               ))}
               {Array.from({ length: lastDate }, (_, i) => {
@@ -667,12 +667,12 @@ export function CalendarPage() {
                   <div
                     key={d}
                     onClick={() => setSelectedDay([year, month, d])}
-                    className={`bg-background p-1 min-h-20 cursor-pointer hover:bg-accent/30 transition-colors ${
+                    className={`bg-background px-1 py-0.5 min-h-14 cursor-pointer hover:bg-accent/30 transition-colors ${
                       isSelected ? 'ring-2 ring-primary ring-inset' : ''
                     }`}
                   >
                     <div className="flex items-center gap-0.5">
-                      <span className={`text-xs inline-flex items-center justify-center w-6 h-6 rounded-full ${
+                      <span className={`text-xs inline-flex items-center justify-center w-5 h-5 rounded-full leading-none ${
                         isToday ? 'bg-primary text-primary-foreground font-medium' : holiday ? 'text-red-500' : dayColor(dow)
                       }`}>
                         {d}
@@ -681,7 +681,7 @@ export function CalendarPage() {
                         <span className="text-[9px] text-red-500 truncate">{holiday}</span>
                       )}
                     </div>
-                    <div className="mt-0.5 space-y-0.5">
+                    <div className="space-y-px">
                       {dayEvents.slice(0, MAX_EVENTS).map((ev, idx) => (
                         <div
                           key={`${ev.id}-${idx}`}
@@ -700,8 +700,8 @@ export function CalendarPage() {
                 )
               })}
               {Array.from({ length: remainder }, (_, i) => (
-                <div key={`n${i}`} className="bg-background p-1 min-h-20 text-muted-foreground/40">
-                  <span className="text-xs">{i + 1}</span>
+                <div key={`n${i}`} className="bg-background px-1 py-0.5 min-h-14 text-muted-foreground/40">
+                  <span className="text-xs leading-none">{i + 1}</span>
                 </div>
               ))}
             </div>
