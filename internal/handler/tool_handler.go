@@ -25,7 +25,6 @@ func (h *ToolHandler) Routes() chi.Router {
 	r.Get("/", h.list)
 	r.Post("/", h.create)
 	r.Post("/refresh-icons", h.refreshIcons)
-	r.Post("/health-check", h.healthCheck)
 	r.Get("/favicon", h.favicon)
 	r.Put("/reorder", h.reorder)
 	r.Put("/{id}", h.update)
@@ -107,15 +106,7 @@ func (h *ToolHandler) refreshIcons(w http.ResponseWriter, r *http.Request) {
 	writeData(w, map[string]int{"updated": count})
 }
 
-func (h *ToolHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
-	user := middleware.UserFromContext(r.Context())
-	results, err := h.toolSvc.HealthCheck(r.Context(), user.ID)
-	if err != nil {
-		writeError(w, err)
-		return
-	}
-	writeData(w, results)
-}
+
 
 func (h *ToolHandler) favicon(w http.ResponseWriter, r *http.Request) {
 	url := r.URL.Query().Get("url")

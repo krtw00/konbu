@@ -5,15 +5,8 @@ import { useCache } from '@/hooks/useCache'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Plus, X, Pencil, Heart, HeartCrack, Loader2 } from 'lucide-react'
+import { Plus, X, Pencil, Loader2 } from 'lucide-react'
 import type { Tool } from '@/types/api'
-
-interface HealthResult {
-  id: string
-  url: string
-  alive: boolean
-  status: number
-}
 
 export function ToolsPage() {
   const { t } = useTranslation()
@@ -27,8 +20,6 @@ export function ToolsPage() {
   const [formCategory, setFormCategory] = useState('')
   const [faviconPreview, setFaviconPreview] = useState('')
   const [faviconLoading, setFaviconLoading] = useState(false)
-  const [healthMap, setHealthMap] = useState<Map<string, HealthResult>>(new Map())
-  const [healthLoading, setHealthLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const dragItem = useRef<string | null>(null)
   const dragOverItem = useRef<string | null>(null)
@@ -111,21 +102,6 @@ export function ToolsPage() {
     load()
   }
 
-  async function runHealthCheck() {
-    setHealthLoading(true)
-    try {
-      const r = await api.healthCheckTools()
-      const map = new Map<string, HealthResult>()
-      for (const h of r.data || []) {
-        map.set(h.id, h)
-      }
-      setHealthMap(map)
-    } catch {
-      // ignore
-    }
-    setHealthLoading(false)
-  }
-
   // Group tools by category
   const grouped = new Map<string, Tool[]>()
   for (const tool of tools) {
@@ -148,27 +124,13 @@ export function ToolsPage() {
     'bg-cyan-500/20 text-cyan-600',
   ]
 
-  function healthIcon(toolId: string) {
-    const h = healthMap.get(toolId)
-    if (!h) return null
-    return h.alive
-      ? <Heart size={12} className="text-green-500 fill-green-500" />
-      : <HeartCrack size={12} className="text-red-500" />
-  }
-
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">{t('tools.title')}</h1>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={runHealthCheck} disabled={healthLoading}>
-            {healthLoading ? <Loader2 size={14} className="mr-1 animate-spin" /> : <Heart size={14} className="mr-1" />}
-            {t('tools.healthCheck')}
-          </Button>
-          <Button size="sm" onClick={openCreateDialog}>
-            <Plus size={16} className="mr-1" /> {t('common.new')}
-          </Button>
-        </div>
+        <Button size="sm" onClick={openCreateDialog}>
+          <Plus size={16} className="mr-1" /> {t('common.new')}
+        </Button>
       </div>
 
       {tools.length === 0 ? (
@@ -191,9 +153,6 @@ export function ToolsPage() {
                     onDrop={handleDrop}
                     className="group relative flex flex-col items-center gap-2 p-4 rounded-xl border border-border hover:bg-accent/50 transition-colors"
                   >
-                    <div className="absolute top-1 left-1">
-                      {healthIcon(tool.id)}
-                    </div>
                     {tool.icon ? (
                       <img
                         src={tool.icon}
