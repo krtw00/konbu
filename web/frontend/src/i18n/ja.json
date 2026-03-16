@@ -24,6 +24,7 @@
     "calendar": "カレンダー",
     "cal": "カレンダー",
     "tools": "ツール",
+    "search": "検索",
     "chat": "AIチャット",
     "settings": "設定"
   },
@@ -98,7 +99,17 @@
     "noResults": "見つかりませんでした",
     "memo": "メモ",
     "todo": "ToDo",
-    "event": "予定"
+    "event": "予定",
+    "tool": "ツール"
+  },
+  "search": {
+    "placeholder": "メモ・ToDo・予定・ツールを検索…",
+    "noResults": "見つかりませんでした",
+    "loading": "検索中…",
+    "resultCount": "{{count}}件の結果",
+    "filterType": "種類",
+    "filterTag": "タグ",
+    "didYouMean": "もしかして"
   },
   "date": {
     "now": "たった今",

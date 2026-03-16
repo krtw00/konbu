@@ -25,6 +25,7 @@
     "cal": "Cal",
     "tools": "Tools",
     "chat": "AI Chat",
+    "search": "Search",
     "settings": "Settings"
   },
   "home": {
@@ -98,7 +99,17 @@
     "noResults": "No results found.",
     "memo": "memo",
     "todo": "todo",
-    "event": "event"
+    "event": "event",
+    "tool": "tool"
+  },
+  "search": {
+    "placeholder": "Search memos, todos, events, tools...",
+    "noResults": "No results found.",
+    "loading": "Searching...",
+    "resultCount": "{{count}} results",
+    "filterType": "Type",
+    "filterTag": "Tag",
+    "didYouMean": "Did you mean?"
   },
   "date": {
     "now": "now",

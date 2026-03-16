@@ -10,6 +10,7 @@ import { TodosPage } from '@/pages/TodosPage'
 import { CalendarPage } from '@/pages/CalendarPage'
 import { ToolsPage } from '@/pages/ToolsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
+import { SearchPage } from '@/pages/SearchPage'
 import { LoginPage } from '@/pages/LoginPage'
 import { SetupPage } from '@/pages/SetupPage'
 
@@ -77,6 +78,7 @@ function App() {
               {currentPage === 'todos' && <TodosPage />}
               {currentPage === 'calendar' && <CalendarPage />}
               {currentPage === 'tools' && <ToolsPage />}
+              {currentPage === 'search' && <SearchPage onOpenMemo={handleEditMemo} />}
               {currentPage === 'settings' && <SettingsPage />}
             </div>
           </main>

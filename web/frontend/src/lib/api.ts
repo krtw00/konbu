@@ -57,7 +57,18 @@ export const api = {
   listTags: () => request<{ data: import('@/types/api').Tag[] }>('GET', '/tags'),
 
   // Search
-  search: (q: string, limit = 20) => request<{ data: import('@/types/api').SearchResult[] }>('GET', `/search?q=${encodeURIComponent(q)}&limit=${limit}`),
+  search: (q: string, limit = 20) => request<import('@/types/api').SearchResponse>('GET', `/search?q=${encodeURIComponent(q)}&limit=${limit}`),
+  searchAdvanced: (params: import('@/types/api').SearchParams) => {
+    const p = new URLSearchParams()
+    p.set('q', params.q)
+    if (params.limit) p.set('limit', String(params.limit))
+    if (params.offset) p.set('offset', String(params.offset))
+    if (params.type) p.set('type', params.type)
+    if (params.tag) p.set('tag', params.tag)
+    if (params.from) p.set('from', params.from)
+    if (params.to) p.set('to', params.to)
+    return request<import('@/types/api').SearchResponse>('GET', `/search?${p.toString()}`)
+  },
 
   // Auth
   setupStatus: () => request<{ data: { needs_setup: boolean; user_count: number; open_registration: boolean } }>('GET', '/auth/setup-status'),

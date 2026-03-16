@@ -358,10 +358,11 @@ func (c *Client) DeleteAPIKey(id string) error {
 // --- Search ---
 
 type SearchResult struct {
-	Type    string `json:"type"`
-	ID      string `json:"id"`
-	Title   string `json:"title"`
-	Snippet string `json:"snippet"`
+	Type    string   `json:"type"`
+	ID      string   `json:"id"`
+	Title   string   `json:"title"`
+	Snippet string   `json:"snippet"`
+	Tags    []string `json:"tags"`
 }
 
 func (c *Client) Search(query string) ([]SearchResult, error) {

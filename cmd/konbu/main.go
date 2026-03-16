@@ -784,13 +784,18 @@ func searchCmd() *cobra.Command {
 				return nil
 			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "TYPE\tID\tTITLE\tSNIPPET")
+			fmt.Fprintln(w, "TYPE\tID\tTITLE\tTAGS\tSNIPPET")
 			for _, r := range results {
 				snippet := r.Snippet
 				if len(snippet) > 60 {
 					snippet = snippet[:60] + "..."
 				}
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", r.Type, r.ID[:8], r.Title, snippet)
+				tags := strings.Join(r.Tags, ",")
+				id := r.ID
+				if len(id) > 8 {
+					id = id[:8]
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", r.Type, id, r.Title, tags, snippet)
 			}
 			w.Flush()
 			return nil

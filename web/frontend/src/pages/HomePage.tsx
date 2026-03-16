@@ -5,7 +5,8 @@ import { useCache } from '@/hooks/useCache'
 import { relativeTime, formatTime, dueFmt } from '@/lib/date'
 import { useAppStore } from '@/stores/app'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { GripVertical } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { GripVertical, Search } from 'lucide-react'
 import type { Todo, CalendarEvent } from '@/types/api'
 
 interface HomePageProps {
@@ -35,7 +36,7 @@ export function HomePage({ onEditMemo }: HomePageProps) {
   const todos = homeData?.todos || []
   const memos = homeData?.memos || []
   const [widgetOrder, setWidgetOrder] = useState<string[]>(homeData?.widgetOrder || DEFAULT_ORDER)
-  const setPage = useAppStore((s) => s.setPage)
+  const { setPage, setSearchQuery } = useAppStore()
   const dragItem = useRef<number | null>(null)
   const dragOver = useRef<number | null>(null)
 
@@ -166,8 +167,27 @@ export function HomePage({ onEditMemo }: HomePageProps) {
     ),
   }
 
+  function handleSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const val = (e.currentTarget.elements.namedItem('homeSearch') as HTMLInputElement)?.value?.trim()
+    if (val) {
+      setSearchQuery(val)
+      setPage('search')
+    }
+  }
+
   return (
     <div>
+      <form onSubmit={handleSearchSubmit} className="mb-4">
+        <div className="relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            name="homeSearch"
+            placeholder={t('search.placeholder')}
+            className="pl-9"
+          />
+        </div>
+      </form>
       <h1 className="text-2xl font-semibold mb-6">
         {new Date().toLocaleDateString(locale, {
           year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',

@@ -4,7 +4,7 @@ import { api } from '@/lib/api'
 import { useAppStore } from '@/stores/app'
 import { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { FileText, CheckSquare, Calendar } from 'lucide-react'
+import { FileText, CheckSquare, Calendar, Monitor } from 'lucide-react'
 import type { SearchResult } from '@/types/api'
 
 interface CommandPaletteProps {
@@ -33,9 +33,9 @@ export function CommandPalette({ onOpenMemo }: CommandPaletteProps) {
         api.listEvents(20),
       ])
       const items: SearchResult[] = [
-        ...(mm.data || []).map((m) => ({ type: 'memo' as const, id: m.id, title: m.title || t('common.untitled'), snippet: '', updated_at: m.updated_at })),
-        ...(td.data || []).map((todo) => ({ type: 'todo' as const, id: todo.id, title: todo.title, snippet: '', updated_at: todo.updated_at })),
-        ...(ev.data || []).map((e) => ({ type: 'event' as const, id: e.id, title: e.title, snippet: '', updated_at: e.updated_at })),
+        ...(mm.data || []).map((m) => ({ type: 'memo' as const, id: m.id, title: m.title || t('common.untitled'), snippet: '', tags: m.tags?.map(t => t.name) || [], updated_at: m.updated_at })),
+        ...(td.data || []).map((todo) => ({ type: 'todo' as const, id: todo.id, title: todo.title, snippet: '', tags: todo.tags?.map(t => t.name) || [], updated_at: todo.updated_at })),
+        ...(ev.data || []).map((e) => ({ type: 'event' as const, id: e.id, title: e.title, snippet: '', tags: e.tags?.map(t => t.name) || [], updated_at: e.updated_at })),
       ]
       setFallbackItems(items)
     }
@@ -84,19 +84,24 @@ export function CommandPalette({ onOpenMemo }: CommandPaletteProps) {
       case 'event':
         setPage('calendar')
         break
+      case 'tool':
+        if (item.snippet) window.open(item.snippet, '_blank')
+        break
     }
   }
 
-  const icons = {
+  const icons: Record<string, typeof FileText> = {
     memo: FileText,
     todo: CheckSquare,
     event: Calendar,
+    tool: Monitor,
   }
 
   const typeLabels: Record<string, string> = {
     memo: t('command.memo'),
     todo: t('command.todo'),
     event: t('command.event'),
+    tool: t('command.tool'),
   }
 
   const displayItems = query.length >= 2 ? results : fallbackItems
@@ -118,12 +123,17 @@ export function CommandPalette({ onOpenMemo }: CommandPaletteProps) {
             <CommandEmpty>{t('command.noResults')}</CommandEmpty>
             <CommandGroup>
               {displayItems.map((item) => {
-                const Icon = icons[item.type]
+                const Icon = icons[item.type] || FileText
                 return (
                   <CommandItem key={`${item.type}-${item.id}`} onSelect={() => handleSelect(item)}>
                     <Icon size={14} className="mr-2 text-muted-foreground" />
-                    <span className="text-xs text-muted-foreground mr-2 w-10">{typeLabels[item.type]}</span>
+                    <span className="text-xs text-muted-foreground mr-2 w-10">{typeLabels[item.type] || item.type}</span>
                     <span className="flex-1 truncate">{item.title}</span>
+                    {item.tags?.length > 0 && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        {item.tags.map(t => `#${t}`).join(' ')}
+                      </span>
+                    )}
                     {item.snippet && <span className="text-xs text-muted-foreground truncate ml-2 max-w-40">{item.snippet}</span>}
                   </CommandItem>
                 )
