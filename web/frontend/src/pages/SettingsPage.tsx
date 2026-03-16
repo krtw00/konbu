@@ -75,7 +75,7 @@ function ProfileTab() {
               id="kofiframe"
               src="https://ko-fi.com/codenica000/?hidefeed=true&widget=true&embed=true"
               className="w-full border-0 rounded-lg"
-              style={{ height: '712px' }}
+              style={{ height: 'min(712px, 60vh)' }}
               title="Ko-fi"
             />
           </div>

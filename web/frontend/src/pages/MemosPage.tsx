@@ -52,6 +52,32 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
         </Button>
       </div>
 
+      {Object.keys(tagCounts).length > 0 && (
+        <div className="md:hidden flex gap-1.5 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-none">
+          <button
+            onClick={() => setTagFilter(null)}
+            className={`shrink-0 text-sm px-3 py-1.5 rounded-full border ${
+              tagFilter === null ? 'bg-accent font-medium border-border' : 'border-transparent hover:bg-accent/50'
+            }`}
+          >
+            {t('common.all')} <span className="text-muted-foreground ml-0.5">{memos.length}</span>
+          </button>
+          {Object.entries(tagCounts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([name, count]) => (
+              <button
+                key={name}
+                onClick={() => setTagFilter(name)}
+                className={`shrink-0 text-sm px-3 py-1.5 rounded-full border ${
+                  tagFilter === name ? 'bg-accent font-medium border-border' : 'border-transparent hover:bg-accent/50'
+                }`}
+              >
+                {name} <span className="text-muted-foreground ml-0.5">{count}</span>
+              </button>
+            ))}
+        </div>
+      )}
+
       <div className="flex gap-4">
         {Object.keys(tagCounts).length > 0 && (
           <div className="hidden md:block w-40 shrink-0 space-y-0.5">
@@ -110,7 +136,7 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100">
+                    <Button variant="ghost" size="icon" className="h-7 w-7 opacity-100 md:opacity-0 md:group-hover:opacity-100">
                       <MoreHorizontal size={14} />
                     </Button>
                   </DropdownMenuTrigger>
