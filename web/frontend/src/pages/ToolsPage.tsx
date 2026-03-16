@@ -180,7 +180,7 @@ export function ToolsPage() {
                       {(tool.name || '?')[0].toUpperCase()}
                     </div>
                     <span className="text-sm font-medium text-center truncate w-full">{tool.name}</span>
-                    <div className="absolute top-1 right-1 flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="absolute top-1 right-1 flex gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); openEditDialog(tool) }}
                         className="text-muted-foreground hover:text-foreground"
