@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
-import { useCache } from '@/hooks/useCache'
+import { useCache, invalidateCache } from '@/hooks/useCache'
 import { relativeTime } from '@/lib/date'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -15,13 +15,14 @@ interface MemosPageProps {
 
 export function MemosPage({ onEditMemo }: MemosPageProps) {
   const { t } = useTranslation()
-  const fetchMemos = () => Promise.all([api.listMemos(), api.listTags()]).then(([r, t]) => ({
+  const fetchMemos = useCallback(() => Promise.all([api.listMemos(), api.listTags()]).then(([r, t]) => ({
     memos: r.data || [] as Memo[],
     tags: (t.data || []).map((tag: Tag) => tag.name),
-  }))
-  const { data: memosData, refresh: loadMemos } = useCache('memos', fetchMemos)
+  })), [])
+  const { data: memosData } = useCache('memos', fetchMemos)
   const memos = memosData?.memos || []
   const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [creating, setCreating] = useState(false)
 
   const filtered = tagFilter
     ? memos.filter((m) => m.tags?.some((t) => t.name === tagFilter))
@@ -33,21 +34,27 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
   }))
 
   async function createMemo() {
-    const r = await api.createMemo({ title: '', type: 'markdown', content: '', tags: [] })
-    onEditMemo(r.data.id)
+    if (creating) return
+    setCreating(true)
+    try {
+      const r = await api.createMemo({ title: '', type: 'markdown', content: '', tags: [] })
+      onEditMemo(r.data.id)
+    } finally {
+      setCreating(false)
+    }
   }
 
   async function deleteMemo(id: string, title: string) {
     if (!confirm(t('memos.confirmDelete', { title: title || t('common.untitled') }))) return
     await api.deleteMemo(id)
-    loadMemos()
+    invalidateCache('memos', 'home')
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">{t('memos.title')}</h1>
-        <Button size="sm" onClick={createMemo}>
+        <Button size="sm" onClick={createMemo} disabled={creating}>
           <Plus size={16} className="mr-1" /> {t('common.new')}
         </Button>
       </div>

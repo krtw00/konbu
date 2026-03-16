@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
-import { useCache } from '@/hooks/useCache'
+import { useCache, invalidateCache } from '@/hooks/useCache'
 import { dateKey, formatTime } from '@/lib/date'
 import { getHolidays } from '@/lib/holidays'
 import { Button } from '@/components/ui/button'
@@ -54,11 +54,11 @@ export function CalendarPage() {
   const [year, setYear] = useState(() => new Date().getFullYear())
   const [month, setMonth] = useState(() => new Date().getMonth())
   const [weekStart, setWeekStart] = useState<Date>(() => getWeekStart(new Date(), 0))
-  const fetchCalendar = () => Promise.all([api.listEvents(100), api.getSettings().catch(() => null)]).then(([r, sRes]) => ({
+  const fetchCalendar = useCallback(() => Promise.all([api.listEvents(100), api.getSettings().catch(() => null)]).then(([r, sRes]) => ({
     events: r.data || [] as CalendarEvent[],
     firstDay: sRes?.data?.first_day_of_week ?? 0,
-  }))
-  const { data: calData, refresh: load } = useCache('calendar', fetchCalendar)
+  })), [])
+  const { data: calData } = useCache('calendar', fetchCalendar)
   const events = calData?.events || []
   const [selectedDay, setSelectedDay] = useState<[number, number, number] | null>(null)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
@@ -201,7 +201,7 @@ export function CalendarPage() {
       tags: [],
     })
     setNewRecurrence('')
-    load()
+    invalidateCache('calendar', 'home')
   }
 
   async function handleNewEventList(_targetDk: string) {
@@ -221,7 +221,7 @@ export function CalendarPage() {
       tags: [],
     })
     setListNewEventDate(null)
-    load()
+    invalidateCache('calendar', 'home')
   }
 
   async function saveEvent() {
@@ -237,14 +237,14 @@ export function CalendarPage() {
       tags: editingEvent.tags?.map((tag) => tag.name) || [],
     })
     setEditingEvent(null)
-    load()
+    invalidateCache('calendar', 'home')
   }
 
   async function deleteEvent(id: string) {
     if (!confirm(t('calendar.confirmDelete'))) return
     await api.deleteEvent(id)
     setEditingEvent(null)
-    load()
+    invalidateCache('calendar', 'home')
   }
 
   const dk = selectedDay ? dateKey(selectedDay[0], selectedDay[1], selectedDay[2]) : null
