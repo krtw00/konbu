@@ -72,15 +72,29 @@ func (s *ToolService) UpdateTool(ctx context.Context, id, userID uuid.UUID, req 
 		return nil, apperror.Internal(err)
 	}
 
+	// Merge: keep existing values for empty fields
+	name := req.Name
+	if name == "" {
+		name = existing.Name
+	}
+	url := req.URL
+	if url == "" {
+		url = existing.URL
+	}
+	category := req.Category
+	if category == "" {
+		category = existing.Category
+	}
+
 	// Re-fetch favicon if URL changed or icon is missing
 	icon := existing.Icon
-	if req.URL != existing.URL || icon == "" {
-		if req.URL != "" {
-			icon = FetchFavicon(req.URL)
+	if url != existing.URL || icon == "" {
+		if url != "" {
+			icon = FetchFavicon(url)
 		}
 	}
 
-	t, err := s.queries.UpdateTool(ctx, id, userID, req.Name, req.URL, icon, req.Category, existing.SortOrder)
+	t, err := s.queries.UpdateTool(ctx, id, userID, name, url, icon, category, existing.SortOrder)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
