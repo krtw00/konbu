@@ -636,7 +636,7 @@ export function CalendarPage() {
   const weekRows = Math.ceil((startPad + lastDate + remainder) / 7)
 
   return (
-    <div className={viewMode === 'month' ? 'h-full flex flex-col' : ''}>
+    <div className="h-full flex flex-col">
       <h1 className="text-lg font-semibold mb-2">{t('calendar.title')}</h1>
 
       {viewMode === 'month' && (
@@ -914,17 +914,21 @@ export function CalendarPage() {
       )}
 
       {viewMode === 'week' && (
-        <div>
+        <div className="flex-1 min-h-0 flex flex-col">
           {renderNavigation()}
-          {renderWeekView()}
+          <div className="flex-1 min-h-0 overflow-auto">
+            {renderWeekView()}
+          </div>
           {renderEditOverlay()}
         </div>
       )}
 
       {viewMode === 'list' && (
-        <div>
+        <div className="flex-1 min-h-0 flex flex-col">
           {renderNavigation()}
-          {renderListView()}
+          <div className="flex-1 min-h-0 overflow-auto">
+            {renderListView()}
+          </div>
           {renderEditOverlay()}
         </div>
       )}
