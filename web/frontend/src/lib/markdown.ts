@@ -1,4 +1,5 @@
 import { marked } from 'marked'
+import DOMPurify from 'dompurify'
 import markedAlert from 'marked-alert'
 import { gfmHeadingId } from 'marked-gfm-heading-id'
 import hljs from 'highlight.js/lib/core'
@@ -72,5 +73,9 @@ export function renderMarkdown(content: string): string {
     /\[\[([^\]]+)\]\]/g,
     '<a href="#" data-memo-link="$1" class="memo-link">$1</a>'
   )
-  return marked.parse(withLinks) as string
+  const html = marked.parse(withLinks) as string
+  return DOMPurify.sanitize(html, {
+    ADD_ATTR: ['data-memo-link'],
+    ADD_TAGS: ['input'],
+  })
 }
