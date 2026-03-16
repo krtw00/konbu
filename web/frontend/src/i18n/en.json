@@ -38,7 +38,16 @@
   "memos": {
     "title": "Memos",
     "noMemos": "No memos",
+    "newTable": "Table",
     "confirmDelete": "Delete \"{{title}}\"?"
+  },
+  "table": {
+    "import": "Import",
+    "export": "Export",
+    "rowCount": "{{count}} rows",
+    "newColumn": "New column…",
+    "renameColumn": "Rename column",
+    "loadMore": "Load more"
   },
   "memoEdit": {
     "tags": "Tags",

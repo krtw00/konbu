@@ -71,7 +71,9 @@ func main() {
 	apiKeyH := handler.NewAPIKeyHandler(authSvc)
 	tagH := handler.NewTagHandler(tagSvc)
 	toolH := handler.NewToolHandler(toolSvc)
+	memoRowSvc := service.NewMemoRowService(db)
 	memoH := handler.NewMemoHandler(memoSvc)
+	memoRowH := handler.NewMemoRowHandler(memoRowSvc)
 	todoH := handler.NewTodoHandler(todoSvc)
 	eventH := handler.NewEventHandler(eventSvc)
 	searchH := handler.NewSearchHandler(searchSvc)
@@ -168,7 +170,11 @@ func main() {
 			r.Mount("/api-keys", apiKeyH.Routes())
 			r.Mount("/tags", tagH.Routes())
 			r.Mount("/tools", toolH.Routes())
-			r.Mount("/memos", memoH.Routes())
+			r.Mount("/memos", func() chi.Router {
+				mr := memoH.Routes()
+				mr.Route("/{id}/rows", memoRowH.Routes)
+				return mr
+			}())
 			r.Mount("/todos", todoH.Routes())
 			r.Mount("/events", eventH.Routes())
 			r.Get("/search", searchH.HandleSearch)

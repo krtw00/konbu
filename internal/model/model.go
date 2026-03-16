@@ -72,10 +72,30 @@ type Memo struct {
 	Type         string           `json:"type"`
 	Content      *string          `json:"content,omitempty"`
 	TableColumns *json.RawMessage `json:"table_columns,omitempty"`
+	RowCount     *int64           `json:"row_count,omitempty"`
 	Tags         []Tag            `json:"tags,omitempty"`
-	Rows         *PaginatedResult `json:"rows,omitempty"`
 	CreatedAt    time.Time        `json:"created_at"`
 	UpdatedAt    time.Time        `json:"updated_at"`
+}
+
+type MemoRow struct {
+	ID        uuid.UUID        `json:"id"`
+	MemoID    uuid.UUID        `json:"memo_id,omitempty"`
+	RowData   json.RawMessage  `json:"row_data"`
+	SortOrder int              `json:"sort_order"`
+	CreatedAt time.Time        `json:"created_at"`
+}
+
+type CreateMemoRowRequest struct {
+	RowData json.RawMessage `json:"row_data"`
+}
+
+type UpdateMemoRowRequest struct {
+	RowData json.RawMessage `json:"row_data"`
+}
+
+type BatchCreateMemoRowsRequest struct {
+	Rows []json.RawMessage `json:"rows"`
 }
 
 type CreateMemoRequest struct {
