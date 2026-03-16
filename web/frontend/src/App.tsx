@@ -70,13 +70,16 @@ function App() {
           <main className="flex-1 overflow-hidden">
             <ChatPage />
           </main>
+        ) : currentPage === 'calendar' ? (
+          <main className="flex-1 overflow-auto p-2 md:p-4">
+            <CalendarPage />
+          </main>
         ) : (
           <main className="flex-1 overflow-auto">
             <div className="max-w-5xl mx-auto p-4 md:p-6">
               {currentPage === 'home' && <HomePage onEditMemo={handleEditMemo} />}
               {currentPage === 'memos' && <MemosPage onEditMemo={handleEditMemo} />}
               {currentPage === 'todos' && <TodosPage />}
-              {currentPage === 'calendar' && <CalendarPage />}
               {currentPage === 'tools' && <ToolsPage />}
               {currentPage === 'search' && <SearchPage onOpenMemo={handleEditMemo} />}
               {currentPage === 'settings' && <SettingsPage />}

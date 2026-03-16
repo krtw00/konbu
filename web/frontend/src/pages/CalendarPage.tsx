@@ -633,23 +633,25 @@ export function CalendarPage() {
     )
   }
 
+  const weekRows = Math.ceil((startPad + lastDate + remainder) / 7)
+
   return (
-    <div>
-      <h1 className="text-2xl font-semibold mb-4">{t('calendar.title')}</h1>
+    <div className={viewMode === 'month' ? 'h-full flex flex-col' : ''}>
+      <h1 className="text-lg font-semibold mb-2">{t('calendar.title')}</h1>
 
       {viewMode === 'month' && (
-        <div className="flex gap-4">
-          <div className="flex-1">
+        <div className="flex gap-4 flex-1 min-h-0">
+          <div className="flex-1 flex flex-col min-h-0">
             {renderNavigation()}
 
-            <div className="grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden">
+            <div className={`grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden flex-1`} style={{ gridTemplateRows: `auto repeat(${weekRows}, 1fr)` }}>
               {daysHeader.map((d, i) => (
                 <div key={d} className={`bg-muted/50 text-center text-xs font-medium py-1 ${headerDayColor(i)}`}>
                   {d}
                 </div>
               ))}
               {Array.from({ length: startPad }, (_, i) => (
-                <div key={`p${i}`} className="bg-background px-1 py-0.5 min-h-14 text-muted-foreground/40">
+                <div key={`p${i}`} className="bg-background px-1 py-0.5 text-muted-foreground/40 overflow-hidden">
                   <span className="text-xs leading-none">{prevLastDate - startPad + 1 + i}</span>
                 </div>
               ))}
@@ -667,7 +669,7 @@ export function CalendarPage() {
                   <div
                     key={d}
                     onClick={() => setSelectedDay([year, month, d])}
-                    className={`bg-background px-1 py-0.5 min-h-14 cursor-pointer hover:bg-accent/30 transition-colors ${
+                    className={`bg-background px-1 py-0.5 cursor-pointer hover:bg-accent/30 transition-colors overflow-hidden ${
                       isSelected ? 'ring-2 ring-primary ring-inset' : ''
                     }`}
                   >
@@ -700,7 +702,7 @@ export function CalendarPage() {
                 )
               })}
               {Array.from({ length: remainder }, (_, i) => (
-                <div key={`n${i}`} className="bg-background px-1 py-0.5 min-h-14 text-muted-foreground/40">
+                <div key={`n${i}`} className="bg-background px-1 py-0.5 text-muted-foreground/40 overflow-hidden">
                   <span className="text-xs leading-none">{i + 1}</span>
                 </div>
               ))}
