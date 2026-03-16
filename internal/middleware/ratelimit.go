@@ -58,6 +58,12 @@ func (rl *RateLimiter) allow(ip string) bool {
 
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Skip rate limiting for session-based (Web UI) requests
+		if _, err := r.Cookie("session"); err == nil {
+			next.ServeHTTP(w, r)
+			return
+		}
+
 		ip := r.RemoteAddr
 		if forwarded := r.Header.Get("X-Real-Ip"); forwarded != "" {
 			ip = forwarded

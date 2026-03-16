@@ -81,8 +81,8 @@ func main() {
 	attachH := handler.NewAttachmentHandler(r2Svc)
 
 	// Rate limiters
-	apiLimiter := middleware.NewRateLimiter(600, time.Minute)
-	authLimiter := middleware.NewRateLimiter(20, time.Minute)
+	apiLimiter := middleware.NewRateLimiter(100, time.Minute)
+	authLimiter := middleware.NewRateLimiter(10, time.Minute)
 
 	// Router
 	r := chi.NewRouter()
