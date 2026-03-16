@@ -96,7 +96,7 @@ func (q *Queries) CreateChatMessage(ctx context.Context, sessionID uuid.UUID, ro
 	err := q.db.QueryRowContext(ctx,
 		`INSERT INTO chat_messages (session_id, role, content, tool_calls, tool_call_id, provider, model, input_tokens, output_tokens)
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-		 RETURNING id, session_id, role, content, tool_calls, tool_call_id, provider, model, input_tokens, output_tokens, created_at`,
+		 RETURNING id, session_id, role, content, COALESCE(tool_calls, 'null'::jsonb), tool_call_id, provider, model, input_tokens, output_tokens, created_at`,
 		sessionID, role, content, toolCalls, toolCallID, provider, model, inputTokens, outputTokens,
 	).Scan(&m.ID, &m.SessionID, &m.Role, &m.Content, &m.ToolCalls, &m.ToolCallID, &m.Provider, &m.Model, &m.InputTokens, &m.OutputTokens, &m.CreatedAt)
 	return m, err
@@ -104,7 +104,7 @@ func (q *Queries) CreateChatMessage(ctx context.Context, sessionID uuid.UUID, ro
 
 func (q *Queries) ListChatMessagesBySessionID(ctx context.Context, sessionID uuid.UUID) ([]ChatMessage, error) {
 	rows, err := q.db.QueryContext(ctx,
-		`SELECT id, session_id, role, content, tool_calls, tool_call_id, provider, model, input_tokens, output_tokens, created_at
+		`SELECT id, session_id, role, content, COALESCE(tool_calls, 'null'::jsonb), tool_call_id, provider, model, input_tokens, output_tokens, created_at
 		 FROM chat_messages WHERE session_id = $1
 		 ORDER BY created_at ASC`, sessionID)
 	if err != nil {
