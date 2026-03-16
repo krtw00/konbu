@@ -127,7 +127,18 @@ func (s *ChatService) SendMessage(ctx context.Context, userID uuid.UUID, session
 	// Build LLM messages (limit to 50)
 	llmMessages := s.buildLLMMessages(dbMessages)
 
-	llm := NewLLMProvider(provider, apiKey)
+	var llmOpts *LLMOptions
+	if s.cfg.DefaultAIAPIKey != "" && apiKey == s.cfg.DefaultAIAPIKey {
+		llmOpts = &LLMOptions{Endpoint: s.cfg.DefaultAIEndpoint, Model: s.cfg.DefaultAIModel}
+	} else {
+		switch provider {
+		case "anthropic":
+			llmOpts = &LLMOptions{Endpoint: s.cfg.AnthropicEndpoint, Model: s.cfg.AnthropicModel}
+		default:
+			llmOpts = &LLMOptions{Endpoint: s.cfg.OpenAIEndpoint, Model: s.cfg.OpenAIModel}
+		}
+	}
+	llm := NewLLMProvider(provider, apiKey, llmOpts)
 	ch := make(chan SSEEvent, 32)
 
 	go s.streamChat(ctx, ch, llm, llmMessages, provider, sessionID, userID)

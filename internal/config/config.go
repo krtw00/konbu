@@ -21,9 +21,15 @@ type Config struct {
 	R2Endpoint       string
 	R2Bucket         string
 	R2PublicURL      string
-	KofiToken          string
-	DefaultAIProvider  string
-	DefaultAIAPIKey    string
+	KofiToken            string
+	OpenAIEndpoint       string
+	OpenAIModel          string
+	AnthropicEndpoint    string
+	AnthropicModel       string
+	DefaultAIProvider    string
+	DefaultAIAPIKey      string
+	DefaultAIEndpoint    string
+	DefaultAIModel       string
 }
 
 func getEnvDefault(key, fallback string) string {
@@ -72,8 +78,14 @@ func Load() *Config {
 		R2Endpoint:       r2Endpoint,
 		R2Bucket:         r2Bucket,
 		R2PublicURL:        os.Getenv("R2_PUBLIC_URL"),
-		KofiToken:          os.Getenv("KOFI_TOKEN"),
-		DefaultAIProvider:  getEnvDefault("DEFAULT_AI_PROVIDER", "openai"),
-		DefaultAIAPIKey:    os.Getenv("DEFAULT_AI_API_KEY"),
+		KofiToken:            os.Getenv("KOFI_TOKEN"),
+		OpenAIEndpoint:       getEnvDefault("OPENAI_ENDPOINT", "https://api.openai.com/v1/chat/completions"),
+		OpenAIModel:          getEnvDefault("OPENAI_MODEL", "gpt-4o"),
+		AnthropicEndpoint:    getEnvDefault("ANTHROPIC_ENDPOINT", "https://api.anthropic.com/v1/messages"),
+		AnthropicModel:       getEnvDefault("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+		DefaultAIProvider:    getEnvDefault("DEFAULT_AI_PROVIDER", "openai"),
+		DefaultAIAPIKey:      os.Getenv("DEFAULT_AI_API_KEY"),
+		DefaultAIEndpoint:    os.Getenv("DEFAULT_AI_ENDPOINT"),
+		DefaultAIModel:       os.Getenv("DEFAULT_AI_MODEL"),
 	}
 }
