@@ -17,6 +17,7 @@ export function ChatPage() {
   const [input, setInput] = useState('')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     if (user) loadSessions()
@@ -28,10 +29,18 @@ export function ChatPage() {
 
   if (!user) return null
 
+  function autoResize(el: HTMLTextAreaElement) {
+    el.style.height = 'auto'
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px'
+  }
+
   function handleSend() {
     if (!input.trim() || isStreaming) return
     sendMessage(input.trim())
     setInput('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+    }
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -155,15 +164,15 @@ export function ChatPage() {
         <div className="p-3 md:p-4 border-t border-border">
           <div className="flex gap-2 items-end">
             <textarea
+              ref={textareaRef}
               value={input}
-              onChange={e => setInput(e.target.value)}
+              onChange={e => { setInput(e.target.value); autoResize(e.target) }}
               onKeyDown={handleKeyDown}
               placeholder={t('chat.inputPlaceholder')}
               disabled={isStreaming}
               rows={1}
               className="flex-1 min-w-0 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              style={{ maxHeight: '120px', minHeight: '38px' }}
-              onInput={e => { const el = e.target as HTMLTextAreaElement; el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 120) + 'px' }}
+              style={{ maxHeight: '160px', minHeight: '38px' }}
             />
             <Button className="shrink-0" onClick={handleSend} disabled={!input.trim() || isStreaming}>
               <Send size={16} />
