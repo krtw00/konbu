@@ -139,6 +139,18 @@ func (s *EventService) UpdateEvent(ctx context.Context, id, userID uuid.UUID, re
 	return &event, nil
 }
 
+func (s *EventService) ListAllEvents(ctx context.Context, userID uuid.UUID) ([]model.CalendarEvent, error) {
+	rows, err := s.queries.ListAllEventsByUserID(ctx, userID)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	items := make([]model.CalendarEvent, len(rows))
+	for i, r := range rows {
+		items[i] = toModelEvent(r)
+	}
+	return items, nil
+}
+
 func (s *EventService) DeleteEvent(ctx context.Context, id, userID uuid.UUID) error {
 	return s.queries.SoftDeleteEvent(ctx, id, userID)
 }

@@ -144,6 +144,9 @@
     "language": "言語",
     "theme": "テーマ",
     "themeDefault": "konbu（デフォルト）",
+    "themeLight": "ライト",
+    "themeDark": "ダーク",
+    "themeSystem": "システム",
     "changePassword": "パスワード変更",
     "oldPassword": "現在のパスワード",
     "newPassword": "新しいパスワード",
@@ -191,7 +194,10 @@
     "aiProvider": "AIプロバイダ",
     "aiApiKey": "APIキー",
     "aiKeySaved": "キーが保存されました",
-    "aiKeyPlaceholder": "sk-... または sk-ant-..."
+    "aiKeyPlaceholder": "sk-... または sk-ant-...",
+    "icalUrl": "iCal URL",
+    "icalDescription": "GoogleカレンダーやAppleカレンダーに追加できます",
+    "icalCopied": "URLをコピーしました"
   },
   "attachment": {
     "upload": "画像をアップロード",

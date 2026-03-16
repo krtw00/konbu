@@ -65,6 +65,27 @@ func (q *Queries) ListEventsByUserID(ctx context.Context, userID uuid.UUID, limi
 	return events, rows.Err()
 }
 
+func (q *Queries) ListAllEventsByUserID(ctx context.Context, userID uuid.UUID) ([]EventRow, error) {
+	rows, err := q.db.QueryContext(ctx,
+		`SELECT `+eventCols+` FROM calendar_events WHERE user_id = $1 AND deleted_at IS NULL
+		 ORDER BY start_at ASC`,
+		userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []EventRow
+	for rows.Next() {
+		e, err := scanEvent(rows)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, e)
+	}
+	return events, rows.Err()
+}
+
 func (q *Queries) CountEventsByUserID(ctx context.Context, userID uuid.UUID) (int64, error) {
 	row := q.db.QueryRowContext(ctx,
 		`SELECT count(*) FROM calendar_events WHERE user_id = $1 AND deleted_at IS NULL`, userID)

@@ -80,6 +80,8 @@ func main() {
 	chatH := handler.NewChatHandler(chatSvc)
 	attachH := handler.NewAttachmentHandler(r2Svc)
 
+	icalH := handler.NewICalHandler(authSvc, eventSvc)
+
 	// Rate limiters
 	apiLimiter := middleware.NewRateLimiter(100, time.Minute)
 	authLimiter := middleware.NewRateLimiter(10, time.Minute)
@@ -102,6 +104,9 @@ func main() {
 		w.Write([]byte(`{"status":"ok"}`))
 	})
 
+	// iCal feed (token query param auth)
+	r.Get("/api/v1/calendar.ics", icalH.HandleCalendarICS)
+
 	// Attachment serving (unauthenticated, for Markdown image display)
 	r.Get("/api/v1/attachments/*", attachH.Serve)
 
@@ -117,6 +122,10 @@ func main() {
 	r.Get("/hero.png", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "image/png")
 		http.ServeFile(w, r, "web/static/hero.png")
+	})
+	r.Get("/manifest.json", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/manifest+json")
+		http.ServeFile(w, r, "web/static/manifest.json")
 	})
 
 	// OAuth

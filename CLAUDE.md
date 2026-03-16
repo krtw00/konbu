@@ -175,3 +175,39 @@ go run ./cmd/server migrate down
 - GraphQL
 - WebSocket
 - ORM（sqlc でコード生成。手書き SQL を基本とする）
+
+## セッションメモ（2026-03-15〜16）
+
+### 完了した作業
+- #3 AIチャット（BYOK、OpenAI/Anthropic、SSEストリーミング、15ツール function calling）
+- #5 MCP Server（`konbu mcp` サブコマンド、stdio、18ツール）
+- #6 画像添付（Cloudflare R2、ドラッグ&ドロップ/ペースト）
+- #8 レート制限（IPベース、認証10req/分、API 100req/分）
+- #12 ツール機能改善（favicon自動取得、アイコンUI削除、定期リフレッシュ）
+- #13 旧Supabase削除
+- #14 Google OAuth設定（メール正規化修正含む）
+- #15 GitHub Sponsors設定（tier作成、Webhook設定）
+- #16 セルフホスト版停止（apps-vps systemd/DB削除）
+- #17 パフォーマンス改善（Monaco lazy load、Cache-Control）
+- #19 課金導線（Ko-fi連携、Webhook、アプリ/LP導線変更）
+- CD: GitHub Actions → Fly.io自動デプロイ
+- 自動マイグレーション（サーバー起動時にSQL適用）
+- ランディングページ（konbu.codenica.dev、Cloudflare Pages）
+- ディスク容量対策（Docker→/home移動、journal/pacman自動掃除）
+
+### 判断・決定事項
+- 課金: Ko-fi（寄付型、特商法回避）→ 規模拡大時にStripe移行
+- ランディング: 非エンジニア向け、OSS/GitHub/セルフホストは訴求しない
+- ブックマーク機能をランディングの訴求ポイントに含める
+
+### 未解決の問題
+- Ko-fi Webhookの実際の動作確認（テスト支払い未実施）
+- AIチャットの実際の動作確認（APIキー設定→チャット→ツール実行の一連テスト）
+- デバッグログ（favicon refresh）がまだ残っている
+
+### 次回の優先事項
+1. #18 ツールのドラッグ&ドロップ並び替え
+2. #7 リマインダー通知（方針: Brevoメール通知 + ブラウザ内バナー）
+3. #9 CIにテスト追加
+4. AIチャット・Ko-fi Webhookの動作確認
+5. デバッグログの削除
