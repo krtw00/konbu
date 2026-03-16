@@ -47,6 +47,20 @@ export function dueFmt(dueDate: string | null): { text: string; className: strin
   return { text: due.toLocaleDateString(currentLocale(), { month: 'short', day: 'numeric' }), className: '' }
 }
 
+/** Convert a datetime-local value ("YYYY-MM-DDTHH:mm") to ISO 8601 UTC string for API */
+export function localToISO(local: string): string {
+  if (!local) return ''
+  return new Date(local).toISOString()
+}
+
+/** Convert an ISO 8601 UTC string to datetime-local value ("YYYY-MM-DDTHH:mm") */
+export function isoToLocal(iso: string): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 export function dateDelta(n: number): string {
   const d = new Date()
   d.setDate(d.getDate() + n)

@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useCache, invalidateCache } from '@/hooks/useCache'
-import { dateKey, formatTime } from '@/lib/date'
+import { dateKey, formatTime, localToISO, isoToLocal } from '@/lib/date'
 import { getHolidays } from '@/lib/holidays'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -193,8 +193,8 @@ export function CalendarPage() {
     await api.createEvent({
       title,
       description: desc || '',
-      start_at: new Date(startAt).toISOString(),
-      end_at: endAt ? new Date(endAt).toISOString() : null,
+      start_at: localToISO(startAt),
+      end_at: endAt ? localToISO(endAt) : null,
       all_day: false,
       recurrence_rule: newRecurrence || null,
       recurrence_end: null,
@@ -213,8 +213,8 @@ export function CalendarPage() {
     await api.createEvent({
       title,
       description: desc || '',
-      start_at: new Date(startAt).toISOString(),
-      end_at: endAt ? new Date(endAt).toISOString() : null,
+      start_at: localToISO(startAt),
+      end_at: endAt ? localToISO(endAt) : null,
       all_day: false,
       recurrence_rule: null,
       recurrence_end: null,
@@ -299,8 +299,8 @@ export function CalendarPage() {
           <label className="text-xs text-muted-foreground">{t('calendar.start')}</label>
           <Input
             type="datetime-local"
-            value={editingEvent.start_at ? new Date(editingEvent.start_at).toISOString().slice(0, 16) : ''}
-            onChange={(e) => setEditingEvent({ ...editingEvent, start_at: new Date(e.target.value).toISOString() })}
+            value={editingEvent.start_at ? isoToLocal(editingEvent.start_at) : ''}
+            onChange={(e) => setEditingEvent({ ...editingEvent, start_at: localToISO(e.target.value) })}
             className="mt-1"
           />
         </div>
@@ -308,8 +308,8 @@ export function CalendarPage() {
           <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
           <Input
             type="datetime-local"
-            value={editingEvent.end_at ? new Date(editingEvent.end_at).toISOString().slice(0, 16) : ''}
-            onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? new Date(e.target.value).toISOString() : null })}
+            value={editingEvent.end_at ? isoToLocal(editingEvent.end_at) : ''}
+            onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? localToISO(e.target.value) : null })}
             className="mt-1"
           />
         </div>
@@ -733,8 +733,8 @@ export function CalendarPage() {
                     <label className="text-xs text-muted-foreground">{t('calendar.start')}</label>
                     <Input
                       type="datetime-local"
-                      value={editingEvent.start_at ? new Date(editingEvent.start_at).toISOString().slice(0, 16) : ''}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, start_at: new Date(e.target.value).toISOString() })}
+                      value={editingEvent.start_at ? isoToLocal(editingEvent.start_at) : ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, start_at: localToISO(e.target.value) })}
                       className="mt-1"
                     />
                   </div>
@@ -742,8 +742,8 @@ export function CalendarPage() {
                     <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
                     <Input
                       type="datetime-local"
-                      value={editingEvent.end_at ? new Date(editingEvent.end_at).toISOString().slice(0, 16) : ''}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                      value={editingEvent.end_at ? isoToLocal(editingEvent.end_at) : ''}
+                      onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? localToISO(e.target.value) : null })}
                       className="mt-1"
                     />
                   </div>
@@ -844,8 +844,8 @@ export function CalendarPage() {
                       <label className="text-xs text-muted-foreground">{t('calendar.start')}</label>
                       <Input
                         type="datetime-local"
-                        value={editingEvent.start_at ? new Date(editingEvent.start_at).toISOString().slice(0, 16) : ''}
-                        onChange={(e) => setEditingEvent({ ...editingEvent, start_at: new Date(e.target.value).toISOString() })}
+                        value={editingEvent.start_at ? isoToLocal(editingEvent.start_at) : ''}
+                        onChange={(e) => setEditingEvent({ ...editingEvent, start_at: localToISO(e.target.value) })}
                         className="mt-1"
                       />
                     </div>
@@ -853,8 +853,8 @@ export function CalendarPage() {
                       <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
                       <Input
                         type="datetime-local"
-                        value={editingEvent.end_at ? new Date(editingEvent.end_at).toISOString().slice(0, 16) : ''}
-                        onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                        value={editingEvent.end_at ? isoToLocal(editingEvent.end_at) : ''}
+                        onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? localToISO(e.target.value) : null })}
                         className="mt-1"
                       />
                     </div>
