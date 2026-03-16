@@ -32,6 +32,38 @@ export const sectionBgColors: Record<string, string> = {
   settings: 'bg-zinc-500/10',
 }
 
+export const sectionBorderColors: Record<string, string> = {
+  home: 'border-orange-400',
+  memos: 'border-blue-400',
+  memo: 'border-blue-400',
+  'memo-edit': 'border-blue-400',
+  todos: 'border-emerald-400',
+  todo: 'border-emerald-400',
+  calendar: 'border-rose-400',
+  event: 'border-rose-400',
+  tools: 'border-violet-400',
+  tool: 'border-violet-400',
+  search: 'border-amber-400',
+  chat: 'border-cyan-400',
+  settings: 'border-zinc-400',
+}
+
+export const sectionBgSolid: Record<string, string> = {
+  home: 'bg-orange-500',
+  memos: 'bg-blue-500',
+  memo: 'bg-blue-500',
+  'memo-edit': 'bg-blue-500',
+  todos: 'bg-emerald-500',
+  todo: 'bg-emerald-500',
+  calendar: 'bg-rose-500',
+  event: 'bg-rose-500',
+  tools: 'bg-violet-500',
+  tool: 'bg-violet-500',
+  search: 'bg-amber-500',
+  chat: 'bg-cyan-500',
+  settings: 'bg-zinc-500',
+}
+
 export const sectionIcons: Record<string, typeof Home> = {
   home: Home,
   memos: FileText,

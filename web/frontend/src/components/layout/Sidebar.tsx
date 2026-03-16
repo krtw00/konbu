@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
-import { sectionColors } from '@/lib/colors'
+import { sectionColors, sectionBgColors, sectionBorderColors } from '@/lib/colors'
 import { Home, FileText, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
 
 const navItems = [
@@ -15,8 +15,9 @@ const navItems = [
 
 export function Sidebar() {
   const { t } = useTranslation()
-  const { currentPage, setPage, setCommandOpen, logout } = useAppStore()
+  const { currentPage, setPage, setCommandOpen, logout, theme } = useAppStore()
   const collapsed = currentPage === 'memo-edit'
+  const isColorful = theme === 'colorful' || theme === 'colorful-dark'
 
   return (
     <nav className={`hidden md:flex flex-col border-r border-border bg-sidebar h-screen sticky top-0 transition-all ${
@@ -30,6 +31,11 @@ export function Sidebar() {
         {navItems.map(({ page, icon: Icon, labelKey }) => {
           const isActive = currentPage === page || (currentPage === 'memo-edit' && page === 'memos')
           const iconColor = sectionColors[page] || 'text-muted-foreground'
+          const activeClass = isActive
+            ? isColorful
+              ? `${sectionBgColors[page] || ''} ${sectionBorderColors[page] || 'border-transparent'} border-l-3 text-sidebar-accent-foreground font-medium`
+              : 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50'
           return (
             <button
               key={page}
@@ -37,11 +43,7 @@ export function Sidebar() {
               title={collapsed ? t(labelKey) : undefined}
               className={`flex items-center rounded-md text-sm transition-colors ${
                 collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'
-              } ${
-                isActive
-                  ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50'
-              }`}
+              } ${activeClass}`}
             >
               <Icon size={18} className={iconColor} />
               {!collapsed && <span>{t(labelKey)}</span>}

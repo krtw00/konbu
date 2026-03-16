@@ -121,15 +121,15 @@
     --popover-foreground: #1C1917;
     --primary: #7C3AED;
     --primary-foreground: #fff;
-    --secondary: #F3E8FF;
+    --secondary: #EDE9FE;
     --secondary-foreground: #1C1917;
     --muted: #F5F3FF;
-    --muted-foreground: #78716C;
+    --muted-foreground: #57534E;
     --accent: #FEF3C7;
     --accent-foreground: #1C1917;
-    --destructive: #EF4444;
-    --border: #E7E5E4;
-    --input: #D6D3D1;
+    --destructive: #DC2626;
+    --border: #D6D3D1;
+    --input: #A8A29E;
     --ring: #7C3AED;
     --sidebar: #1E1B4B;
     --sidebar-foreground: #E0E7FF;
@@ -137,7 +137,7 @@
     --sidebar-primary-foreground: #fff;
     --sidebar-accent: #312E81;
     --sidebar-accent-foreground: #E0E7FF;
-    --sidebar-border: #3730A3;
+    --sidebar-border: #4338CA;
     --sidebar-ring: #A78BFA;
 }
 
@@ -180,6 +180,32 @@
   html {
     @apply font-sans;
     }
+}
+
+/* Colorful theme: stronger borders and bolder cards */
+.colorful [data-slot="card"],
+.colorful .rounded-xl.border,
+.colorful .rounded-2xl.border,
+.colorful .rounded-lg.border {
+  border-width: 2px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.colorful [data-slot="dialog-content"] {
+  border: 2px solid var(--ring);
+}
+
+.colorful [data-slot="badge"] {
+  border-width: 1.5px;
+  font-weight: 600;
+}
+
+.colorful .border-border {
+  border-color: #D6D3D1;
+}
+
+.colorful.dark .border-border {
+  border-color: #57534E;
 }
 
 /* GFM alerts */
