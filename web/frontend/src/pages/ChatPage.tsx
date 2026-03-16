@@ -4,7 +4,6 @@ import { useChatStore } from '@/stores/chat'
 import { useAppStore } from '@/stores/app'
 import { Button } from '@/components/ui/button'
 import { Send, Plus, Trash2, Loader2, MessageCircle, Menu } from 'lucide-react'
-import { UpgradePrompt } from '@/components/UpgradePrompt'
 
 export function ChatPage() {
   const { t } = useTranslation()
@@ -29,8 +28,6 @@ export function ChatPage() {
 
   if (!user) return null
 
-  const isSponsor = user.plan === 'sponsor' || user.is_admin
-
   function handleSend() {
     if (!input.trim() || isStreaming) return
     sendMessage(input.trim())
@@ -49,13 +46,6 @@ export function ChatPage() {
     setDrawerOpen(false)
   }
 
-  if (!isSponsor) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <UpgradePrompt feature="chat" />
-      </div>
-    )
-  }
 
   const sessionList = (
     <>

@@ -47,7 +47,10 @@
     "saved": "Saved",
     "errorSaving": "Error saving",
     "editing": "Editing...",
-    "confirmDelete": "Delete this memo?"
+    "confirmDelete": "Delete this memo?",
+    "edit": "Edit",
+    "hidePreview": "Hide Preview",
+    "showPreview": "Preview"
   },
   "todos": {
     "title": "ToDo",
