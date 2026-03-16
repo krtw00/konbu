@@ -88,6 +88,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.RealIP)
+	r.Use(middleware.SecurityHeaders)
 	r.Use(middleware.Logging)
 
 	// Webhooks (unauthenticated, signature-verified)

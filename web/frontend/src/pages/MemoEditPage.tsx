@@ -8,8 +8,8 @@ import Editor from '@monaco-editor/react'
 import type * as Monaco from 'monaco-editor'
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 
-if (!window.MonacoEnvironment) {
-  window.MonacoEnvironment = {
+if (!(globalThis as any).MonacoEnvironment) {
+  (globalThis as any).MonacoEnvironment = {
     getWorker: () => new editorWorker(),
   }
 }
