@@ -73,7 +73,13 @@
     "description": "Description",
     "descriptionPlaceholder": "Description (optional)",
     "more": "+{{count}} more",
-    "confirmDelete": "Delete?"
+    "confirmDelete": "Delete?",
+    "month": "Month",
+    "week": "Week",
+    "list": "List",
+    "thisWeek": "This week",
+    "upcoming": "Upcoming",
+    "recurrence": "Recurrence"
   },
   "tools": {
     "title": "Tools",
