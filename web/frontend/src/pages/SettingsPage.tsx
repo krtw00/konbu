@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Copy, Trash2, Plus, Key, ExternalLink, Sun, Moon, Monitor, Calendar } from 'lucide-react'
+import { Copy, Trash2, Plus, Key, ExternalLink, Sun, Moon, Monitor, Calendar, Palette, Contrast } from 'lucide-react'
 
 function ProfileTab() {
   const { t } = useTranslation()
@@ -112,6 +112,8 @@ function AppearanceTab() {
     { value: 'light' as const, label: t('settings.themeLight'), icon: Sun },
     { value: 'dark' as const, label: t('settings.themeDark'), icon: Moon },
     { value: 'system' as const, label: t('settings.themeSystem'), icon: Monitor },
+    { value: 'colorful' as const, label: t('settings.themeColorful'), icon: Palette },
+    { value: 'colorful-dark' as const, label: t('settings.themeColorfulDark'), icon: Contrast },
   ]
 
   return (
@@ -140,14 +142,14 @@ function AppearanceTab() {
       </div>
       <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium">{t('settings.theme')}</label>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {themeOptions.map(({ value, label, icon: Icon }) => (
             <Button
               key={value}
               variant={theme === value ? 'default' : 'outline'}
               size="sm"
               onClick={() => setTheme(value)}
-              className="flex-1 gap-1.5"
+              className="gap-1.5"
             >
               <Icon size={14} />
               {label}

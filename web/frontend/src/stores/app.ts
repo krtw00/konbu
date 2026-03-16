@@ -3,20 +3,23 @@ import type { User, CalendarEvent, Todo } from '@/types/api'
 import { api } from '@/lib/api'
 import { prefetchCache } from '@/hooks/useCache'
 
-type Theme = 'light' | 'dark' | 'system'
+type Theme = 'light' | 'dark' | 'system' | 'colorful' | 'colorful-dark'
 
 function getSystemDark() {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
 function applyTheme(theme: Theme) {
-  const isDark = theme === 'dark' || (theme === 'system' && getSystemDark())
-  document.documentElement.classList.toggle('dark', isDark)
+  const el = document.documentElement
+  const isDark = theme === 'dark' || theme === 'colorful-dark' || (theme === 'system' && getSystemDark())
+  const isColorful = theme === 'colorful' || theme === 'colorful-dark'
+  el.classList.toggle('dark', isDark)
+  el.classList.toggle('colorful', isColorful)
 }
 
 function initTheme(): Theme {
   const stored = localStorage.getItem('konbu-theme') as Theme | null
-  const theme = stored && ['light', 'dark', 'system'].includes(stored) ? stored : 'system'
+  const theme = stored && ['light', 'dark', 'system', 'colorful', 'colorful-dark'].includes(stored) ? stored : 'system'
   applyTheme(theme)
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
     const current = (localStorage.getItem('konbu-theme') || 'system') as Theme
