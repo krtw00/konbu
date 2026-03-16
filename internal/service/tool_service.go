@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/google/uuid"
@@ -184,33 +183,6 @@ func (s *ToolService) ReorderTools(ctx context.Context, userID uuid.UUID, order 
 	return tx.Commit()
 }
 
-type HealthResult struct {
-	ID     uuid.UUID `json:"id"`
-	URL    string    `json:"url"`
-	Alive  bool      `json:"alive"`
-	Status int       `json:"status"`
-}
-
-func (s *ToolService) HealthCheck(ctx context.Context, userID uuid.UUID) ([]HealthResult, error) {
-	tools, err := s.queries.ListToolsByUserID(ctx, userID)
-	if err != nil {
-		return nil, apperror.Internal(err)
-	}
-
-	client := &http.Client{Timeout: 5 * time.Second}
-	results := make([]HealthResult, len(tools))
-	for i, t := range tools {
-		results[i] = HealthResult{ID: t.ID, URL: t.URL}
-		resp, err := client.Head(t.URL)
-		if err != nil {
-			continue
-		}
-		resp.Body.Close()
-		results[i].Status = resp.StatusCode
-		results[i].Alive = resp.StatusCode >= 200 && resp.StatusCode < 400
-	}
-	return results, nil
-}
 
 func toModelTool(t repository.Tool) model.Tool {
 	return model.Tool{
