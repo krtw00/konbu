@@ -15,6 +15,8 @@
 
 <p align="center"><img src="docs/screenshot.png" width="800" alt="konbu screenshot"></p>
 
+<p align="center"><img src="docs/demo.gif" width="800" alt="AI chat demo — managing schedule and todos with natural language"></p>
+
 ---
 
 ## Try It

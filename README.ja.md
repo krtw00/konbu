@@ -15,6 +15,8 @@
 
 <p align="center"><img src="docs/screenshot.png" width="800" alt="konbu スクリーンショット"></p>
 
+<p align="center"><img src="docs/demo.gif" width="800" alt="AIチャットデモ — 自然言語で予定とToDoを管理"></p>
+
 ---
 
 ## 使ってみる
