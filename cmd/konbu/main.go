@@ -658,7 +658,8 @@ func toolCmd() *cobra.Command {
 		Use: "add [name] [url]", Short: "Add a tool",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			t, err := cli().CreateTool(args[0], args[1])
+			cat, _ := cmd.Flags().GetString("category")
+			t, err := cli().CreateTool(args[0], args[1], cat)
 			if err != nil {
 				return err
 			}
@@ -670,6 +671,7 @@ func toolCmd() *cobra.Command {
 			return nil
 		},
 	}
+	add.Flags().String("category", "", "Category")
 	tool.AddCommand(add)
 
 	edit := &cobra.Command{

@@ -280,8 +280,12 @@ func (c *Client) ListTools() ([]Tool, error) {
 	return tools, json.Unmarshal(data, &tools)
 }
 
-func (c *Client) CreateTool(name, url string) (*Tool, error) {
-	data, err := c.do("POST", "/api/v1/tools", map[string]any{"name": name, "url": url})
+func (c *Client) CreateTool(name, url, category string) (*Tool, error) {
+	body := map[string]any{"name": name, "url": url}
+	if category != "" {
+		body["category"] = category
+	}
+	data, err := c.do("POST", "/api/v1/tools", body)
 	if err != nil {
 		return nil, err
 	}
