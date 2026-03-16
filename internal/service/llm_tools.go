@@ -660,9 +660,7 @@ func toolError(msg string) string {
 // --- web_search ---
 
 var searxngInstances = []string{
-	"https://search.sapti.me",
-	"https://searx.be",
-	"https://search.bus-hit.me",
+	"http://133.18.124.16:8888",
 }
 
 func (e *ToolExecutor) execWebSearch(_ context.Context, args map[string]interface{}) (string, error) {
