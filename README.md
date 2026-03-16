@@ -4,7 +4,7 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">Personal workspace: memos, todos, calendar, and tool launcher in one place.</p>
+<p align="center">Personal workspace with AI chat — manage memos, todos, and calendar by just talking to it.</p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
@@ -24,12 +24,13 @@
 
 ## Features
 
+- **AI Chat** -- "Add groceries to my todo" "What's my schedule tomorrow?" — manage everything with natural language (free tier included)
 - **Memos** -- Markdown notes with tagging, live preview
 - **ToDo** -- Inline task creation with due dates, tags, and notes
 - **Calendar** -- Monthly view with event CRUD and iCal import
-- **Tools** -- Bookmark launcher with categories and health checks
+- **Tools** -- Bookmark launcher with categories and drag-and-drop reordering
 - **Cross-search** -- Full-text search across all data
-- **CLI** -- Full-featured CLI client for remote API access
+- **CLI & MCP** -- Full-featured CLI client and MCP server for AI agent integration
 - **Export/Import** -- JSON export, Markdown ZIP export, iCal import
 - **i18n** -- English and Japanese
 
