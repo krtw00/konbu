@@ -94,8 +94,17 @@ type SSEEvent struct {
 }
 
 func (s *ChatService) SendMessage(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID, content string, user *model.User) (<-chan SSEEvent, error) {
-	if user.Plan != "sponsor" && !user.IsAdmin && s.cfg.DefaultAIAPIKey == "" {
-		return nil, apperror.Forbidden("AI chat requires a Sponsor plan")
+	if user.Plan != "sponsor" && !user.IsAdmin {
+		if s.cfg.DefaultAIAPIKey == "" {
+			return nil, apperror.Forbidden("AI chat requires a Sponsor plan")
+		}
+		count, err := s.queries.CountUserMessagesThisMonth(ctx, userID)
+		if err != nil {
+			return nil, apperror.Internal(err)
+		}
+		if count >= 20 {
+			return nil, apperror.Forbidden("Monthly free AI chat limit reached (20/20). Become a Supporter for unlimited access.")
+		}
 	}
 
 	// Get AI config
