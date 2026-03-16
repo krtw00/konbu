@@ -38,7 +38,16 @@
   "memos": {
     "title": "メモ",
     "noMemos": "メモはありません",
+    "newTable": "テーブル",
     "confirmDelete": "「{{title}}」を削除しますか？"
+  },
+  "table": {
+    "import": "インポート",
+    "export": "エクスポート",
+    "rowCount": "{{count}}行",
+    "newColumn": "新しい列…",
+    "renameColumn": "列名を変更",
+    "loadMore": "もっと読み込む"
   },
   "memoEdit": {
     "tags": "タグ",

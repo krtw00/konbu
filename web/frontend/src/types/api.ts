@@ -3,9 +3,31 @@ export interface Memo {
   title: string
   content: string
   type: 'markdown' | 'table'
+  table_columns?: TableColumn[]
+  row_count?: number
   tags: Tag[]
   created_at: string
   updated_at: string
+}
+
+export interface TableColumn {
+  id: string
+  name: string
+}
+
+export interface MemoRow {
+  id: string
+  memo_id: string
+  row_data: Record<string, string>
+  sort_order: number
+  created_at: string
+}
+
+export interface MemoRowsResponse {
+  data: MemoRow[]
+  total: number
+  limit: number
+  offset: number
 }
 
 export interface Todo {

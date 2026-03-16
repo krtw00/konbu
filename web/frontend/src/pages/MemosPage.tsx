@@ -54,9 +54,21 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-semibold">{t('memos.title')}</h1>
-        <Button size="sm" onClick={createMemo} disabled={creating}>
-          <Plus size={16} className="mr-1" /> {t('common.new')}
-        </Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={async () => {
+            if (creating) return
+            setCreating(true)
+            try {
+              const r = await api.createMemo({ title: '', type: 'table', content: '', tags: [] })
+              onEditMemo(r.data.id)
+            } finally { setCreating(false) }
+          }} disabled={creating}>
+            <Plus size={16} className="mr-1" /> {t('memos.newTable')}
+          </Button>
+          <Button size="sm" onClick={createMemo} disabled={creating}>
+            <Plus size={16} className="mr-1" /> {t('common.new')}
+          </Button>
+        </div>
       </div>
 
       {Object.keys(tagCounts).length > 0 && (

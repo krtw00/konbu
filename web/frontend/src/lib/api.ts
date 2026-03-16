@@ -19,9 +19,29 @@ export const api = {
   getMemo: (id: string) => request<{ data: import('@/types/api').Memo }>('GET', `/memos/${id}`),
   createMemo: (body: { title: string; type: string; content: string; tags: string[] }) =>
     request<{ data: import('@/types/api').Memo }>('POST', '/memos', body),
-  updateMemo: (id: string, body: { title: string; content: string; tags: string[] }) =>
+  updateMemo: (id: string, body: { title: string; content: string; tags: string[]; table_columns?: import('@/types/api').TableColumn[] }) =>
     request<{ data: import('@/types/api').Memo }>('PUT', `/memos/${id}`, body),
   deleteMemo: (id: string) => request<null>('DELETE', `/memos/${id}`),
+
+  // Memo Rows
+  listMemoRows: (memoId: string, params?: { limit?: number; offset?: number; sort?: string; order?: string }) => {
+    const p = new URLSearchParams()
+    if (params?.limit) p.set('limit', String(params.limit))
+    if (params?.offset) p.set('offset', String(params.offset))
+    if (params?.sort) p.set('sort', params.sort)
+    if (params?.order) p.set('order', params.order)
+    return request<import('@/types/api').MemoRowsResponse>('GET', `/memos/${memoId}/rows?${p.toString()}`)
+  },
+  createMemoRow: (memoId: string, rowData: Record<string, string>) =>
+    request<{ data: import('@/types/api').MemoRow }>('POST', `/memos/${memoId}/rows`, { row_data: rowData }),
+  updateMemoRow: (memoId: string, rowId: string, rowData: Record<string, string>) =>
+    request<null>('PUT', `/memos/${memoId}/rows/${rowId}`, { row_data: rowData }),
+  deleteMemoRow: (memoId: string, rowId: string) =>
+    request<null>('DELETE', `/memos/${memoId}/rows/${rowId}`),
+  batchCreateMemoRows: (memoId: string, rows: Record<string, string>[]) =>
+    request<{ data: import('@/types/api').MemoRow[] }>('POST', `/memos/${memoId}/rows/batch`, { rows: rows.map(r => JSON.stringify(r)).map(r => JSON.parse(r)) }),
+  exportMemoRowsCSV: (memoId: string) =>
+    fetch(`/api/v1/memos/${memoId}/rows/export`).then(r => r.text()),
 
   // Todos
   listTodos: (limit = 100) => request<{ data: import('@/types/api').Todo[] }>('GET', `/todos?limit=${limit}`),

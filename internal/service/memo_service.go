@@ -81,7 +81,7 @@ func (s *MemoService) GetMemo(ctx context.Context, id, userID uuid.UUID) (*model
 		modelTags[i] = model.Tag{ID: t.ID, Name: t.Name}
 	}
 
-	return &model.Memo{
+	memo := &model.Memo{
 		ID:           m.ID,
 		Title:        m.Title,
 		Type:         m.Type,
@@ -90,7 +90,16 @@ func (s *MemoService) GetMemo(ctx context.Context, id, userID uuid.UUID) (*model
 		Tags:         modelTags,
 		CreatedAt:    m.CreatedAt,
 		UpdatedAt:    m.UpdatedAt,
-	}, nil
+	}
+
+	if m.Type == "table" {
+		count, err := s.queries.CountMemoRows(ctx, id)
+		if err == nil {
+			memo.RowCount = &count
+		}
+	}
+
+	return memo, nil
 }
 
 func (s *MemoService) CreateMemo(ctx context.Context, userID uuid.UUID, req model.CreateMemoRequest) (*model.Memo, error) {

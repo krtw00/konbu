@@ -17,7 +17,8 @@ if (!(globalThis as any).MonacoEnvironment) {
 import { renderMarkdown } from '@/lib/markdown'
 import { registerMarkdownFeatures } from '@/lib/monaco-markdown'
 import { ArrowLeft, Tag, Trash2, Eye, EyeOff, Bold, Italic, Strikethrough, Code, Link, List, ListOrdered, CheckSquare, Heading1, Heading2, Heading3, Quote, Minus, Table, ImageIcon } from 'lucide-react'
-import type { Memo } from '@/types/api'
+import { TableEditor } from '@/components/TableEditor'
+import type { Memo, TableColumn } from '@/types/api'
 
 interface MemoEditPageProps {
   memoId: string
@@ -277,8 +278,25 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
         </Button>
       </div>
 
+      {/* Table Editor */}
+      {memo?.type === 'table' && (
+        <div className="flex-1 min-h-0 p-2">
+          <TableEditor
+            memoId={memoId}
+            columns={memo?.table_columns || []}
+            onColumnsChange={async (cols: TableColumn[]) => {
+              const raw = JSON.stringify(cols)
+              const parsed = JSON.parse(raw)
+              await api.updateMemo(memoId, { title, content: content, tags, table_columns: parsed })
+              setMemo(prev => prev ? { ...prev, table_columns: cols } : prev)
+              invalidateCache('memos')
+            }}
+          />
+        </div>
+      )}
+
       {/* Editor + Preview — full remaining space */}
-      <div className="flex-1 flex overflow-hidden min-h-0">
+      {memo?.type !== 'table' && <div className="flex-1 flex overflow-hidden min-h-0">
         <div className="flex-1 min-w-0">
           <Editor
             value={content}
@@ -348,10 +366,10 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
             />
           </>
         )}
-      </div>
+      </div>}
 
       {/* Mobile: fullscreen preview (default) or editor */}
-      {showPreview && (
+      {memo?.type !== 'table' && showPreview && (
         <div className="md:hidden absolute inset-0 z-50 bg-background flex flex-col">
           <div className="flex items-center gap-2 px-3 py-2 border-b border-border shrink-0">
             <span className="text-sm font-medium flex-1">{title || t('common.untitled')}</span>
@@ -367,14 +385,16 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
         </div>
       )}
 
-      {/* Status bar */}
-      <div className="flex items-center gap-3 px-2 py-0.5 border-t border-border text-[10px] text-muted-foreground bg-muted shrink-0" style={{ minHeight: 22 }}>
-        <span>Ln {lineCount}, Col 1</span>
-        <span>{charCount} characters</span>
-        <div className="flex-1" />
-        <span>Markdown</span>
-        <span>UTF-8</span>
-      </div>
+      {/* Status bar (markdown only) */}
+      {memo?.type !== 'table' && (
+        <div className="flex items-center gap-3 px-2 py-0.5 border-t border-border text-[10px] text-muted-foreground bg-muted shrink-0" style={{ minHeight: 22 }}>
+          <span>Ln {lineCount}, Col 1</span>
+          <span>{charCount} characters</span>
+          <div className="flex-1" />
+          <span>Markdown</span>
+          <span>UTF-8</span>
+        </div>
+      )}
     </div>
   )
 }
