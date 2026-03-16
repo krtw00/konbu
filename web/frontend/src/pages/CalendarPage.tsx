@@ -436,11 +436,11 @@ export function CalendarPage() {
     })
 
     return (
-      <div className="overflow-x-auto">
-        <div className="min-w-[700px]">
+      <div className="flex-1 flex flex-col min-h-0">
+        <div className="flex-1 flex flex-col min-h-0">
           {/* Day headers */}
-          <div className="grid grid-cols-[60px_repeat(7,1fr)] gap-px bg-border rounded-t-lg overflow-hidden">
-            <div className="bg-muted/50 p-1" />
+          <div className="grid grid-cols-[40px_repeat(7,1fr)] gap-px bg-border rounded-t-lg overflow-hidden">
+            <div className="bg-muted/50" />
             {weekDays.map((d, i) => {
               const wdk = dateKey(d.getFullYear(), d.getMonth(), d.getDate())
               const isToday = wdk === todayDk
@@ -484,11 +484,11 @@ export function CalendarPage() {
           )}
 
           {/* Time grid */}
-          <div className="grid grid-cols-[60px_repeat(7,1fr)] gap-px bg-border rounded-b-lg overflow-hidden max-h-[600px] overflow-y-auto">
+          <div className="grid grid-cols-[40px_repeat(7,1fr)] gap-px bg-border rounded-b-lg overflow-hidden flex-1" style={{ gridTemplateRows: `repeat(24, 1fr)` }}>
             {HOURS.map((hour) => (
               <div key={hour} className="contents">
-                <div className="bg-background text-xs text-muted-foreground text-right pr-2 py-1 h-14 border-t border-border/50">
-                  {String(hour).padStart(2, '0')}:00
+                <div className="bg-background text-[10px] text-muted-foreground text-right pr-1 flex items-start justify-end border-t border-border/50">
+                  {String(hour).padStart(2, '0')}
                 </div>
                 {weekDays.map((d, i) => {
                   const wdk = dateKey(d.getFullYear(), d.getMonth(), d.getDate())
@@ -500,7 +500,7 @@ export function CalendarPage() {
                   return (
                     <div
                       key={i}
-                      className={`bg-background h-14 border-t border-border/50 p-0.5 relative ${
+                      className={`bg-background border-t border-border/50 px-0.5 overflow-hidden ${
                         isToday ? 'bg-primary/5' : ''
                       }`}
                     >
