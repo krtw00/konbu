@@ -5,6 +5,7 @@ import { useAppStore } from '@/stores/app'
 import { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { FileText, CheckSquare, Calendar, Monitor } from 'lucide-react'
+import { sectionColors } from '@/lib/colors'
 import type { SearchResult } from '@/types/api'
 
 interface CommandPaletteProps {
@@ -126,7 +127,7 @@ export function CommandPalette({ onOpenMemo }: CommandPaletteProps) {
                 const Icon = icons[item.type] || FileText
                 return (
                   <CommandItem key={`${item.type}-${item.id}`} onSelect={() => handleSelect(item)}>
-                    <Icon size={14} className="mr-2 text-muted-foreground" />
+                    <Icon size={14} className={`mr-2 ${sectionColors[item.type] || 'text-muted-foreground'}`} />
                     <span className="text-xs text-muted-foreground mr-2 w-10">{typeLabels[item.type] || item.type}</span>
                     <span className="flex-1 truncate">{item.title}</span>
                     {item.tags?.length > 0 && (

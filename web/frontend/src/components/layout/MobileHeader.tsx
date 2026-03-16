@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
+import { sectionColors } from '@/lib/colors'
 import { Menu, X, Home, FileText, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
 
 const navItems = [
@@ -51,26 +52,28 @@ export function MobileHeader() {
         <>
           <div className="fixed inset-0 top-[53px] bg-black/40 z-40" onClick={() => setOpen(false)} />
           <nav className="fixed top-[53px] left-0 right-0 bg-background border-b border-border z-50 py-2">
-            {navItems.map(({ page, icon: Icon, labelKey }) => (
-              <button
-                key={page}
-                onClick={() => navigate(page)}
-                className={`flex items-center gap-3 w-full px-5 py-3 text-sm transition-colors ${
-                  currentPage === page || (currentPage === 'memo-edit' && page === 'memos')
-                    ? 'text-primary font-medium bg-accent/50'
-                    : 'text-foreground/80'
-                }`}
-              >
-                <Icon size={18} />
-                <span>{t(labelKey)}</span>
-              </button>
-            ))}
+            {navItems.map(({ page, icon: Icon, labelKey }) => {
+              const isActive = currentPage === page || (currentPage === 'memo-edit' && page === 'memos')
+              const iconColor = sectionColors[page] || 'text-muted-foreground'
+              return (
+                <button
+                  key={page}
+                  onClick={() => navigate(page)}
+                  className={`flex items-center gap-3 w-full px-5 py-3 text-sm transition-colors ${
+                    isActive ? 'text-foreground font-medium bg-accent/50' : 'text-foreground/80'
+                  }`}
+                >
+                  <Icon size={18} className={iconColor} />
+                  <span>{t(labelKey)}</span>
+                </button>
+              )
+            })}
             <div className="border-t border-border my-1" />
             <button
               onClick={() => { logout(); setOpen(false) }}
               className="flex items-center gap-3 w-full px-5 py-3 text-sm text-foreground/80"
             >
-              <LogOut size={18} />
+              <LogOut size={18} className="text-muted-foreground" />
               <span>{t('settings.logout')}</span>
             </button>
           </nav>
