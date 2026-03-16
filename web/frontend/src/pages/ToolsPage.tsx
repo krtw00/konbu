@@ -22,6 +22,7 @@ export function ToolsPage() {
   const [faviconLoading, setFaviconLoading] = useState(false)
   const [draggingId, setDraggingId] = useState<string | null>(null)
   const [dragOverId, setDragOverId] = useState<string | null>(null)
+  const dragOverRef = useRef<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   function handleDragStart(e: React.DragEvent, id: string) {
@@ -33,29 +34,34 @@ export function ToolsPage() {
   function handleDragOver(e: React.DragEvent, id: string) {
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
-    setDragOverId(id)
-  }
-
-  function handleDragLeave() {
-    setDragOverId(null)
-  }
-
-  async function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    if (!draggingId || !dragOverId || draggingId === dragOverId) {
-      setDraggingId(null)
-      setDragOverId(null)
-      return
+    if (dragOverRef.current !== id) {
+      dragOverRef.current = id
+      setDragOverId(id)
     }
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    const related = e.relatedTarget as HTMLElement | null
+    if (!related || !e.currentTarget.contains(related)) {
+      setDragOverId(null)
+      dragOverRef.current = null
+    }
+  }
+
+  async function handleDrop(e: React.DragEvent, targetId: string) {
+    e.preventDefault()
+    const sourceId = e.dataTransfer.getData('text/plain') || draggingId
+    setDraggingId(null)
+    setDragOverId(null)
+    dragOverRef.current = null
+    if (!sourceId || sourceId === targetId) return
     const allIds = tools.map(t => t.id)
-    const fromIdx = allIds.indexOf(draggingId)
-    const toIdx = allIds.indexOf(dragOverId)
+    const fromIdx = allIds.indexOf(sourceId)
+    const toIdx = allIds.indexOf(targetId)
     if (fromIdx === -1 || toIdx === -1) return
     const reordered = [...allIds]
     reordered.splice(fromIdx, 1)
-    reordered.splice(toIdx, 0, draggingId)
-    setDraggingId(null)
-    setDragOverId(null)
+    reordered.splice(toIdx, 0, sourceId)
     await api.reorderTools(reordered)
     invalidateCache('tools')
   }
@@ -63,6 +69,7 @@ export function ToolsPage() {
   function handleDragEnd() {
     setDraggingId(null)
     setDragOverId(null)
+    dragOverRef.current = null
   }
 
   useEffect(() => {
@@ -168,8 +175,8 @@ export function ToolsPage() {
                     draggable
                     onDragStart={(e) => handleDragStart(e, tool.id)}
                     onDragOver={(e) => handleDragOver(e, tool.id)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
+                    onDragLeave={(e) => handleDragLeave(e)}
+                    onDrop={(e) => handleDrop(e, tool.id)}
                     onDragEnd={handleDragEnd}
                     onClick={() => window.open(tool.url, '_blank')}
                     className={`group relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all ${
