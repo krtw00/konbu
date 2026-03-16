@@ -52,6 +52,7 @@ export const api = {
   deleteTool: (id: string) => request<null>('DELETE', `/tools/${id}`),
   fetchFavicon: (url: string) => request<{ data: { icon: string } }>('GET', `/tools/favicon?url=${encodeURIComponent(url)}`),
   healthCheckTools: () => request<{ data: { id: string; url: string; alive: boolean; status: number }[] }>('POST', '/tools/health-check'),
+  reorderTools: (order: string[]) => request<null>('PUT', '/tools/reorder', { order }),
 
   // Tags
   listTags: () => request<{ data: import('@/types/api').Tag[] }>('GET', '/tags'),

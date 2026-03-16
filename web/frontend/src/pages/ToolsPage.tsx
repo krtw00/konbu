@@ -30,6 +30,32 @@ export function ToolsPage() {
   const [healthMap, setHealthMap] = useState<Map<string, HealthResult>>(new Map())
   const [healthLoading, setHealthLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const dragItem = useRef<string | null>(null)
+  const dragOverItem = useRef<string | null>(null)
+
+  function handleDragStart(id: string) {
+    dragItem.current = id
+  }
+
+  function handleDragOver(e: React.DragEvent, id: string) {
+    e.preventDefault()
+    dragOverItem.current = id
+  }
+
+  async function handleDrop() {
+    if (!dragItem.current || !dragOverItem.current || dragItem.current === dragOverItem.current) return
+    const allIds = tools.map(t => t.id)
+    const fromIdx = allIds.indexOf(dragItem.current)
+    const toIdx = allIds.indexOf(dragOverItem.current)
+    if (fromIdx === -1 || toIdx === -1) return
+    const reordered = [...allIds]
+    reordered.splice(fromIdx, 1)
+    reordered.splice(toIdx, 0, dragItem.current)
+    dragItem.current = null
+    dragOverItem.current = null
+    await api.reorderTools(reordered)
+    load()
+  }
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -159,6 +185,10 @@ export function ToolsPage() {
                     href={tool.url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    draggable
+                    onDragStart={() => handleDragStart(tool.id)}
+                    onDragOver={(e) => handleDragOver(e, tool.id)}
+                    onDrop={handleDrop}
                     className="group relative flex flex-col items-center gap-2 p-4 rounded-xl border border-border hover:bg-accent/50 transition-colors"
                   >
                     <div className="absolute top-1 left-1">
