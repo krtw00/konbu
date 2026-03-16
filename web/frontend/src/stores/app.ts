@@ -30,7 +30,7 @@ function prefetchHomeData() {
   })))
 }
 
-type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'settings'
+type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'chat' | 'settings'
 
 interface AppState {
   currentPage: Page
