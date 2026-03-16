@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -119,6 +120,7 @@ func (h *ChatHandler) sendMessage(w http.ResponseWriter, r *http.Request) {
 
 	stream, err := h.chatSvc.SendMessage(r.Context(), user.ID, sessionID, req.Content, user)
 	if err != nil {
+		log.Printf("chat error: %v", err)
 		writeError(w, err)
 		return
 	}

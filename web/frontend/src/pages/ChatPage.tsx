@@ -69,13 +69,13 @@ export function ChatPage() {
             sessions.map(s => (
               <div
                 key={s.id}
-                className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-accent/50 ${s.id === currentSessionId ? 'bg-accent' : ''}`}
+                className={`group flex items-center justify-between px-3 py-2 text-sm cursor-pointer hover:bg-accent/50 ${s.id === currentSessionId ? 'bg-accent' : ''}`}
                 onClick={() => selectSession(s.id)}
               >
                 <span className="truncate flex-1">{s.title || t('chat.newSession')}</span>
                 <button
                   onClick={(e) => { e.stopPropagation(); deleteSession(s.id) }}
-                  className="text-muted-foreground hover:text-destructive ml-2 opacity-0 group-hover:opacity-100"
+                  className="text-muted-foreground hover:text-destructive ml-2 opacity-0 group-hover:opacity-100 shrink-0"
                 >
                   <Trash2 size={12} />
                 </button>
