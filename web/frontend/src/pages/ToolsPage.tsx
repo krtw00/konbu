@@ -1,17 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
-import { useCache } from '@/hooks/useCache'
+import { useCache, invalidateCache } from '@/hooks/useCache'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { Plus, X, Pencil, Loader2 } from 'lucide-react'
+import { Plus, X, Pencil, Loader2, GripVertical } from 'lucide-react'
 import type { Tool } from '@/types/api'
 
 export function ToolsPage() {
   const { t } = useTranslation()
-  const fetchTools = () => api.listTools().then(r => r.data || [] as Tool[])
-  const { data: tools_, refresh: load } = useCache('tools', fetchTools)
+  const fetchTools = useCallback(() => api.listTools().then(r => r.data || [] as Tool[]), [])
+  const { data: tools_ } = useCache('tools', fetchTools)
   const tools = tools_ || []
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTool, setEditingTool] = useState<Tool | null>(null)
@@ -20,32 +20,49 @@ export function ToolsPage() {
   const [formCategory, setFormCategory] = useState('')
   const [faviconPreview, setFaviconPreview] = useState('')
   const [faviconLoading, setFaviconLoading] = useState(false)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined)
-  const dragItem = useRef<string | null>(null)
-  const dragOverItem = useRef<string | null>(null)
 
-  function handleDragStart(id: string) {
-    dragItem.current = id
+  function handleDragStart(e: React.DragEvent, id: string) {
+    setDraggingId(id)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', id)
   }
 
   function handleDragOver(e: React.DragEvent, id: string) {
     e.preventDefault()
-    dragOverItem.current = id
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverId(id)
   }
 
-  async function handleDrop() {
-    if (!dragItem.current || !dragOverItem.current || dragItem.current === dragOverItem.current) return
+  function handleDragLeave() {
+    setDragOverId(null)
+  }
+
+  async function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    if (!draggingId || !dragOverId || draggingId === dragOverId) {
+      setDraggingId(null)
+      setDragOverId(null)
+      return
+    }
     const allIds = tools.map(t => t.id)
-    const fromIdx = allIds.indexOf(dragItem.current)
-    const toIdx = allIds.indexOf(dragOverItem.current)
+    const fromIdx = allIds.indexOf(draggingId)
+    const toIdx = allIds.indexOf(dragOverId)
     if (fromIdx === -1 || toIdx === -1) return
     const reordered = [...allIds]
     reordered.splice(fromIdx, 1)
-    reordered.splice(toIdx, 0, dragItem.current)
-    dragItem.current = null
-    dragOverItem.current = null
+    reordered.splice(toIdx, 0, draggingId)
+    setDraggingId(null)
+    setDragOverId(null)
     await api.reorderTools(reordered)
-    load()
+    invalidateCache('tools')
+  }
+
+  function handleDragEnd() {
+    setDraggingId(null)
+    setDragOverId(null)
   }
 
   useEffect(() => {
@@ -76,7 +93,9 @@ export function ToolsPage() {
     setDialogOpen(true)
   }
 
-  function openEditDialog(tool: Tool) {
+  function openEditDialog(e: React.MouseEvent, tool: Tool) {
+    e.preventDefault()
+    e.stopPropagation()
     setEditingTool(tool)
     setFormName(tool.name)
     setFormUrl(tool.url)
@@ -93,13 +112,15 @@ export function ToolsPage() {
       await api.createTool(body)
     }
     setDialogOpen(false)
-    load()
+    invalidateCache('tools')
   }
 
-  async function deleteTool(id: string, name: string) {
+  async function deleteTool(e: React.MouseEvent, id: string, name: string) {
+    e.preventDefault()
+    e.stopPropagation()
     if (!confirm(t('tools.confirmDelete', { name }))) return
     await api.deleteTool(id)
-    load()
+    invalidateCache('tools')
   }
 
   // Group tools by category
@@ -142,17 +163,26 @@ export function ToolsPage() {
               {cat && <h2 className="text-sm font-medium text-muted-foreground mb-2">{cat}</h2>}
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
                 {grouped.get(cat)!.map((tool, i) => (
-                  <a
+                  <div
                     key={tool.id}
-                    href={tool.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     draggable
-                    onDragStart={() => handleDragStart(tool.id)}
+                    onDragStart={(e) => handleDragStart(e, tool.id)}
                     onDragOver={(e) => handleDragOver(e, tool.id)}
+                    onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
-                    className="group relative flex flex-col items-center gap-2 p-4 rounded-xl border border-border hover:bg-accent/50 transition-colors"
+                    onDragEnd={handleDragEnd}
+                    onClick={() => window.open(tool.url, '_blank')}
+                    className={`group relative flex flex-col items-center gap-2 p-4 rounded-xl border cursor-pointer transition-all ${
+                      draggingId === tool.id
+                        ? 'opacity-40 border-dashed border-primary'
+                        : dragOverId === tool.id
+                          ? 'border-primary bg-primary/5 scale-105'
+                          : 'border-border hover:bg-accent/50'
+                    }`}
                   >
+                    <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-50 cursor-grab text-muted-foreground">
+                      <GripVertical size={14} />
+                    </div>
                     {tool.icon ? (
                       <img
                         src={tool.icon}
@@ -171,19 +201,19 @@ export function ToolsPage() {
                     <span className="text-sm font-medium text-center truncate w-full">{tool.name}</span>
                     <div className="absolute top-1 right-1 flex gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); openEditDialog(tool) }}
+                        onClick={(e) => openEditDialog(e, tool)}
                         className="text-muted-foreground hover:text-foreground"
                       >
                         <Pencil size={12} />
                       </button>
                       <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); deleteTool(tool.id, tool.name) }}
+                        onClick={(e) => deleteTool(e, tool.id, tool.name)}
                         className="text-muted-foreground hover:text-destructive"
                       >
                         <X size={14} />
                       </button>
                     </div>
-                  </a>
+                  </div>
                 ))}
               </div>
             </div>
