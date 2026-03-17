@@ -9,8 +9,8 @@ import Editor from '@monaco-editor/react'
 import type * as Monaco from 'monaco-editor'
 import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker'
 
-if (!(globalThis as any).MonacoEnvironment) {
-  (globalThis as any).MonacoEnvironment = {
+if (!(globalThis as unknown as Record<string, unknown>).MonacoEnvironment) {
+  (globalThis as unknown as Record<string, unknown>).MonacoEnvironment = {
     getWorker: () => new editorWorker(),
   }
 }

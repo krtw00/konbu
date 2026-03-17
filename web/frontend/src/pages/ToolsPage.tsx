@@ -72,12 +72,8 @@ export function ToolsPage() {
     dragOverRef.current = null
   }
 
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-    if (!formUrl || !formUrl.startsWith('http')) {
-      setFaviconPreview('')
-      return
-    }
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { if (debounceRef.current) clearTimeout(debounceRef.current); if (!formUrl || !formUrl.startsWith('http')) { setFaviconPreview(''); return }
     setFaviconLoading(true)
     debounceRef.current = setTimeout(async () => {
       try {

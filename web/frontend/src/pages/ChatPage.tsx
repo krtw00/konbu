@@ -19,9 +19,8 @@ export function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  useEffect(() => {
-    if (user) loadSessions()
-  }, [user])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (user) loadSessions() }, [user])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })

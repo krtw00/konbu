@@ -21,9 +21,8 @@ export function ChatPanel() {
   const [showSessions, setShowSessions] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-    if (isOpen && user) loadSessions()
-  }, [isOpen, user])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (isOpen && user) loadSessions() }, [isOpen, user])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
