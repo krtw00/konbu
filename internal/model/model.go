@@ -142,11 +142,61 @@ type UpdateTodoRequest struct {
 	Tags        []string `json:"tags,omitempty"`
 }
 
+// --- Calendar ---
+
+type Calendar struct {
+	ID          uuid.UUID `json:"id"`
+	OwnerID     uuid.UUID `json:"owner_id"`
+	Name        string    `json:"name"`
+	IsDefault   bool      `json:"is_default"`
+	ShareToken  *string   `json:"share_token,omitempty"`
+	Color       string    `json:"color"`
+	MemberCount int       `json:"member_count"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+type CalendarMember struct {
+	CalendarID uuid.UUID `json:"calendar_id"`
+	UserID     uuid.UUID `json:"user_id"`
+	UserName   string    `json:"user_name"`
+	UserEmail  string    `json:"user_email"`
+	Role       string    `json:"role"`
+	Color      string    `json:"color"`
+	JoinedAt   time.Time `json:"joined_at"`
+}
+
+type CalendarDetail struct {
+	Calendar
+	Members []CalendarMember `json:"members"`
+}
+
+type CreateCalendarRequest struct {
+	Name  string `json:"name"`
+	Color string `json:"color"`
+}
+
+type UpdateCalendarRequest struct {
+	Name  string `json:"name"`
+	Color string `json:"color"`
+}
+
+type AddMemberRequest struct {
+	Email string `json:"email"`
+	Role  string `json:"role"`
+}
+
+type UpdateMemberRequest struct {
+	Role  string `json:"role"`
+	Color string `json:"color"`
+}
+
 // --- Calendar Event ---
 
 type CalendarEvent struct {
 	ID             uuid.UUID  `json:"id"`
-	UserID         uuid.UUID  `json:"user_id,omitempty"`
+	CalendarID     *uuid.UUID `json:"calendar_id,omitempty"`
+	CreatedBy      uuid.UUID  `json:"created_by,omitempty"`
 	Title          string     `json:"title"`
 	Description    string     `json:"description"`
 	StartAt        time.Time  `json:"start_at"`
@@ -160,6 +210,7 @@ type CalendarEvent struct {
 }
 
 type CreateEventRequest struct {
+	CalendarID     *uuid.UUID `json:"calendar_id,omitempty"`
 	Title          string     `json:"title"`
 	Description    string     `json:"description"`
 	StartAt        time.Time  `json:"start_at"`
@@ -171,6 +222,7 @@ type CreateEventRequest struct {
 }
 
 type UpdateEventRequest struct {
+	CalendarID     *uuid.UUID `json:"calendar_id,omitempty"`
 	Title          string     `json:"title"`
 	Description    string     `json:"description"`
 	StartAt        time.Time  `json:"start_at"`

@@ -133,12 +133,43 @@ CREATE INDEX idx_todos_due_date ON todos(user_id, due_date) WHERE deleted_at IS 
 CREATE INDEX idx_todos_title_trgm ON todos USING gin (title gin_trgm_ops);
 
 -- =============================================================================
+-- Calendars
+-- =============================================================================
+
+CREATE TABLE calendars (
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name        TEXT NOT NULL DEFAULT '',
+    is_default  BOOLEAN NOT NULL DEFAULT FALSE,
+    share_token TEXT UNIQUE,
+    color       TEXT NOT NULL DEFAULT '#4F46E5',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at  TIMESTAMPTZ
+);
+
+CREATE INDEX idx_calendars_owner_id ON calendars(owner_id) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX idx_calendars_default ON calendars(owner_id) WHERE is_default = TRUE AND deleted_at IS NULL;
+
+CREATE TABLE calendar_members (
+    calendar_id UUID NOT NULL REFERENCES calendars(id) ON DELETE CASCADE,
+    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role        TEXT NOT NULL DEFAULT 'editor' CHECK (role IN ('admin', 'editor', 'viewer')),
+    color       TEXT NOT NULL DEFAULT '#4F46E5',
+    joined_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (calendar_id, user_id)
+);
+
+CREATE INDEX idx_calendar_members_user_id ON calendar_members(user_id);
+
+-- =============================================================================
 -- Calendar Events
 -- =============================================================================
 
 CREATE TABLE calendar_events (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_by  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    calendar_id UUID REFERENCES calendars(id) ON DELETE SET NULL,
     title       TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
     start_at    TIMESTAMPTZ NOT NULL,
@@ -155,8 +186,9 @@ CREATE TABLE calendar_event_tags (
     PRIMARY KEY (event_id, tag_id)
 );
 
-CREATE INDEX idx_calendar_events_user_id ON calendar_events(user_id) WHERE deleted_at IS NULL;
-CREATE INDEX idx_calendar_events_range ON calendar_events(user_id, start_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_calendar_events_user_id ON calendar_events(created_by) WHERE deleted_at IS NULL;
+CREATE INDEX idx_calendar_events_range ON calendar_events(created_by, start_at) WHERE deleted_at IS NULL;
+CREATE INDEX idx_calendar_events_calendar_id ON calendar_events(calendar_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_calendar_events_title_trgm ON calendar_events USING gin (title gin_trgm_ops);
 
 -- =============================================================================
