@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useCache, invalidateCache } from '@/hooks/useCache'
 import { relativeTime, formatTime, dueFmt } from '@/lib/date'
+import { stripMarkdown } from '@/lib/markdown'
 import { useAppStore } from '@/stores/app'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -155,7 +156,7 @@ export function HomePage({ onEditMemo }: HomePageProps) {
                 >
                   <div className="font-medium text-sm truncate">{m.title || t('common.untitled')}</div>
                   {m.content && (
-                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{m.content}</div>
+                    <div className="text-xs text-muted-foreground mt-1 line-clamp-2">{stripMarkdown(m.content)}</div>
                   )}
                   <div className="text-xs text-muted-foreground mt-2">{relativeTime(m.updated_at)}</div>
                 </button>

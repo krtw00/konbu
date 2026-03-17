@@ -67,6 +67,23 @@ marked.use(
   },
 )
 
+export function stripMarkdown(text: string): string {
+  return (text || '')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')     // images
+    .replace(/\[[^\]]*\]\([^)]*\)/g, '$&')     // keep link text
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')   // links → text only
+    .replace(/```[\s\S]*?```/g, '')             // code blocks
+    .replace(/`([^`]*)`/g, '$1')               // inline code
+    .replace(/#{1,6}\s+/g, '')                  // headings
+    .replace(/[*_~]{1,3}([^*_~]+)[*_~]{1,3}/g, '$1') // bold/italic/strike
+    .replace(/^>\s+/gm, '')                     // blockquotes
+    .replace(/^[-*+]\s+/gm, '')                 // unordered lists
+    .replace(/^\d+\.\s+/gm, '')                 // ordered lists
+    .replace(/^---+$/gm, '')                    // horizontal rules
+    .replace(/\n{2,}/g, ' ')                    // collapse newlines
+    .trim()
+}
+
 export function renderMarkdown(content: string): string {
   // Replace [[memo name]] with clickable links before parsing
   const withLinks = (content || '').replace(

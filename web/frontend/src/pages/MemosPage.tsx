@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useCache, invalidateCache } from '@/hooks/useCache'
 import { relativeTime } from '@/lib/date'
+import { stripMarkdown } from '@/lib/markdown'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -130,7 +131,7 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
                 <div className="flex-1 min-w-0">
                   <div className="text-sm font-medium truncate">{m.title || t('common.untitled')}</div>
                   {m.content && (
-                    <div className="text-xs text-muted-foreground truncate">{m.content}</div>
+                    <div className="text-xs text-muted-foreground truncate">{stripMarkdown(m.content)}</div>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
