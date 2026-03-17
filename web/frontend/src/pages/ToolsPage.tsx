@@ -183,7 +183,7 @@ export function ToolsPage() {
                           : 'border-border hover:bg-accent/50'
                     }`}
                   >
-                    <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-50 cursor-grab text-muted-foreground">
+                    <div className="absolute top-2 left-2 opacity-50 md:opacity-0 md:group-hover:opacity-50 cursor-grab text-muted-foreground">
                       <GripVertical size={14} />
                     </div>
                     {tool.icon ? (
@@ -205,13 +205,13 @@ export function ToolsPage() {
                     <div className="absolute top-1 right-1 flex gap-0.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={(e) => openEditDialog(e, tool)}
-                        className="text-muted-foreground hover:text-foreground"
+                        className="text-muted-foreground hover:text-foreground p-1"
                       >
                         <Pencil size={12} />
                       </button>
                       <button
                         onClick={(e) => deleteTool(e, tool.id, tool.name)}
-                        className="text-muted-foreground hover:text-destructive"
+                        className="text-muted-foreground hover:text-destructive p-1"
                       >
                         <X size={14} />
                       </button>

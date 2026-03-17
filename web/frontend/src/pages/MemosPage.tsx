@@ -144,7 +144,7 @@ export function MemosPage({ onEditMemo }: MemosPageProps) {
                 </div>
                 <DropdownMenu>
                   <DropdownMenuTrigger onClick={(e) => e.stopPropagation()}>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 opacity-100 md:opacity-0 md:group-hover:opacity-100 md:h-7 md:w-7">
                       <MoreHorizontal size={14} />
                     </Button>
                   </DropdownMenuTrigger>

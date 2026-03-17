@@ -185,7 +185,7 @@ export function HomePage({ onEditMemo }: HomePageProps) {
           <Input
             name="homeSearch"
             placeholder={t('search.placeholder')}
-            className="pl-9"
+            className="pl-9 h-10"
           />
         </div>
       </form>
@@ -205,7 +205,7 @@ export function HomePage({ onEditMemo }: HomePageProps) {
             onDragOver={(e) => e.preventDefault()}
             className="relative group"
           >
-            <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center cursor-grab opacity-0 group-hover:opacity-50 hover:!opacity-100 z-10">
+            <div className="absolute left-0 top-0 bottom-0 w-6 flex items-center justify-center cursor-grab opacity-50 md:opacity-0 md:group-hover:opacity-50 hover:!opacity-100 z-10">
               <GripVertical size={14} className="text-muted-foreground" />
             </div>
             {widgets[id]}

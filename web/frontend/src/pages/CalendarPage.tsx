@@ -350,7 +350,7 @@ export function CalendarPage() {
           <button
             key={mode}
             onClick={() => setViewMode(mode)}
-            className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+            className={`px-4 py-2 md:px-3 md:py-1.5 text-xs font-medium transition-colors ${
               viewMode === mode
                 ? 'bg-primary text-primary-foreground'
                 : 'bg-background hover:bg-accent/50 text-muted-foreground'
@@ -372,11 +372,11 @@ export function CalendarPage() {
           <div className="flex items-center gap-2">
             {renderViewModeButtons()}
             <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={prevMonth}>
+              <Button variant="ghost" size="icon" className="h-9 w-9 md:h-8 md:w-8" onClick={prevMonth}>
                 <ChevronLeft size={16} />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8" onClick={goToday}>{t('calendar.today')}</Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={nextMonth}>
+              <Button variant="ghost" size="sm" className="h-9 md:h-8" onClick={goToday}>{t('calendar.today')}</Button>
+              <Button variant="ghost" size="icon" className="h-9 w-9 md:h-8 md:w-8" onClick={nextMonth}>
                 <ChevronRight size={16} />
               </Button>
             </div>
@@ -391,11 +391,11 @@ export function CalendarPage() {
           <div className="flex items-center gap-2">
             {renderViewModeButtons()}
             <div className="flex gap-1">
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={prevWeek}>
+              <Button variant="ghost" size="icon" className="h-9 w-9 md:h-8 md:w-8" onClick={prevWeek}>
                 <ChevronLeft size={16} />
               </Button>
-              <Button variant="ghost" size="sm" className="h-8" onClick={goToday}>{t('calendar.thisWeek')}</Button>
-              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={nextWeek}>
+              <Button variant="ghost" size="sm" className="h-9 md:h-8" onClick={goToday}>{t('calendar.thisWeek')}</Button>
+              <Button variant="ghost" size="icon" className="h-9 w-9 md:h-8 md:w-8" onClick={nextWeek}>
                 <ChevronRight size={16} />
               </Button>
             </div>
@@ -409,7 +409,7 @@ export function CalendarPage() {
         <span className="font-medium">{t('calendar.upcoming')}</span>
         <div className="flex items-center gap-2">
           {renderViewModeButtons()}
-          <Button variant="ghost" size="sm" className="h-8" onClick={goToday}>{t('calendar.today')}</Button>
+          <Button variant="ghost" size="sm" className="h-9 md:h-8" onClick={goToday}>{t('calendar.today')}</Button>
         </div>
       </div>
     )
@@ -650,7 +650,7 @@ export function CalendarPage() {
                 </div>
               ))}
               {Array.from({ length: startPad }, (_, i) => (
-                <div key={`p${i}`} className="bg-background px-1 py-0.5 text-muted-foreground/40 overflow-hidden">
+                <div key={`p${i}`} className="bg-background px-1.5 py-1 md:px-1 md:py-0.5 text-muted-foreground/40 overflow-hidden">
                   <span className="text-xs leading-none">{prevLastDate - startPad + 1 + i}</span>
                 </div>
               ))}
@@ -668,12 +668,12 @@ export function CalendarPage() {
                   <div
                     key={d}
                     onClick={() => setSelectedDay([year, month, d])}
-                    className={`bg-background px-1 py-0.5 cursor-pointer hover:bg-accent/30 transition-colors overflow-hidden ${
+                    className={`bg-background px-1.5 py-1 md:px-1 md:py-0.5 cursor-pointer hover:bg-accent/30 transition-colors overflow-hidden ${
                       isSelected ? 'ring-2 ring-primary ring-inset' : ''
                     }`}
                   >
                     <div className="flex items-center gap-0.5">
-                      <span className={`text-xs inline-flex items-center justify-center w-5 h-5 rounded-full leading-none ${
+                      <span className={`text-xs inline-flex items-center justify-center w-6 h-6 md:w-5 md:h-5 rounded-full leading-none ${
                         isToday ? 'bg-primary text-primary-foreground font-medium' : holiday ? 'text-red-500' : dayColor(dow)
                       }`}>
                         {d}
@@ -701,7 +701,7 @@ export function CalendarPage() {
                 )
               })}
               {Array.from({ length: remainder }, (_, i) => (
-                <div key={`n${i}`} className="bg-background px-1 py-0.5 text-muted-foreground/40 overflow-hidden">
+                <div key={`n${i}`} className="bg-background px-1.5 py-1 md:px-1 md:py-0.5 text-muted-foreground/40 overflow-hidden">
                   <span className="text-xs leading-none">{i + 1}</span>
                 </div>
               ))}

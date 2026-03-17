@@ -171,9 +171,9 @@ export function ChatPage() {
               disabled={isStreaming}
               rows={1}
               className="flex-1 min-w-0 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              style={{ maxHeight: '160px', minHeight: '38px' }}
+              style={{ maxHeight: '160px', minHeight: '44px' }}
             />
-            <Button className="shrink-0" onClick={handleSend} disabled={!input.trim() || isStreaming}>
+            <Button size="default" className="shrink-0" onClick={handleSend} disabled={!input.trim() || isStreaming}>
               <Send size={16} />
             </Button>
           </div>
