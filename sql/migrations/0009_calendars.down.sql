@@ -5,5 +5,8 @@ DROP INDEX IF EXISTS idx_calendar_events_calendar;
 ALTER TABLE calendar_events RENAME COLUMN created_by TO user_id;
 ALTER TABLE calendar_events DROP COLUMN IF EXISTS calendar_id;
 
+DROP INDEX IF EXISTS idx_calendar_members_user_id;
+DROP INDEX IF EXISTS idx_calendars_default;
+DROP INDEX IF EXISTS idx_calendars_owner_id;
 DROP TABLE IF EXISTS calendar_members;
 DROP TABLE IF EXISTS calendars;
