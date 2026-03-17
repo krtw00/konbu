@@ -268,6 +268,7 @@ func (c *Client) DeleteTodo(id string) error {
 // --- Event ---
 
 type Event struct {
+	CalendarID     *string `json:"calendar_id"`
 	ID             string  `json:"id"`
 	Title          string  `json:"title"`
 	Description    string  `json:"description"`
@@ -280,8 +281,12 @@ type Event struct {
 	UpdatedAt      string  `json:"updated_at"`
 }
 
-func (c *Client) ListEvents() ([]Event, error) {
-	data, err := c.do("GET", "/api/v1/events?limit=100&sort=start_at:asc", nil)
+func (c *Client) ListEvents(calendarID string) ([]Event, error) {
+	path := "/api/v1/events?limit=100&sort=start_at:asc"
+	if calendarID != "" {
+		path += "&calendar_id=" + url.QueryEscape(calendarID)
+	}
+	data, err := c.do("GET", path, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -319,6 +324,170 @@ func (c *Client) UpdateEvent(id string, fields map[string]any) (*Event, error) {
 func (c *Client) DeleteEvent(id string) error {
 	_, err := c.do("DELETE", "/api/v1/events/"+id, nil)
 	return err
+}
+
+// --- Calendar ---
+
+type Calendar struct {
+	ID          string  `json:"id"`
+	OwnerID     string  `json:"owner_id"`
+	Name        string  `json:"name"`
+	IsDefault   bool    `json:"is_default"`
+	ShareToken  *string `json:"share_token"`
+	Color       string  `json:"color"`
+	MemberCount int     `json:"member_count"`
+	CreatedAt   string  `json:"created_at"`
+	UpdatedAt   string  `json:"updated_at"`
+}
+
+type CalendarMember struct {
+	CalendarID string `json:"calendar_id"`
+	UserID     string `json:"user_id"`
+	UserName   string `json:"user_name"`
+	UserEmail  string `json:"user_email"`
+	Role       string `json:"role"`
+	Color      string `json:"color"`
+	JoinedAt   string `json:"joined_at"`
+}
+
+type CalendarDetail struct {
+	Calendar
+	Members []CalendarMember `json:"members"`
+}
+
+func (c *Client) ListCalendars() ([]Calendar, error) {
+	data, err := c.do("GET", "/api/v1/calendars", nil)
+	if err != nil {
+		return nil, err
+	}
+	var calendars []Calendar
+	return calendars, json.Unmarshal(data, &calendars)
+}
+
+func (c *Client) GetCalendar(id string) (*CalendarDetail, error) {
+	data, err := c.do("GET", "/api/v1/calendars/"+id, nil)
+	if err != nil {
+		return nil, err
+	}
+	var detail CalendarDetail
+	return &detail, json.Unmarshal(data, &detail)
+}
+
+func (c *Client) CreateCalendar(name, color string) (*Calendar, error) {
+	body := map[string]any{"name": name}
+	if color != "" {
+		body["color"] = color
+	}
+	data, err := c.do("POST", "/api/v1/calendars", body)
+	if err != nil {
+		return nil, err
+	}
+	var cal Calendar
+	return &cal, json.Unmarshal(data, &cal)
+}
+
+func (c *Client) UpdateCalendar(id string, fields map[string]any) (*Calendar, error) {
+	data, err := c.do("PUT", "/api/v1/calendars/"+id, fields)
+	if err != nil {
+		return nil, err
+	}
+	var cal Calendar
+	return &cal, json.Unmarshal(data, &cal)
+}
+
+func (c *Client) DeleteCalendar(id string) error {
+	_, err := c.do("DELETE", "/api/v1/calendars/"+id, nil)
+	return err
+}
+
+func (c *Client) JoinCalendar(token string) (*Calendar, error) {
+	data, err := c.do("POST", "/api/v1/calendars/join/"+token, nil)
+	if err != nil {
+		return nil, err
+	}
+	var cal Calendar
+	return &cal, json.Unmarshal(data, &cal)
+}
+
+func (c *Client) CreateCalendarShareLink(id string) (string, error) {
+	data, err := c.do("POST", "/api/v1/calendars/"+id+"/share-link", nil)
+	if err != nil {
+		return "", err
+	}
+	var resp struct {
+		ShareToken string `json:"share_token"`
+	}
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return "", err
+	}
+	return resp.ShareToken, nil
+}
+
+func (c *Client) DeleteCalendarShareLink(id string) error {
+	_, err := c.do("DELETE", "/api/v1/calendars/"+id+"/share-link", nil)
+	return err
+}
+
+func (c *Client) AddCalendarMember(id, email, role string) (*CalendarMember, error) {
+	data, err := c.do("POST", "/api/v1/calendars/"+id+"/members", map[string]any{
+		"email": email,
+		"role":  role,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var member CalendarMember
+	return &member, json.Unmarshal(data, &member)
+}
+
+func (c *Client) UpdateCalendarMember(id, userID string, fields map[string]any) error {
+	_, err := c.do("PUT", "/api/v1/calendars/"+id+"/members/"+userID, fields)
+	return err
+}
+
+func (c *Client) RemoveCalendarMember(id, userID string) error {
+	_, err := c.do("DELETE", "/api/v1/calendars/"+id+"/members/"+userID, nil)
+	return err
+}
+
+// --- Public Share ---
+
+type PublicShare struct {
+	ResourceType string `json:"resource_type"`
+	ResourceID   string `json:"resource_id"`
+	Token        string `json:"token"`
+	CreatedAt    string `json:"created_at"`
+	UpdatedAt    string `json:"updated_at"`
+}
+
+func (c *Client) GetPublicShare(resourceType, id string) (*PublicShare, error) {
+	data, err := c.do("GET", "/api/v1/public-shares/"+resourceType+"/"+id, nil)
+	if err != nil {
+		return nil, err
+	}
+	if string(data) == "null" {
+		return nil, nil
+	}
+	var share PublicShare
+	return &share, json.Unmarshal(data, &share)
+}
+
+func (c *Client) CreatePublicShare(resourceType, id string) (*PublicShare, error) {
+	data, err := c.do("POST", "/api/v1/public-shares/"+resourceType+"/"+id, nil)
+	if err != nil {
+		return nil, err
+	}
+	var share PublicShare
+	return &share, json.Unmarshal(data, &share)
+}
+
+func (c *Client) DeletePublicShare(resourceType, id string) error {
+	_, err := c.do("DELETE", "/api/v1/public-shares/"+resourceType+"/"+id, nil)
+	return err
+}
+
+func (c *Client) PublicURL(token string) string {
+	return c.BaseURL + "/public/" + token
 }
 
 // --- Tool ---

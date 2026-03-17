@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { PublicShareDialog } from '@/components/PublicShareDialog'
 import { Calendar as CalendarIcon, Check, X } from 'lucide-react'
 import type { Todo, Tag } from '@/types/api'
 
@@ -205,6 +206,7 @@ export function TodosPage() {
             </div>
             <div className="flex gap-2 pt-2">
               <Button variant="destructive" size="sm" onClick={deleteDetail}>{t('common.delete')}</Button>
+              <PublicShareDialog resourceType="todo" resourceId={selectedTodo.id} />
               <div className="flex-1" />
               <Button size="sm" onClick={() => { saveDetail(); setSelectedId(null); setSelectedTodo(null) }}>{t('common.done')}</Button>
             </div>
@@ -253,6 +255,7 @@ export function TodosPage() {
               </div>
               <div className="flex gap-2 pt-2">
                 <Button variant="destructive" size="sm" onClick={deleteDetail}>{t('common.delete')}</Button>
+                <PublicShareDialog resourceType="todo" resourceId={selectedTodo.id} />
                 <div className="flex-1" />
                 <Button size="sm" onClick={() => { saveDetail(); setSelectedId(null); setSelectedTodo(null) }}>{t('common.done')}</Button>
               </div>

@@ -4,7 +4,7 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">Manage memos, todos, calendar, and bookmarks<br>in one place — with AI and cross-search.</p>
+<p align="center">An AI-powered digital planner.<br>Keep your schedule at the center, with notes and todos in the same place.</p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
@@ -26,12 +26,18 @@
 
 ## Why konbu?
 
-Memos, tasks, calendar, and bookmarks are usually scattered across separate apps. Information gets fragmented, and "where did I write that?" becomes a daily frustration. konbu brings everything into one place with cross-search and AI chat.
+Planners are good at showing your schedule, but the notes and tasks around it usually end up in separate apps.
+
+Once that context is scattered, you spend more time remembering where you put things than actually using them.
+
+konbu is an AI-powered digital planner that keeps your schedule, notes, todos, and links in the same place. The calendar stays at the center, while the rest of the information remains close enough to act on and easy enough to find later.
+
+It is text-first, but not text-only. Each type of information still has the UI it needs, and AI sits on top as an agent that can check your schedule, search, organize, rewrite, and add things for you.
 
 ## Features
 
 - **Cross-search** -- Full-text search across memos, todos, events, and bookmarks. No more "where was that?"
-- **AI Chat** -- "Add groceries to my todo" "What's my schedule tomorrow?" — manage everything with natural language (free tier included)
+- **AI Agent Chat** -- "Add groceries to my todo" "What's on my schedule tomorrow?" — AI searches, organizes, rewrites, and acts on your workspace (free tier included)
 - **Memos** -- Markdown notes with tagging, live preview
 - **ToDo** -- Inline task creation with due dates, tags, and notes
 - **Calendar** -- Monthly view with event CRUD and iCal import
@@ -67,14 +73,7 @@ cd web/frontend && npm ci && npm run build && cd ../..
 # Build server
 go build -o bin/server ./cmd/server
 
-# Run migrations
-psql $DATABASE_URL -f sql/migrations/0001_initial.up.sql
-psql $DATABASE_URL -f sql/migrations/0002_auth_password.up.sql
-psql $DATABASE_URL -f sql/migrations/0003_recurring_events.up.sql
-psql $DATABASE_URL -f sql/migrations/0004_tool_category.up.sql
-psql $DATABASE_URL -f sql/migrations/0005_trgm_search.up.sql
-
-# Start
+# Start (runs all SQL migrations automatically on boot)
 DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 ```
 
@@ -87,6 +86,21 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `PORT` | No | `8080` | Server port |
 | `DEV_USER` | No | -- | Auto-login as this email (dev only) |
 | `OPEN_REGISTRATION` | No | -- | Set `true` to allow anyone to register (for Cloud) |
+| `BASE_URL` | No | -- | Public app URL used for OAuth callbacks |
+| `GOOGLE_CLIENT_ID` | No | -- | Enable Google OAuth login |
+| `GOOGLE_CLIENT_SECRET` | No | -- | Enable Google OAuth login |
+| `WEBHOOK_SECRET` | No | -- | GitHub Sponsors webhook secret |
+| `KOFI_TOKEN` | No | -- | Ko-fi webhook verification token |
+| `AI_ENCRYPTION_KEY` | No | -- | 64 hex chars used to encrypt BYOK AI keys |
+| `DEFAULT_AI_PROVIDER` | No | `openai` | Server-side free-tier AI provider |
+| `DEFAULT_AI_API_KEY` | No | -- | Server-side free-tier AI key |
+| `DEFAULT_AI_ENDPOINT` | No | -- | Override free-tier provider endpoint |
+| `DEFAULT_AI_MODEL` | No | -- | Override free-tier provider model |
+| `R2_ACCESS_KEY_ID` | No | -- | Attachment upload credentials |
+| `R2_SECRET_ACCESS_KEY` | No | -- | Attachment upload credentials |
+| `R2_ENDPOINT` | No | Cloudflare R2 default | Attachment storage endpoint |
+| `R2_BUCKET` | No | `konbu-attachments` | Attachment storage bucket |
+| `R2_PUBLIC_URL` | No | -- | Optional public base URL for attachments |
 
 ### Docker Compose (prod) variables
 
@@ -169,15 +183,18 @@ Base path: `/api/v1`
 
 | Resource | Endpoints |
 |---|---|
-| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` |
-| User | `GET/PUT /auth/me`, `GET/PUT /auth/settings`, `POST /auth/change-password` |
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/setup-status`, `GET /auth/providers`, `GET /auth/google/login`, `GET /auth/google/callback` |
+| User | `GET/PUT /auth/me`, `GET/PUT /auth/settings`, `POST /auth/change-password`, `POST /auth/delete-account` |
 | API Keys | `GET/POST /api-keys`, `DELETE /api-keys/:id` |
-| Memos | `GET/POST /memos`, `GET/PUT/DELETE /memos/:id` |
+| Memos | `GET/POST /memos`, `GET/PUT/DELETE /memos/:id`, `GET/POST /memos/:id/rows`, `POST /memos/:id/rows/batch`, `GET /memos/:id/rows/export`, `PUT/DELETE /memos/:id/rows/:rowId` |
 | ToDos | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done`, `PATCH /todos/:id/reopen` |
 | Events | `GET/POST /events`, `GET/PUT/DELETE /events/:id` |
+| Calendars | `GET/POST /calendars`, `GET/PUT/DELETE /calendars/:id`, `POST /calendars/join/:token`, share-link and member management, `GET /calendar.ics` |
 | Tools | `GET/POST /tools`, `PUT/DELETE /tools/:id` |
 | Tags | `GET/POST /tags`, `PUT/DELETE /tags/:id` |
 | Search | `GET /search?q=...` |
+| Chat | `GET/POST /chat/sessions`, `GET/PUT/DELETE /chat/sessions/:id`, `POST /chat/sessions/:id/messages`, `GET/PUT /chat/config` |
+| Attachments | `POST /attachments`, `GET /attachments/*` |
 | Export | `GET /export/json`, `GET /export/markdown` |
 | Import | `POST /import/ical` |
 
@@ -210,8 +227,9 @@ internal/
   handler/      # HTTP handlers
   service/      # Business logic
   repository/   # DB access (sqlc)
-  middleware/    # Auth, logging
+  middleware/   # Auth, logging
   client/       # API client (used by CLI)
+  mcp/          # MCP server
 web/frontend/   # React + Vite SPA
 sql/            # Schema and migrations
 docker/         # Dockerfile

@@ -2,11 +2,13 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useCache, invalidateCache } from '@/hooks/useCache'
-import { dateKey, formatTime, localToISO, isoToLocal } from '@/lib/date'
+import { dateKey, formatTime, localToISO, isoToLocal, isoToDateInput, localDateToISO } from '@/lib/date'
 import { getHolidays } from '@/lib/holidays'
+import { appURL } from '@/lib/runtime'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { PublicShareDialog } from '@/components/PublicShareDialog'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { ChevronLeft, ChevronRight, Repeat, Plus, ChevronDown, Settings2, Link2, Copy, Trash2, UserPlus, X } from 'lucide-react'
 import type { CalendarEvent, Calendar, CalendarDetail } from '@/types/api'
@@ -85,9 +87,15 @@ export function CalendarPage() {
   // Calendar management state
   const [manageOpen, setManageOpen] = useState(false)
   const [manageDetail, setManageDetail] = useState<CalendarDetail | null>(null)
+  const [manageName, setManageName] = useState('')
+  const [manageColor, setManageColor] = useState(CAL_COLORS[0])
+  const [manageMsg, setManageMsg] = useState('')
+  const [manageSaving, setManageSaving] = useState(false)
   const [newCalName, setNewCalName] = useState('')
   const [newCalColor, setNewCalColor] = useState(CAL_COLORS[0])
   const [showNewCal, setShowNewCal] = useState(false)
+  const [newEventAllDay, setNewEventAllDay] = useState(false)
+  const [newListEventAllDay, setNewListEventAllDay] = useState(false)
   const [joinToken, setJoinToken] = useState('')
   const [joinMsg, setJoinMsg] = useState('')
   const [newMemberEmail, setNewMemberEmail] = useState('')
@@ -100,8 +108,33 @@ export function CalendarPage() {
     try {
       const r = await api.getCalendar(calId)
       setManageDetail(r.data)
+      setManageName(r.data.name)
+      setManageColor(r.data.color || CAL_COLORS[0])
+      setManageMsg('')
       setManageOpen(true)
     } catch { /* ignore */ }
+  }
+
+  async function handleUpdateCalendar() {
+    if (!manageDetail || !manageName.trim()) return
+    setManageSaving(true)
+    setManageMsg('')
+    try {
+      await api.updateCalendar(manageDetail.id, { name: manageName.trim(), color: manageColor })
+      const [detailRes] = await Promise.all([
+        api.getCalendar(manageDetail.id),
+        invalidateCache('calendars', 'calendar', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : [])),
+      ])
+      setManageDetail(detailRes.data)
+      setManageName(detailRes.data.name)
+      setManageColor(detailRes.data.color || CAL_COLORS[0])
+      setManageMsg(t('common.saved'))
+      setTimeout(() => setManageMsg(''), 2000)
+    } catch (err) {
+      setManageMsg(err instanceof Error ? err.message : 'Error')
+    } finally {
+      setManageSaving(false)
+    }
   }
 
   async function handleCreateCalendar() {
@@ -136,7 +169,7 @@ export function CalendarPage() {
   }
 
   async function handleCopyLink(token: string) {
-    const url = `${window.location.origin}/api/v1/calendars/join/${token}`
+    const url = appURL(`/api/v1/calendars/join/${token}`)
     await navigator.clipboard.writeText(url)
     setShareMsg(t('calendar.linkCopied'))
     setTimeout(() => setShareMsg(''), 2000)
@@ -196,7 +229,6 @@ export function CalendarPage() {
     return null
   }
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setWeekStart(getWeekStart(new Date(), firstDayOfWeek)) }, [firstDayOfWeek])
 
   const holidays = useMemo(() => getHolidays(year), [year])
@@ -313,24 +345,25 @@ export function CalendarPage() {
     return ''
   }
 
-  async function handleNewEvent(_dk: string) {
-    const title = (document.getElementById('new-ev-title') as HTMLInputElement)?.value.trim()
+  async function handleNewEvent(_dk: string, suffix = '') {
+    const title = (document.getElementById(`new-ev-title${suffix}`) as HTMLInputElement)?.value.trim()
     if (!title) return
-    const startAt = (document.getElementById('new-ev-start') as HTMLInputElement)?.value
-    const endAt = (document.getElementById('new-ev-end') as HTMLInputElement)?.value
-    const desc = (document.getElementById('new-ev-desc') as HTMLTextAreaElement)?.value
+    const startAt = (document.getElementById(`new-ev-start${suffix}`) as HTMLInputElement)?.value
+    const endAt = (document.getElementById(`new-ev-end${suffix}`) as HTMLInputElement)?.value
+    const desc = (document.getElementById(`new-ev-desc${suffix}`) as HTMLTextAreaElement)?.value
     await api.createEvent({
       title,
       description: desc || '',
-      start_at: localToISO(startAt),
-      end_at: endAt ? localToISO(endAt) : null,
-      all_day: false,
+      start_at: newEventAllDay ? localDateToISO(_dk) : localToISO(startAt),
+      end_at: newEventAllDay ? null : (endAt ? localToISO(endAt) : null),
+      all_day: newEventAllDay,
       recurrence_rule: newRecurrence || null,
       recurrence_end: null,
       tags: [],
       calendar_id: selectedCalendarId || undefined,
     })
     setNewRecurrence('')
+    setNewEventAllDay(false)
     invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
   }
 
@@ -343,15 +376,16 @@ export function CalendarPage() {
     await api.createEvent({
       title,
       description: desc || '',
-      start_at: localToISO(startAt),
-      end_at: endAt ? localToISO(endAt) : null,
-      all_day: false,
+      start_at: newListEventAllDay ? localDateToISO(_targetDk) : localToISO(startAt),
+      end_at: newListEventAllDay ? null : (endAt ? localToISO(endAt) : null),
+      all_day: newListEventAllDay,
       recurrence_rule: null,
       recurrence_end: null,
       tags: [],
       calendar_id: selectedCalendarId || undefined,
     })
     setListNewEventDate(null)
+    setNewListEventAllDay(false)
     invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
   }
 
@@ -379,6 +413,14 @@ export function CalendarPage() {
   }
 
   const dk = selectedDay ? dateKey(selectedDay[0], selectedDay[1], selectedDay[2]) : null
+
+  useEffect(() => {
+    if (!selectedDay) setNewEventAllDay(false)
+  }, [selectedDay])
+
+  useEffect(() => {
+    if (!listNewEventDate) setNewListEventAllDay(false)
+  }, [listNewEventDate])
 
   // Week view data
   const weekDays = useMemo(() => getWeekDays(weekStart), [weekStart])
@@ -426,24 +468,39 @@ export function CalendarPage() {
           onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
           className="font-medium"
         />
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={editingEvent.all_day}
+            onChange={(e) => setEditingEvent({
+              ...editingEvent,
+              all_day: e.target.checked,
+              start_at: e.target.checked ? localDateToISO(isoToDateInput(editingEvent.start_at)) : editingEvent.start_at,
+              end_at: e.target.checked ? null : editingEvent.end_at,
+            })}
+          />
+          {t('common.allDay')}
+        </label>
         <div>
           <label className="text-xs text-muted-foreground">{t('calendar.start')}</label>
           <Input
-            type="datetime-local"
-            value={editingEvent.start_at ? isoToLocal(editingEvent.start_at) : ''}
-            onChange={(e) => setEditingEvent({ ...editingEvent, start_at: localToISO(e.target.value) })}
+            type={editingEvent.all_day ? 'date' : 'datetime-local'}
+            value={editingEvent.start_at ? (editingEvent.all_day ? isoToDateInput(editingEvent.start_at) : isoToLocal(editingEvent.start_at)) : ''}
+            onChange={(e) => setEditingEvent({ ...editingEvent, start_at: editingEvent.all_day ? localDateToISO(e.target.value) : localToISO(e.target.value) })}
             className="mt-1"
           />
         </div>
-        <div>
-          <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
-          <Input
-            type="datetime-local"
-            value={editingEvent.end_at ? isoToLocal(editingEvent.end_at) : ''}
-            onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? localToISO(e.target.value) : null })}
-            className="mt-1"
-          />
-        </div>
+        {!editingEvent.all_day && (
+          <div>
+            <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
+            <Input
+              type="datetime-local"
+              value={editingEvent.end_at ? isoToLocal(editingEvent.end_at) : ''}
+              onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? localToISO(e.target.value) : null })}
+              className="mt-1"
+            />
+          </div>
+        )}
         <div>
           <label className="text-xs text-muted-foreground">{t('calendar.description')}</label>
           <Textarea
@@ -466,6 +523,7 @@ export function CalendarPage() {
         </div>
         <div className="flex gap-2">
           <Button variant="destructive" size="sm" onClick={() => deleteEvent(editingEvent.id)}>{t('common.delete')}</Button>
+          <PublicShareDialog resourceType="event" resourceId={editingEvent.id} />
           <div className="flex-1" />
           <Button variant="ghost" size="sm" onClick={onClose}>{t('common.cancel')}</Button>
           <Button size="sm" onClick={saveEvent}>{t('common.save')}</Button>
@@ -729,9 +787,25 @@ export function CalendarPage() {
               <button className="text-muted-foreground hover:text-foreground" onClick={() => setListNewEventDate(null)}>x</button>
             </div>
             <Input id="new-ev-title-list" placeholder={t('calendar.eventTitle')} />
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={newListEventAllDay} onChange={(e) => setNewListEventAllDay(e.target.checked)} />
+              {t('common.allDay')}
+            </label>
             <div className="flex gap-2">
-              <Input id="new-ev-start-list" type="datetime-local" defaultValue={listNewEventDate + 'T09:00'} />
-              <Input id="new-ev-end-list" type="datetime-local" defaultValue={listNewEventDate + 'T10:00'} />
+              <Input
+                key={`new-ev-start-list-${newListEventAllDay ? 'date' : 'time'}-${listNewEventDate}`}
+                id="new-ev-start-list"
+                type={newListEventAllDay ? 'date' : 'datetime-local'}
+                defaultValue={newListEventAllDay ? listNewEventDate : listNewEventDate + 'T09:00'}
+              />
+              {!newListEventAllDay && (
+                <Input
+                  key={`new-ev-end-list-${listNewEventDate}`}
+                  id="new-ev-end-list"
+                  type="datetime-local"
+                  defaultValue={listNewEventDate + 'T10:00'}
+                />
+              )}
             </div>
             <Textarea id="new-ev-desc-list" placeholder={t('calendar.descriptionPlaceholder')} />
             <Button size="sm" className="w-full" onClick={() => handleNewEventList(listNewEventDate)}>{t('common.add')}</Button>
@@ -774,70 +848,90 @@ export function CalendarPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex items-center gap-3 mb-2">
-        <h1 className="text-lg font-semibold">{t('calendar.title')}</h1>
+      <div className="mb-3 flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-lg font-semibold">{t('calendar.title')}</h1>
+        </div>
         {calendarList.length > 0 && (
-          <div className="relative">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="relative sm:min-w-[260px]">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-10 w-full justify-between rounded-xl px-3 text-sm font-medium"
+                onClick={() => setCalSelectorOpen(!calSelectorOpen)}
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  {selectedCalendar ? (
+                    <>
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: selectedCalendar.color || '#3b82f6' }} />
+                      <span className="truncate">{selectedCalendar.name}</span>
+                    </>
+                  ) : (
+                    <span className="truncate">{t('calendar.allCalendars')}</span>
+                  )}
+                </span>
+                <ChevronDown size={14} className="shrink-0 text-muted-foreground" />
+              </Button>
+              {calSelectorOpen && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setCalSelectorOpen(false)} />
+                  <div className="absolute top-full left-0 z-40 mt-2 w-full min-w-[280px] rounded-xl border border-border bg-background py-1 shadow-lg">
+                    <button
+                      className={`w-full px-3 py-2 text-left text-sm hover:bg-accent/50 ${!selectedCalendarId ? 'bg-accent/30 font-medium' : ''}`}
+                      onClick={() => { setSelectedCalendarId(null); setCalSelectorOpen(false) }}
+                    >
+                      {t('calendar.allCalendars')}
+                    </button>
+                    {calendarList.map(cal => (
+                      <div key={cal.id} className={`flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent/50 ${selectedCalendarId === cal.id ? 'bg-accent/30 font-medium' : ''}`}>
+                        <button
+                          className="flex min-w-0 flex-1 items-center gap-2 py-1 text-left"
+                          onClick={() => { setSelectedCalendarId(cal.id); setCalSelectorOpen(false) }}
+                        >
+                          <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cal.color || '#3b82f6' }} />
+                          <span className="truncate">{cal.name}</span>
+                          {cal.member_count > 1 && <span className="ml-auto text-xs text-muted-foreground">{cal.member_count}</span>}
+                        </button>
+                        <button
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                          onClick={() => openManageCalendar(cal.id)}
+                        >
+                          <Settings2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                    <div className="mt-1 border-t border-border pt-1">
+                      <button
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent/50"
+                        onClick={() => { setShowNewCal(true); setCalSelectorOpen(false) }}
+                      >
+                        <Plus size={14} />
+                        {t('calendar.newCalendar')}
+                      </button>
+                      <button
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent/50"
+                        onClick={() => { setCalSelectorOpen(false); setJoinToken(''); setJoinMsg(''); setManageOpen(false); setShowNewCal(false); document.getElementById('join-input')?.focus() }}
+                      >
+                        <UserPlus size={14} />
+                        {t('calendar.joinCalendar')}
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
             <Button
               variant="outline"
               size="sm"
-              className="gap-1.5 text-xs"
-              onClick={() => setCalSelectorOpen(!calSelectorOpen)}
+              className="h-10 justify-center gap-2 rounded-xl px-4 text-sm font-medium sm:justify-start"
+              disabled={!selectedCalendar}
+              onClick={() => selectedCalendar && openManageCalendar(selectedCalendar.id)}
             >
-              {selectedCalendar ? (
-                <>
-                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: selectedCalendar.color || '#3b82f6' }} />
-                  {selectedCalendar.name}
-                </>
-              ) : (
-                t('calendar.allCalendars')
-              )}
-              <ChevronDown size={12} />
+              <Settings2 size={15} />
+              {selectedCalendar ? selectedCalendar.name : t('calendar.manageCalendars')}
+              <span className="text-muted-foreground">· {t('calendar.manageCalendars')}</span>
             </Button>
-            {calSelectorOpen && (
-              <>
-                <div className="fixed inset-0 z-30" onClick={() => setCalSelectorOpen(false)} />
-                <div className="absolute top-full left-0 mt-1 w-48 bg-background border border-border rounded-lg shadow-lg z-40 py-1">
-                  <button
-                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-accent/50 ${!selectedCalendarId ? 'font-medium bg-accent/30' : ''}`}
-                    onClick={() => { setSelectedCalendarId(null); setCalSelectorOpen(false) }}
-                  >
-                    {t('calendar.allCalendars')}
-                  </button>
-                  {calendarList.map(cal => (
-                    <div key={cal.id} className={`flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent/50 ${selectedCalendarId === cal.id ? 'font-medium bg-accent/30' : ''}`}>
-                      <button
-                        className="flex items-center gap-2 flex-1 min-w-0 text-left"
-                        onClick={() => { setSelectedCalendarId(cal.id); setCalSelectorOpen(false) }}
-                      >
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cal.color || '#3b82f6' }} />
-                        <span className="truncate">{cal.name}</span>
-                        {cal.member_count > 1 && <span className="text-xs text-muted-foreground ml-auto">{cal.member_count}</span>}
-                      </button>
-                      <button className="text-muted-foreground hover:text-foreground shrink-0 p-0.5" onClick={() => openManageCalendar(cal.id)}>
-                        <Settings2 size={12} />
-                      </button>
-                    </div>
-                  ))}
-                  <div className="border-t border-border mt-1 pt-1">
-                    <button
-                      className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent/50 flex items-center gap-2 text-muted-foreground"
-                      onClick={() => { setShowNewCal(true); setCalSelectorOpen(false) }}
-                    >
-                      <Plus size={12} />
-                      {t('calendar.newCalendar')}
-                    </button>
-                    <button
-                      className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent/50 flex items-center gap-2 text-muted-foreground"
-                      onClick={() => { setCalSelectorOpen(false); setJoinToken(''); setJoinMsg(''); setManageOpen(false); setShowNewCal(false); document.getElementById('join-input')?.focus() }}
-                    >
-                      <UserPlus size={12} />
-                      {t('calendar.joinCalendar')}
-                    </button>
-                  </div>
-                </div>
-              </>
-            )}
           </div>
         )}
       </div>
@@ -928,56 +1022,7 @@ export function CalendarPage() {
               </div>
 
               {editingEvent ? (
-                <div className="space-y-2">
-                  <Input
-                    value={editingEvent.title}
-                    onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
-                    className="font-medium"
-                  />
-                  <div>
-                    <label className="text-xs text-muted-foreground">{t('calendar.start')}</label>
-                    <Input
-                      type="datetime-local"
-                      value={editingEvent.start_at ? isoToLocal(editingEvent.start_at) : ''}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, start_at: localToISO(e.target.value) })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
-                    <Input
-                      type="datetime-local"
-                      value={editingEvent.end_at ? isoToLocal(editingEvent.end_at) : ''}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? localToISO(e.target.value) : null })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">{t('calendar.description')}</label>
-                    <Textarea
-                      value={editingEvent.description || ''}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-muted-foreground">{t('calendar.recurrence')}</label>
-                    <select
-                      value={editingEvent.recurrence_rule || ''}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, recurrence_rule: e.target.value || null })}
-                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                    >
-                      {RECURRENCE_OPTIONS.map((o) => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="destructive" size="sm" onClick={() => deleteEvent(editingEvent.id)}>{t('common.delete')}</Button>
-                    <div className="flex-1" />
-                    <Button size="sm" onClick={saveEvent}>{t('common.save')}</Button>
-                  </div>
-                </div>
+                renderEditPanel(() => setEditingEvent(null))
               ) : (
                 <>
                   <div className="space-y-1.5">
@@ -1001,9 +1046,25 @@ export function CalendarPage() {
                   <div className="border-t border-border pt-3 space-y-2">
                     <div className="text-xs text-muted-foreground font-medium">{t('calendar.newEvent')}</div>
                     <Input id="new-ev-title" placeholder={t('calendar.eventTitle')} />
+                    <label className="flex items-center gap-2 text-sm">
+                      <input type="checkbox" checked={newEventAllDay} onChange={(e) => setNewEventAllDay(e.target.checked)} />
+                      {t('common.allDay')}
+                    </label>
                     <div className="flex gap-2">
-                      <Input id="new-ev-start" type="datetime-local" defaultValue={dk + 'T09:00'} />
-                      <Input id="new-ev-end" type="datetime-local" defaultValue={dk + 'T10:00'} />
+                      <Input
+                        key={`new-ev-start-${newEventAllDay ? 'date' : 'time'}-${dk}`}
+                        id="new-ev-start"
+                        type={newEventAllDay ? 'date' : 'datetime-local'}
+                        defaultValue={newEventAllDay ? (dk ?? '') : `${dk ?? ''}T09:00`}
+                      />
+                      {!newEventAllDay && (
+                        <Input
+                          key={`new-ev-end-${dk}`}
+                          id="new-ev-end"
+                          type="datetime-local"
+                          defaultValue={`${dk ?? ''}T10:00`}
+                        />
+                      )}
                     </div>
                     <Textarea id="new-ev-desc" placeholder={t('calendar.descriptionPlaceholder')} />
                     <div>
@@ -1039,44 +1100,7 @@ export function CalendarPage() {
                 </div>
 
                 {editingEvent ? (
-                  <div className="space-y-2">
-                    <Input
-                      value={editingEvent.title}
-                      onChange={(e) => setEditingEvent({ ...editingEvent, title: e.target.value })}
-                      className="font-medium"
-                    />
-                    <div>
-                      <label className="text-xs text-muted-foreground">{t('calendar.start')}</label>
-                      <Input
-                        type="datetime-local"
-                        value={editingEvent.start_at ? isoToLocal(editingEvent.start_at) : ''}
-                        onChange={(e) => setEditingEvent({ ...editingEvent, start_at: localToISO(e.target.value) })}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground">{t('calendar.end')}</label>
-                      <Input
-                        type="datetime-local"
-                        value={editingEvent.end_at ? isoToLocal(editingEvent.end_at) : ''}
-                        onChange={(e) => setEditingEvent({ ...editingEvent, end_at: e.target.value ? localToISO(e.target.value) : null })}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground">{t('calendar.description')}</label>
-                      <Textarea
-                        value={editingEvent.description || ''}
-                        onChange={(e) => setEditingEvent({ ...editingEvent, description: e.target.value })}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <Button variant="destructive" size="sm" onClick={() => deleteEvent(editingEvent.id)}>{t('common.delete')}</Button>
-                      <div className="flex-1" />
-                      <Button size="sm" onClick={saveEvent}>{t('common.save')}</Button>
-                    </div>
-                  </div>
+                  renderEditPanel(() => setEditingEvent(null))
                 ) : (
                   <>
                     <div className="space-y-1.5">
@@ -1100,12 +1124,28 @@ export function CalendarPage() {
                     <div className="border-t border-border pt-3 space-y-2">
                       <div className="text-xs text-muted-foreground font-medium">{t('calendar.newEvent')}</div>
                       <Input id="new-ev-title-m" placeholder={t('calendar.eventTitle')} />
+                      <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={newEventAllDay} onChange={(e) => setNewEventAllDay(e.target.checked)} />
+                        {t('common.allDay')}
+                      </label>
                       <div className="flex flex-col gap-2">
-                        <Input id="new-ev-start-m" type="datetime-local" defaultValue={dk + 'T09:00'} />
-                        <Input id="new-ev-end-m" type="datetime-local" defaultValue={dk + 'T10:00'} />
+                        <Input
+                          key={`new-ev-start-mobile-${newEventAllDay ? 'date' : 'time'}-${dk}`}
+                          id="new-ev-start-m"
+                          type={newEventAllDay ? 'date' : 'datetime-local'}
+                          defaultValue={newEventAllDay ? (dk ?? '') : `${dk ?? ''}T09:00`}
+                        />
+                        {!newEventAllDay && (
+                          <Input
+                            key={`new-ev-end-mobile-${dk}`}
+                            id="new-ev-end-m"
+                            type="datetime-local"
+                            defaultValue={`${dk ?? ''}T10:00`}
+                          />
+                        )}
                       </div>
                       <Textarea id="new-ev-desc-m" placeholder={t('calendar.descriptionPlaceholder')} />
-                      <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk)}>{t('common.add')}</Button>
+                      <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk, '-m')}>{t('common.add')}</Button>
                     </div>
                   </>
                 )}
@@ -1168,7 +1208,12 @@ export function CalendarPage() {
       </Dialog>
 
       {/* Calendar manage dialog */}
-      <Dialog open={manageOpen} onOpenChange={setManageOpen}>
+      <Dialog open={manageOpen} onOpenChange={(open) => {
+        setManageOpen(open)
+        if (!open) {
+          setManageMsg('')
+        }
+      }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1179,6 +1224,37 @@ export function CalendarPage() {
           </DialogHeader>
           {manageDetail && (
             <div className="space-y-4">
+              <div className="space-y-3 rounded-xl border border-border p-3">
+                <div>
+                  <label className="text-sm font-medium">{t('calendar.calendarName')}</label>
+                  <Input className="mt-1" value={manageName} onChange={e => setManageName(e.target.value)} />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">{t('calendar.calendarColor')}</label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {CAL_COLORS.map(c => (
+                      <button
+                        key={c}
+                        type="button"
+                        className={`h-7 w-7 rounded-full border-2 transition ${manageColor === c ? 'border-foreground scale-105' : 'border-transparent'}`}
+                        style={{ backgroundColor: c }}
+                        onClick={() => setManageColor(c)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  {manageMsg ? <p className="text-xs text-muted-foreground">{manageMsg}</p> : <div />}
+                  <Button
+                    size="sm"
+                    onClick={handleUpdateCalendar}
+                    disabled={manageSaving || !manageName.trim() || (manageName.trim() === manageDetail.name && manageColor === (manageDetail.color || CAL_COLORS[0]))}
+                  >
+                    {t('common.save')}
+                  </Button>
+                </div>
+              </div>
+
               {/* Share link */}
               <div>
                 <label className="text-sm font-medium">{t('calendar.shareLink')}</label>
@@ -1194,6 +1270,13 @@ export function CalendarPage() {
                   </div>
                 )}
                 {shareMsg && <p className="text-xs text-muted-foreground mt-1">{shareMsg}</p>}
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">{t('publicShare.title')}</label>
+                <div className="mt-1">
+                  <PublicShareDialog resourceType="calendar" resourceId={manageDetail.id} />
+                </div>
               </div>
 
               {/* Members */}

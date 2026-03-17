@@ -8,7 +8,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 # API設計
 
-> **Status**: Active | 最終更新: 2026-03-14
+> **Status**: Active | 最終更新: 2026-03-17
 
 本ドキュメントは、konbuのREST API設計を定義する。
 
@@ -34,6 +34,15 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | POST | `/auth/login` | ログイン（Session Cookie発行） |
 | POST | `/auth/logout` | ログアウト（Cookie削除） |
 | GET | `/auth/setup-status` | 初期セットアップ状態確認 |
+| GET | `/auth/providers` | 有効なログイン手段一覧 |
+| GET | `/auth/google/login` | Google OAuth 開始 |
+| GET | `/auth/google/callback` | Google OAuth コールバック |
+
+### Public（公開）
+
+| メソッド | パス | 説明 |
+|----------|------|------|
+| GET | `/public/:token` | 公開リンクの閲覧用データ取得（read-only） |
 
 ### Auth（認証済み）
 
@@ -44,6 +53,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | POST | `/auth/change-password` | パスワード変更 |
 | GET | `/auth/settings` | ユーザー設定取得 (JSONB) |
 | PUT | `/auth/settings` | ユーザー設定更新 |
+| POST | `/auth/delete-account` | アカウント削除 |
 
 ### API Keys
 
@@ -62,6 +72,12 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | GET | `/memos/:id` | メモ詳細 |
 | PUT | `/memos/:id` | メモ更新 |
 | DELETE | `/memos/:id` | メモ削除（論理削除） |
+| GET | `/memos/:id/rows` | テーブル行一覧 |
+| POST | `/memos/:id/rows` | テーブル行追加 |
+| POST | `/memos/:id/rows/batch` | テーブル行一括追加 |
+| GET | `/memos/:id/rows/export` | CSVエクスポート |
+| PUT | `/memos/:id/rows/:rowId` | テーブル行更新 |
+| DELETE | `/memos/:id/rows/:rowId` | テーブル行削除 |
 
 追加フィルタ: `type` (`markdown` / `table`)
 
@@ -91,6 +107,33 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 追加フィルタ: `from`, `to` (datetime), `month` (`2026-03`形式)
 
+### Calendars
+
+| メソッド | パス | 説明 |
+|----------|------|------|
+| GET | `/calendars` | カレンダー一覧 |
+| POST | `/calendars` | カレンダー作成 |
+| GET | `/calendars/:id` | カレンダー詳細（メンバー含む） |
+| PUT | `/calendars/:id` | カレンダー更新 |
+| DELETE | `/calendars/:id` | カレンダー削除 |
+| POST | `/calendars/join/:token` | 共有リンクで参加 |
+| POST | `/calendars/:id/share-link` | 共有リンク生成 |
+| DELETE | `/calendars/:id/share-link` | 共有リンク無効化 |
+| POST | `/calendars/:id/members` | メンバー追加 |
+| PUT | `/calendars/:id/members/:uid` | メンバー権限/色更新 |
+| DELETE | `/calendars/:id/members/:uid` | メンバー削除 |
+| GET | `/calendar.ics` | iCalフィード取得（token認証） |
+
+### Public Shares
+
+| メソッド | パス | 説明 |
+|----------|------|------|
+| GET | `/public-shares/:resourceType/:id` | リソースの公開リンク取得 |
+| POST | `/public-shares/:resourceType/:id` | 閲覧専用の公開リンク作成 |
+| DELETE | `/public-shares/:resourceType/:id` | 公開リンク削除 |
+
+対応する `resourceType`: `memo`, `todo`, `calendar`, `tool`, `event`
+
 ### Tools
 
 | メソッド | パス | 説明 |
@@ -116,7 +159,29 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 | メソッド | パス | 説明 |
 |----------|------|------|
-| GET | `/search?q=...` | メモ・ToDo・予定の横断全文検索 |
+| GET | `/search?q=...` | メモ・ToDo・予定・ツールの横断検索 |
+
+追加パラメータ: `type`, `tag`, `from`, `to`, `limit`, `offset`
+
+### Chat
+
+| メソッド | パス | 説明 |
+|----------|------|------|
+| GET | `/chat/sessions` | チャットセッション一覧 |
+| POST | `/chat/sessions` | チャットセッション作成 |
+| GET | `/chat/sessions/:id` | チャットセッション詳細 |
+| PUT | `/chat/sessions/:id` | セッション名更新 |
+| DELETE | `/chat/sessions/:id` | セッション削除 |
+| POST | `/chat/sessions/:id/messages` | メッセージ送信（SSEストリーム） |
+| GET | `/chat/config` | AI設定取得 |
+| PUT | `/chat/config` | AI設定保存 |
+
+### Attachments
+
+| メソッド | パス | 説明 |
+|----------|------|------|
+| POST | `/attachments` | 画像添付アップロード（Sponsor/Admin） |
+| GET | `/attachments/*` | 添付ファイル取得 |
 
 ### Export
 
@@ -142,6 +207,8 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | APIキー | `Authorization: Bearer <api-key>` | CLI / 外部連携 |
 | セッションCookie | `konbu_session` (HMAC-SHA256署名) | Web UI |
 | 開発モード | `DEV_USER` 環境変数 | ローカル開発 |
+| iCal feed | `GET /api/v1/calendar.ics?token=...` | 外部カレンダー購読 |
+| 公開リンク | `GET /api/v1/public/:token` | ログイン不要の閲覧専用ページ |
 
 ### エラーレスポンス
 

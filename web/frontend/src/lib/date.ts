@@ -61,11 +61,21 @@ export function localToISO(local: string): string {
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}:00${sign}${oh}:${om}`
 }
 
+export function localDateToISO(localDate: string): string {
+  if (!localDate) return ''
+  return localToISO(`${localDate}T00:00`)
+}
+
 /** Convert an ISO 8601 string to datetime-local value ("YYYY-MM-DDTHH:mm") */
 export function isoToLocal(iso: string): string {
   if (!iso) return ''
   const d = new Date(iso)
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`
+}
+
+export function isoToDateInput(iso: string): string {
+  if (!iso) return ''
+  return isoToLocal(iso).slice(0, 10)
 }
 
 export function dateDelta(n: number): string {

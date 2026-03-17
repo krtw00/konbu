@@ -18,10 +18,10 @@ type Request struct {
 }
 
 type Response struct {
-	JSONRPC string      `json:"jsonrpc"`
+	JSONRPC string          `json:"jsonrpc"`
 	ID      json.RawMessage `json:"id,omitempty"`
-	Result  interface{} `json:"result,omitempty"`
-	Error   *RPCError   `json:"error,omitempty"`
+	Result  interface{}     `json:"result,omitempty"`
+	Error   *RPCError       `json:"error,omitempty"`
 }
 
 type RPCError struct {
@@ -269,7 +269,7 @@ func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (stri
 		return "deleted", false
 
 	case "list_events":
-		events, err := cli.ListEvents()
+		events, err := cli.ListEvents("")
 		if err != nil {
 			return err.Error(), true
 		}

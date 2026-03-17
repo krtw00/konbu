@@ -4,7 +4,7 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">メモ・ToDo・カレンダー・ブックマークを<br>一箇所で管理できるAIワークスペース。</p>
+<p align="center">電子版AI組み込みスケジュール帳。<br>予定を軸に、メモやToDoも同じ場所で扱える。</p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
@@ -26,19 +26,23 @@
 
 ## なぜ konbu を作ったのか
 
-メモ、タスク、カレンダー、ブックマークは多くの場合別々のツールで管理されています。
+スケジュール帳は予定を見るには便利ですが、関連するメモややることは別アプリに逃げがちです。
 
+- 予定はカレンダー
 - メモは Notion や Obsidian
 - タスクは ToDo アプリ
-- 予定はカレンダーアプリ
 - URL はブラウザのブックマーク
 
-情報が分散すると「あれどこに書いたっけ？」が増えます。konbu はこれらを一箇所にまとめ、横断検索と AI チャットで扱えるようにしたワークスペースです。
+予定の周辺情報が散らばると、あとで見返すたびに「どこに置いたか」を探すことになります。
+
+konbu は、予定を軸にまわりの情報もまとめて扱える電子版AI組み込みスケジュール帳です。予定、メモ、ToDo、リンクを同じ場所に置いて、あとから迷わず見返せるようにしています。
+
+カレンダーはふつうに使えて、メモやToDoはその周辺に置けます。AI はその情報空間に対して動く代理人で、予定確認、検索、整理、書き直し、登録まで手伝います。
 
 ## 機能
 
 - **横断検索** -- メモ・ToDo・予定・ブックマークをまたいだ全文検索。「あれどこだっけ」がなくなる
-- **AIチャット** -- 「明日の予定を教えて」「買い物リストをToDoに追加」— 自然言語で全機能を操作（無料枠あり）
+- **AI エージェントチャット** -- 「明日の予定を教えて」「買い物リストを ToDo に追加」— AI が検索・整理・書き直し・操作を代行（無料枠あり）
 - **メモ** -- Markdown対応、ライブプレビュー、タグ管理
 - **ToDo** -- インライン作成、期限設定、タグフィルタ、ノート付き
 - **カレンダー** -- 月表示、予定の作成・編集、iCalインポート
@@ -74,14 +78,7 @@ cd web/frontend && npm ci && npm run build && cd ../..
 # サーバービルド
 go build -o bin/server ./cmd/server
 
-# マイグレーション実行
-psql $DATABASE_URL -f sql/migrations/0001_initial.up.sql
-psql $DATABASE_URL -f sql/migrations/0002_auth_password.up.sql
-psql $DATABASE_URL -f sql/migrations/0003_recurring_events.up.sql
-psql $DATABASE_URL -f sql/migrations/0004_tool_category.up.sql
-psql $DATABASE_URL -f sql/migrations/0005_trgm_search.up.sql
-
-# 起動
+# 起動（全マイグレーションは起動時に自動適用）
 DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 ```
 
@@ -94,6 +91,21 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `PORT` | No | `8080` | サーバーポート |
 | `DEV_USER` | No | -- | 開発用自動ログイン（メール形式） |
 | `OPEN_REGISTRATION` | No | -- | `true` で誰でもアカウント作成可能（Cloud版向け） |
+| `BASE_URL` | No | -- | OAuth コールバックに使う公開URL |
+| `GOOGLE_CLIENT_ID` | No | -- | Google OAuth ログイン有効化 |
+| `GOOGLE_CLIENT_SECRET` | No | -- | Google OAuth ログイン有効化 |
+| `WEBHOOK_SECRET` | No | -- | GitHub Sponsors Webhook シークレット |
+| `KOFI_TOKEN` | No | -- | Ko-fi Webhook 検証トークン |
+| `AI_ENCRYPTION_KEY` | No | -- | BYOK 用 AI キー暗号化に使う64桁hex |
+| `DEFAULT_AI_PROVIDER` | No | `openai` | サーバー提供の無料枠 AI プロバイダ |
+| `DEFAULT_AI_API_KEY` | No | -- | サーバー提供の無料枠 AI キー |
+| `DEFAULT_AI_ENDPOINT` | No | -- | 無料枠プロバイダ endpoint 上書き |
+| `DEFAULT_AI_MODEL` | No | -- | 無料枠モデル上書き |
+| `R2_ACCESS_KEY_ID` | No | -- | 添付ファイル保存用資格情報 |
+| `R2_SECRET_ACCESS_KEY` | No | -- | 添付ファイル保存用資格情報 |
+| `R2_ENDPOINT` | No | Cloudflare R2 既定値 | 添付ファイル保存先 endpoint |
+| `R2_BUCKET` | No | `konbu-attachments` | 添付ファイル保存先バケット |
+| `R2_PUBLIC_URL` | No | -- | 添付ファイル公開ベースURL（任意） |
 
 ### Docker Compose（本番用）変数
 
@@ -176,15 +188,18 @@ IDは先頭8文字の短縮形で指定できます。
 
 | リソース | エンドポイント |
 |---|---|
-| 認証 | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` |
-| ユーザー | `GET/PUT /auth/me`, `GET/PUT /auth/settings`, `POST /auth/change-password` |
+| 認証 | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/setup-status`, `GET /auth/providers`, `GET /auth/google/login`, `GET /auth/google/callback` |
+| ユーザー | `GET/PUT /auth/me`, `GET/PUT /auth/settings`, `POST /auth/change-password`, `POST /auth/delete-account` |
 | APIキー | `GET/POST /api-keys`, `DELETE /api-keys/:id` |
-| メモ | `GET/POST /memos`, `GET/PUT/DELETE /memos/:id` |
+| メモ | `GET/POST /memos`, `GET/PUT/DELETE /memos/:id`, `GET/POST /memos/:id/rows`, `POST /memos/:id/rows/batch`, `GET /memos/:id/rows/export`, `PUT/DELETE /memos/:id/rows/:rowId` |
 | ToDo | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done`, `PATCH /todos/:id/reopen` |
 | 予定 | `GET/POST /events`, `GET/PUT/DELETE /events/:id` |
+| カレンダー | `GET/POST /calendars`, `GET/PUT/DELETE /calendars/:id`, `POST /calendars/join/:token`, 共有リンク・メンバー管理, `GET /calendar.ics` |
 | ツール | `GET/POST /tools`, `PUT/DELETE /tools/:id` |
 | タグ | `GET/POST /tags`, `PUT/DELETE /tags/:id` |
 | 検索 | `GET /search?q=...` |
+| チャット | `GET/POST /chat/sessions`, `GET/PUT/DELETE /chat/sessions/:id`, `POST /chat/sessions/:id/messages`, `GET/PUT /chat/config` |
+| 添付ファイル | `POST /attachments`, `GET /attachments/*` |
 | エクスポート | `GET /export/json`, `GET /export/markdown` |
 | インポート | `POST /import/ical` |
 
@@ -217,8 +232,9 @@ internal/
   handler/      # HTTPハンドラ
   service/      # ビジネスロジック
   repository/   # DBアクセス (sqlc)
-  middleware/    # 認証・ログ
+  middleware/   # 認証・ログ
   client/       # APIクライアント（CLI用）
+  mcp/          # MCPサーバー
 web/frontend/   # React + Vite SPA
 sql/            # スキーマ・マイグレーション
 docker/         # Dockerfile

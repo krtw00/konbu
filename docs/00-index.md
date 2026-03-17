@@ -38,6 +38,7 @@ flowchart LR
 |--------------|------|
 | [summary.md](./01-overview/summary.md) | プロジェクト概要（1枚で全体把握） |
 | [goals.md](./01-overview/goals.md) | 目的・解決する課題 |
+| [principles.md](./01-overview/principles.md) | 設計原則・判断基準 |
 | [scope.md](./01-overview/scope.md) | スコープ・対象外 |
 
 ### 02 - Architecture（設計）
@@ -77,7 +78,8 @@ flowchart LR
 
 1. [summary.md](./01-overview/summary.md) - プロジェクト概要を把握
 2. [goals.md](./01-overview/goals.md) - 目的を理解
-3. [context.md](./02-architecture/context.md) - システム境界を確認
+3. [principles.md](./01-overview/principles.md) - 設計原則を確認
+4. [context.md](./02-architecture/context.md) - システム境界を確認
 
 ### 設計を理解したい場合
 

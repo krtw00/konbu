@@ -67,13 +67,29 @@ func resolveEventID(prefix string) string {
 	if len(prefix) >= 36 {
 		return prefix
 	}
-	events, err := cli().ListEvents()
+	events, err := cli().ListEvents("")
 	if err != nil {
 		return prefix
 	}
 	for _, e := range events {
 		if strings.HasPrefix(e.ID, prefix) {
 			return e.ID
+		}
+	}
+	return prefix
+}
+
+func resolveCalendarID(prefix string) string {
+	if len(prefix) >= 36 {
+		return prefix
+	}
+	calendars, err := cli().ListCalendars()
+	if err != nil {
+		return prefix
+	}
+	for _, c := range calendars {
+		if strings.HasPrefix(c.ID, prefix) {
+			return c.ID
 		}
 	}
 	return prefix
@@ -128,6 +144,32 @@ func formatRowData(rowData map[string]string) string {
 	return string(b)
 }
 
+func resolveResourceID(resourceType, prefix string) string {
+	switch resourceType {
+	case "memo":
+		return resolveMemoID(prefix)
+	case "todo":
+		return resolveTodoID(prefix)
+	case "calendar":
+		return resolveCalendarID(prefix)
+	case "tool":
+		return resolveToolID(prefix)
+	case "event":
+		return resolveEventID(prefix)
+	default:
+		return prefix
+	}
+}
+
+func normalizeResourceType(resourceType string) string {
+	switch strings.ToLower(resourceType) {
+	case "memo", "todo", "calendar", "tool", "event":
+		return strings.ToLower(resourceType)
+	default:
+		return ""
+	}
+}
+
 func main() {
 	root := &cobra.Command{
 		Use:   "konbu",
@@ -138,7 +180,7 @@ func main() {
 	root.PersistentFlags().StringVar(&apiKey, "api-key", "", "API key (or KONBU_API_KEY env)")
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "Output as JSON")
 
-	root.AddCommand(memoCmd(), todoCmd(), eventCmd(), toolCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
+	root.AddCommand(memoCmd(), todoCmd(), calendarCmd(), eventCmd(), toolCmd(), publicCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
@@ -620,10 +662,14 @@ func todoCmd() *cobra.Command {
 func eventCmd() *cobra.Command {
 	event := &cobra.Command{Use: "event", Short: "Manage calendar events"}
 
-	event.AddCommand(&cobra.Command{
+	list := &cobra.Command{
 		Use: "list", Short: "List events",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			events, err := cli().ListEvents()
+			calendarID, _ := cmd.Flags().GetString("calendar")
+			if calendarID != "" {
+				calendarID = resolveCalendarID(calendarID)
+			}
+			events, err := cli().ListEvents(calendarID)
 			if err != nil {
 				return err
 			}
@@ -632,10 +678,11 @@ func eventCmd() *cobra.Command {
 				return nil
 			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "ID\tTITLE\tSTART\tEND\tALL_DAY\tRECUR")
+			fmt.Fprintln(w, "ID\tTITLE\tSTART\tEND\tCAL\tALL_DAY\tRECUR")
 			for _, e := range events {
 				start := e.StartAt[:16]
 				end := "-"
+				calendar := "-"
 				allDay := ""
 				recur := ""
 				if e.AllDay {
@@ -649,15 +696,20 @@ func eventCmd() *cobra.Command {
 						end = (*e.EndAt)[:16]
 					}
 				}
+				if e.CalendarID != nil && *e.CalendarID != "" {
+					calendar = (*e.CalendarID)[:8]
+				}
 				if e.RecurrenceRule != nil && *e.RecurrenceRule != "" {
 					recur = *e.RecurrenceRule
 				}
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", e.ID[:8], e.Title, start, end, allDay, recur)
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\t%s\n", e.ID[:8], e.Title, start, end, calendar, allDay, recur)
 			}
 			w.Flush()
 			return nil
 		},
-	})
+	}
+	list.Flags().String("calendar", "", "Calendar ID")
+	event.AddCommand(list)
 
 	event.AddCommand(&cobra.Command{
 		Use: "show [id]", Short: "Show event details",
@@ -718,6 +770,9 @@ func eventCmd() *cobra.Command {
 				"all_day":     allDay,
 				"tags":        []string{},
 			}
+			if calendarID, _ := cmd.Flags().GetString("calendar"); calendarID != "" {
+				fields["calendar_id"] = resolveCalendarID(calendarID)
+			}
 			if endStr != "" {
 				fields["end_at"] = endStr
 			}
@@ -744,6 +799,7 @@ func eventCmd() *cobra.Command {
 	add.Flags().StringP("end", "e", "", "End time (RFC3339)")
 	add.Flags().StringP("desc", "d", "", "Description")
 	add.Flags().Bool("all-day", false, "All day event")
+	add.Flags().String("calendar", "", "Calendar ID")
 	add.Flags().StringP("recurrence", "r", "", "Recurrence rule (daily, weekly, monthly, yearly)")
 	add.Flags().String("recurrence-end", "", "Recurrence end date (YYYY-MM-DD or RFC3339)")
 	event.AddCommand(add)
@@ -765,6 +821,14 @@ func eventCmd() *cobra.Command {
 			}
 			if v, _ := cmd.Flags().GetString("desc"); v != "" {
 				fields["description"] = v
+			}
+			if cmd.Flags().Changed("calendar") {
+				v, _ := cmd.Flags().GetString("calendar")
+				if v == "" || v == "none" {
+					fields["calendar_id"] = nil
+				} else {
+					fields["calendar_id"] = resolveCalendarID(v)
+				}
 			}
 			if cmd.Flags().Changed("all-day") {
 				v, _ := cmd.Flags().GetBool("all-day")
@@ -802,6 +866,7 @@ func eventCmd() *cobra.Command {
 	edit.Flags().StringP("start", "s", "", "Start time (RFC3339)")
 	edit.Flags().StringP("end", "e", "", "End time (RFC3339)")
 	edit.Flags().StringP("desc", "d", "", "Description")
+	edit.Flags().String("calendar", "", "Calendar ID (or 'none' to remove)")
 	edit.Flags().Bool("all-day", false, "All day event")
 	edit.Flags().StringP("recurrence", "r", "", "Recurrence rule (daily, weekly, monthly, yearly, none to remove)")
 	edit.Flags().String("recurrence-end", "", "Recurrence end date (YYYY-MM-DD or RFC3339)")
@@ -821,6 +886,241 @@ func eventCmd() *cobra.Command {
 	})
 
 	return event
+}
+
+// --- calendar ---
+
+func calendarCmd() *cobra.Command {
+	calendar := &cobra.Command{Use: "calendar", Short: "Manage calendars"}
+
+	calendar.AddCommand(&cobra.Command{
+		Use: "list", Short: "List calendars",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			calendars, err := cli().ListCalendars()
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(calendars)
+				return nil
+			}
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(w, "ID\tNAME\tCOLOR\tMEMBERS\tDEFAULT\tSHARED")
+			for _, c := range calendars {
+				def := ""
+				shared := ""
+				if c.IsDefault {
+					def = "✓"
+				}
+				if c.ShareToken != nil && *c.ShareToken != "" {
+					shared = "✓"
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n", c.ID[:8], c.Name, c.Color, c.MemberCount, def, shared)
+			}
+			w.Flush()
+			return nil
+		},
+	})
+
+	calendar.AddCommand(&cobra.Command{
+		Use: "show [id]", Short: "Show calendar details",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveCalendarID(args[0])
+			detail, err := cli().GetCalendar(id)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(detail)
+				return nil
+			}
+			fmt.Printf("# %s\n\n", detail.Name)
+			fmt.Printf("ID: %s\nColor: %s\nMembers: %d\n", detail.ID, detail.Color, len(detail.Members))
+			if detail.IsDefault {
+				fmt.Println("Default: yes")
+			}
+			if detail.ShareToken != nil && *detail.ShareToken != "" {
+				fmt.Printf("Share token: %s\n", *detail.ShareToken)
+			}
+			if len(detail.Members) > 0 {
+				fmt.Println("\nMembers:")
+				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+				fmt.Fprintln(w, "USER_ID\tNAME\tEMAIL\tROLE\tCOLOR")
+				for _, m := range detail.Members {
+					fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", m.UserID[:8], m.UserName, m.UserEmail, m.Role, m.Color)
+				}
+				w.Flush()
+			}
+			return nil
+		},
+	})
+
+	add := &cobra.Command{
+		Use: "add [name]", Short: "Create a calendar",
+		Args: cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			color, _ := cmd.Flags().GetString("color")
+			cal, err := cli().CreateCalendar(strings.Join(args, " "), color)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(cal)
+				return nil
+			}
+			fmt.Printf("Created: %s (%s)\n", cal.Name, cal.ID[:8])
+			return nil
+		},
+	}
+	add.Flags().String("color", "", "Calendar color (hex)")
+	calendar.AddCommand(add)
+
+	edit := &cobra.Command{
+		Use: "edit [id]", Short: "Update a calendar",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveCalendarID(args[0])
+			fields := map[string]any{}
+			if v, _ := cmd.Flags().GetString("name"); v != "" {
+				fields["name"] = v
+			}
+			if v, _ := cmd.Flags().GetString("color"); v != "" {
+				fields["color"] = v
+			}
+			cal, err := cli().UpdateCalendar(id, fields)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(cal)
+				return nil
+			}
+			fmt.Printf("Updated: %s\n", cal.Name)
+			return nil
+		},
+	}
+	edit.Flags().String("name", "", "New name")
+	edit.Flags().String("color", "", "New color (hex)")
+	calendar.AddCommand(edit)
+
+	calendar.AddCommand(&cobra.Command{
+		Use: "rm [id]", Short: "Delete a calendar",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveCalendarID(args[0])
+			if err := cli().DeleteCalendar(id); err != nil {
+				return err
+			}
+			fmt.Println("Deleted.")
+			return nil
+		},
+	})
+
+	calendar.AddCommand(&cobra.Command{
+		Use: "join [token]", Short: "Join a calendar by invitation token",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cal, err := cli().JoinCalendar(args[0])
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(cal)
+				return nil
+			}
+			fmt.Printf("Joined: %s (%s)\n", cal.Name, cal.ID[:8])
+			return nil
+		},
+	})
+
+	calendar.AddCommand(&cobra.Command{
+		Use: "share-link [id]", Short: "Create or rotate an invite share token",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveCalendarID(args[0])
+			token, err := cli().CreateCalendarShareLink(id)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(map[string]string{"share_token": token})
+				return nil
+			}
+			fmt.Println(token)
+			return nil
+		},
+	})
+
+	calendar.AddCommand(&cobra.Command{
+		Use: "revoke-share-link [id]", Short: "Delete the invite share token",
+		Args: cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveCalendarID(args[0])
+			if err := cli().DeleteCalendarShareLink(id); err != nil {
+				return err
+			}
+			fmt.Println("Revoked.")
+			return nil
+		},
+	})
+
+	member := &cobra.Command{Use: "member", Short: "Manage calendar members"}
+
+	memberAdd := &cobra.Command{
+		Use: "add [calendar_id] [email]", Short: "Add a calendar member",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			role, _ := cmd.Flags().GetString("role")
+			calendarID := resolveCalendarID(args[0])
+			m, err := cli().AddCalendarMember(calendarID, args[1], role)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(m)
+				return nil
+			}
+			fmt.Printf("Added: %s (%s)\n", m.UserEmail, m.Role)
+			return nil
+		},
+	}
+	memberAdd.Flags().String("role", "editor", "Role (admin, editor, viewer)")
+	member.AddCommand(memberAdd)
+
+	memberEdit := &cobra.Command{
+		Use: "edit [calendar_id] [user_id]", Short: "Update a calendar member",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			fields := map[string]any{}
+			if v, _ := cmd.Flags().GetString("role"); v != "" {
+				fields["role"] = v
+			}
+			if v, _ := cmd.Flags().GetString("color"); v != "" {
+				fields["color"] = v
+			}
+			return cli().UpdateCalendarMember(resolveCalendarID(args[0]), args[1], fields)
+		},
+	}
+	memberEdit.Flags().String("role", "", "Role (admin, editor, viewer)")
+	memberEdit.Flags().String("color", "", "Member color")
+	member.AddCommand(memberEdit)
+
+	member.AddCommand(&cobra.Command{
+		Use: "rm [calendar_id] [user_id]", Short: "Remove a calendar member",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := cli().RemoveCalendarMember(resolveCalendarID(args[0]), args[1]); err != nil {
+				return err
+			}
+			fmt.Println("Removed.")
+			return nil
+		},
+	})
+
+	calendar.AddCommand(member)
+
+	return calendar
 }
 
 // --- tool ---
@@ -951,6 +1251,76 @@ func toolCmd() *cobra.Command {
 	})
 
 	return tool
+}
+
+// --- public ---
+
+func publicCmd() *cobra.Command {
+	public := &cobra.Command{Use: "public", Short: "Manage public share links"}
+
+	public.AddCommand(&cobra.Command{
+		Use: "get [resource_type] [id]", Short: "Get public share for a resource",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resourceType := normalizeResourceType(args[0])
+			if resourceType == "" {
+				return fmt.Errorf("unsupported resource type: %s", args[0])
+			}
+			share, err := cli().GetPublicShare(resourceType, resolveResourceID(resourceType, args[1]))
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(share)
+				return nil
+			}
+			if share == nil {
+				fmt.Println("Not published.")
+				return nil
+			}
+			fmt.Println(cli().PublicURL(share.Token))
+			return nil
+		},
+	})
+
+	public.AddCommand(&cobra.Command{
+		Use: "create [resource_type] [id]", Short: "Create a public share for a resource",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resourceType := normalizeResourceType(args[0])
+			if resourceType == "" {
+				return fmt.Errorf("unsupported resource type: %s", args[0])
+			}
+			share, err := cli().CreatePublicShare(resourceType, resolveResourceID(resourceType, args[1]))
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(map[string]any{"share": share, "url": cli().PublicURL(share.Token)})
+				return nil
+			}
+			fmt.Println(cli().PublicURL(share.Token))
+			return nil
+		},
+	})
+
+	public.AddCommand(&cobra.Command{
+		Use: "rm [resource_type] [id]", Short: "Delete a public share for a resource",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resourceType := normalizeResourceType(args[0])
+			if resourceType == "" {
+				return fmt.Errorf("unsupported resource type: %s", args[0])
+			}
+			if err := cli().DeletePublicShare(resourceType, resolveResourceID(resourceType, args[1])); err != nil {
+				return err
+			}
+			fmt.Println("Deleted.")
+			return nil
+		},
+	})
+
+	return public
 }
 
 // --- tag ---

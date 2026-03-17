@@ -38,6 +38,15 @@ func (q *Queries) GetTodoByID(ctx context.Context, id, userID uuid.UUID) (TodoRo
 	return t, err
 }
 
+func (q *Queries) GetTodoByIDPublic(ctx context.Context, id uuid.UUID) (TodoRow, error) {
+	row := q.db.QueryRowContext(ctx,
+		`SELECT id, user_id, title, description, status, due_date, created_at, updated_at
+		 FROM todos WHERE id = $1 AND deleted_at IS NULL`, id)
+	var t TodoRow
+	err := row.Scan(&t.ID, &t.UserID, &t.Title, &t.Description, &t.Status, &t.DueDate, &t.CreatedAt, &t.UpdatedAt)
+	return t, err
+}
+
 func (q *Queries) ListTodosByUserID(ctx context.Context, userID uuid.UUID, limit, offset int) ([]TodoRow, error) {
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT id, user_id, title, description, status, due_date, created_at, updated_at

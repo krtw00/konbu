@@ -1,0 +1,32 @@
+name: Question / Inquiry
+description: Ask a question or send a general inquiry
+labels: ["question"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What do you want to ask or discuss?
+    validations:
+      required: true
+  - type: textarea
+    id: background
+    attributes:
+      label: Background
+      description: Why are you asking this? Include context if needed.
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Any logs, screenshots, links, or extra information.
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Type
+      options:
+        - Usage question
+        - Self-hosting / deployment
+        - Integration / API
+        - General inquiry
+    validations:
+      required: true

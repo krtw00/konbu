@@ -137,6 +137,20 @@
     "categoryPlaceholder": "e.g. Dev, Infra, Docs",
     "healthCheck": "Health Check"
   },
+  "publicShare": {
+    "button": "Publish",
+    "title": "Public link",
+    "description": "Create a read-only public URL. Anyone with the link can view it without signing in.",
+    "url": "Public URL",
+    "publish": "Start publishing",
+    "notPublished": "This item is not published yet.",
+    "copied": "Public URL copied",
+    "loadError": "Failed to load publish status",
+    "publishError": "Failed to create public link",
+    "deleteError": "Failed to delete public link",
+    "unavailable": "This public page is unavailable",
+    "unavailableDescription": "The link may be invalid or the item is no longer published."
+  },
   "command": {
     "searchPlaceholder": "Search everything...",
     "noResults": "No results found.",
@@ -182,12 +196,12 @@
     "googleLogin": "Continue with Google"
   },
   "login": {
-    "heroTitle": "Your personal workspace",
-    "heroDescription": "Memos, todos, calendar, and tools — all in one place.",
-    "featureMemos": "Markdown notes with tags and live preview",
-    "featureTodos": "Tasks with due dates and status tracking",
-    "featureCalendar": "Monthly calendar with event management",
-    "featureSearch": "Search across everything instantly"
+    "heroTitle": "An AI-powered digital planner",
+    "heroDescription": "Keep your schedule at the center, with notes and todos in the same place. Ask AI to find, organize, and add things for you.",
+    "featureMemos": "Keep schedules, notes, todos, and links in one place",
+    "featureTodos": "Use the right UI for each kind of information without splitting tools",
+    "featureCalendar": "Let AI check your schedule, search, organize, and add things",
+    "featureSearch": "Find things later without remembering where you put them"
   },
   "settings": {
     "title": "Settings",
