@@ -55,7 +55,7 @@ function prefetchHomeData() {
   })))
 }
 
-type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'chat' | 'settings' | 'search'
+type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'tables' | 'table-edit' | 'chat' | 'settings' | 'search'
 
 interface AppState {
   currentPage: Page

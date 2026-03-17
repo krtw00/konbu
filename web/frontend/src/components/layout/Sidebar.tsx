@@ -1,11 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { sectionColors, sectionBgColors, sectionBorderColors } from '@/lib/colors'
-import { Home, FileText, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
+import { Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
 
 const navItems = [
   { page: 'home' as const, icon: Home, labelKey: 'nav.home' },
   { page: 'memos' as const, icon: FileText, labelKey: 'nav.memos' },
+  { page: 'tables' as const, icon: Table2, labelKey: 'nav.tables' },
   { page: 'todos' as const, icon: CheckSquare, labelKey: 'nav.todo' },
   { page: 'calendar' as const, icon: Calendar, labelKey: 'nav.calendar' },
   { page: 'tools' as const, icon: Monitor, labelKey: 'nav.tools' },
@@ -29,7 +30,7 @@ export function Sidebar() {
       </div>
       <div className={`flex-1 flex flex-col gap-0.5 ${collapsed ? 'px-1' : 'px-2'}`}>
         {navItems.map(({ page, icon: Icon, labelKey }) => {
-          const isActive = currentPage === page || (currentPage === 'memo-edit' && page === 'memos')
+          const isActive = currentPage === page || (currentPage === 'memo-edit' && page === 'memos') || (currentPage === 'table-edit' && page === 'tables')
           const iconColor = sectionColors[page] || 'text-muted-foreground'
           const activeClass = isActive
             ? isColorful

@@ -8,6 +8,7 @@ import { HomePage } from '@/pages/HomePage'
 import { MemosPage } from '@/pages/MemosPage'
 import { TodosPage } from '@/pages/TodosPage'
 import { CalendarPage } from '@/pages/CalendarPage'
+import { TablesPage } from '@/pages/TablesPage'
 import { ToolsPage } from '@/pages/ToolsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
 import { SearchPage } from '@/pages/SearchPage'
@@ -38,9 +39,15 @@ function App() {
     return () => window.removeEventListener('open-memo', onOpenMemo)
   }, [handleEditMemo])
 
+  const handleEditTable = useCallback((id: string) => {
+    setEditingMemoId(id)
+    setPage('table-edit')
+  }, [setPage])
+
   const handleCloseMemoEdit = useCallback(() => {
     setEditingMemoId(null)
-    setPage('memos')
+    const prev = useAppStore.getState().currentPage
+    setPage(prev === 'table-edit' ? 'tables' : 'memos')
   }, [setPage])
 
   if (isLoading) {
@@ -60,7 +67,7 @@ function App() {
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-0">
         <MobileHeader />
-        {currentPage === 'memo-edit' && editingMemoId ? (
+        {(currentPage === 'memo-edit' || currentPage === 'table-edit') && editingMemoId ? (
           <main className="flex-1 overflow-hidden">
             <Suspense fallback={<div className="flex-1" />}>
               <MemoEditPage memoId={editingMemoId} onClose={handleCloseMemoEdit} />
@@ -79,6 +86,7 @@ function App() {
             <div className="max-w-5xl mx-auto p-4 md:p-6">
               {currentPage === 'home' && <HomePage onEditMemo={handleEditMemo} />}
               {currentPage === 'memos' && <MemosPage onEditMemo={handleEditMemo} />}
+              {currentPage === 'tables' && <TablesPage onEditTable={handleEditTable} />}
               {currentPage === 'todos' && <TodosPage />}
               {currentPage === 'tools' && <ToolsPage />}
               {currentPage === 'search' && <SearchPage onOpenMemo={handleEditMemo} />}

@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { sectionColors } from '@/lib/colors'
-import { Menu, X, Home, FileText, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
+import { Menu, X, Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
 
 const navItems = [
   { page: 'home' as const, icon: Home, labelKey: 'nav.home' },
   { page: 'memos' as const, icon: FileText, labelKey: 'nav.memos' },
+  { page: 'tables' as const, icon: Table2, labelKey: 'nav.tables' },
   { page: 'todos' as const, icon: CheckSquare, labelKey: 'nav.todo' },
   { page: 'calendar' as const, icon: Calendar, labelKey: 'nav.calendar' },
   { page: 'tools' as const, icon: Monitor, labelKey: 'nav.tools' },
@@ -53,7 +54,7 @@ export function MobileHeader() {
           <div className="fixed inset-0 top-[53px] bg-black/40 z-40" onClick={() => setOpen(false)} />
           <nav className="fixed top-[53px] left-0 right-0 bg-background border-b border-border z-50 py-2">
             {navItems.map(({ page, icon: Icon, labelKey }) => {
-              const isActive = currentPage === page || (currentPage === 'memo-edit' && page === 'memos')
+              const isActive = currentPage === page || (currentPage === 'memo-edit' && page === 'memos') || (currentPage === 'table-edit' && page === 'tables')
               const iconColor = sectionColors[page] || 'text-muted-foreground'
               return (
                 <button

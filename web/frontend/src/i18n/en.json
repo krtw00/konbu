@@ -20,6 +20,7 @@
     "home": "Home",
     "memos": "Memos",
     "memo": "Memo",
+    "tables": "Tables",
     "todo": "ToDo",
     "calendar": "Calendar",
     "cal": "Cal",
@@ -38,7 +39,11 @@
   "memos": {
     "title": "Memos",
     "noMemos": "No memos",
-    "newTable": "Table",
+    "confirmDelete": "Delete \"{{title}}\"?"
+  },
+  "tables": {
+    "title": "Tables",
+    "noTables": "No tables",
     "confirmDelete": "Delete \"{{title}}\"?"
   },
   "table": {
