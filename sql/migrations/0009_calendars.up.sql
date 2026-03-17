@@ -2,26 +2,30 @@
 -- グループカレンダー: TimeTree型のカレンダー単位でイベントを管理
 
 CREATE TABLE calendars (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    owner_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name       TEXT NOT NULL DEFAULT '',
-    is_default BOOLEAN NOT NULL DEFAULT FALSE,
-    token      TEXT UNIQUE,
-    color      TEXT NOT NULL DEFAULT '#3B82F6',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    deleted_at TIMESTAMPTZ
+    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name        TEXT NOT NULL DEFAULT '',
+    is_default  BOOLEAN NOT NULL DEFAULT FALSE,
+    share_token TEXT UNIQUE,
+    color       TEXT NOT NULL DEFAULT '#4F46E5',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at  TIMESTAMPTZ
 );
 
-CREATE INDEX idx_calendars_owner ON calendars(owner_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_calendars_owner_id ON calendars(owner_id) WHERE deleted_at IS NULL;
+CREATE UNIQUE INDEX idx_calendars_default ON calendars(owner_id) WHERE is_default = TRUE AND deleted_at IS NULL;
 
 CREATE TABLE calendar_members (
     calendar_id UUID NOT NULL REFERENCES calendars(id) ON DELETE CASCADE,
     user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    role        TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('admin', 'member', 'viewer')),
-    color       TEXT NOT NULL DEFAULT '',
+    role        TEXT NOT NULL DEFAULT 'editor' CHECK (role IN ('admin', 'editor', 'viewer')),
+    color       TEXT NOT NULL DEFAULT '#4F46E5',
     joined_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
     PRIMARY KEY (calendar_id, user_id)
 );
+
+CREATE INDEX idx_calendar_members_user_id ON calendar_members(user_id);
 
 -- 既存ユーザーごとにデフォルトカレンダーを作成
 INSERT INTO calendars (id, owner_id, name, is_default)

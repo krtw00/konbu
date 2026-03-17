@@ -1,0 +1,2 @@
+-- 0010_fix_calendars_schema.down.sql
+-- No-op: fixes are idempotent
