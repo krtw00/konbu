@@ -40,10 +40,10 @@ export function getHolidays(year: number): Map<string, string> {
 
   // Substitute holidays (振替休日): if holiday falls on Sunday, next Monday is a holiday
   const entries = [...holidays.entries()]
-  for (const [dateStr, _name] of entries) {
+  for (const [dateStr] of entries) {
     const d = new Date(dateStr + 'T00:00:00')
     if (d.getDay() === 0) {
-      let next = new Date(d)
+      const next = new Date(d)
       next.setDate(next.getDate() + 1)
       const nextStr = next.toISOString().slice(0, 10)
       if (!holidays.has(nextStr)) {

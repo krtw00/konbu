@@ -59,16 +59,15 @@ export function CalendarPage() {
     firstDay: sRes?.data?.first_day_of_week ?? 0,
   })), [])
   const { data: calData } = useCache('calendar', fetchCalendar)
-  const events = calData?.events || []
+  const events = useMemo(() => calData?.events ?? [], [calData?.events])
   const [selectedDay, setSelectedDay] = useState<[number, number, number] | null>(null)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [newRecurrence, setNewRecurrence] = useState('')
   const [firstDayOfWeek] = useState(calData?.firstDay ?? 0)
   const [listNewEventDate, setListNewEventDate] = useState<string | null>(null)
 
-  useEffect(() => {
-    setWeekStart(getWeekStart(new Date(), firstDayOfWeek))
-  }, [firstDayOfWeek])
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setWeekStart(getWeekStart(new Date(), firstDayOfWeek)) }, [firstDayOfWeek])
 
   const holidays = useMemo(() => getHolidays(year), [year])
 

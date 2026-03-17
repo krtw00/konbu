@@ -21,12 +21,8 @@ export function CommandPalette({ onOpenMemo }: CommandPaletteProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Load fallback items when opening
-  useEffect(() => {
-    if (!commandOpen) {
-      setQuery('')
-      setResults([])
-      return
-    }
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { if (!commandOpen) { setQuery(''); setResults([]); return }
     async function load() {
       const [mm, td, ev] = await Promise.all([
         api.listMemos(30),

@@ -44,9 +44,8 @@ export function TableEditor({ memoId, columns, onColumnsChange }: TableEditorPro
     setOffset(off)
   }, [memoId, sortCol, sortOrder])
 
-  useEffect(() => {
-    loadRows(0)
-  }, [loadRows])
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadRows(0) }, [loadRows])
 
   useEffect(() => {
     if (editingCell && inputRef.current) {
