@@ -34,6 +34,8 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
   const [loading, setLoading] = useState(false)
   const [typeFilter, setTypeFilter] = useState<string[]>([])
   const [tagFilter, setTagFilter] = useState('')
+  const [dateFrom, setDateFrom] = useState('')
+  const [dateTo, setDateTo] = useState('')
   const [allTags, setAllTags] = useState<string[]>([])
   const [showFilters, setShowFilters] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -44,7 +46,7 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
     }).catch(() => {})
   }, [])
 
-  const doSearch = useCallback(async (q: string, off: number, types: string[], tag: string) => {
+  const doSearch = useCallback(async (q: string, off: number, types: string[], tag: string, from?: string, to?: string) => {
     if (q.length < 2) {
       setResults([])
       setSuggestions([])
@@ -59,6 +61,8 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
         offset: off,
         type: types.length > 0 ? types.join(',') : undefined,
         tag: tag || undefined,
+        from: from ? new Date(from).toISOString() : undefined,
+        to: to ? new Date(to + 'T23:59:59').toISOString() : undefined,
       })
       setResults(r.data || [])
       setSuggestions(r.suggestions || [])
@@ -75,7 +79,7 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
   useEffect(() => {
     if (searchQuery && searchQuery.length >= 2) {
       setQuery(searchQuery)
-      doSearch(searchQuery, 0, typeFilter, tagFilter)
+      doSearch(searchQuery, 0, typeFilter, tagFilter, dateFrom, dateTo)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -86,7 +90,7 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(() => {
       setSearchQuery(val)
-      doSearch(val, 0, typeFilter, tagFilter)
+      doSearch(val, 0, typeFilter, tagFilter, dateFrom, dateTo)
     }, 300)
   }
 
@@ -95,7 +99,7 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     setSearchQuery(query)
     setOffset(0)
-    doSearch(query, 0, typeFilter, tagFilter)
+    doSearch(query, 0, typeFilter, tagFilter, dateFrom, dateTo)
   }
 
   function toggleType(type: string) {
@@ -104,19 +108,26 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
       : [...typeFilter, type]
     setTypeFilter(next)
     setOffset(0)
-    doSearch(query, 0, next, tagFilter)
+    doSearch(query, 0, next, tagFilter, dateFrom, dateTo)
   }
 
   function handleTagFilter(tag: string) {
     const next = tagFilter === tag ? '' : tag
     setTagFilter(next)
     setOffset(0)
-    doSearch(query, 0, typeFilter, next)
+    doSearch(query, 0, typeFilter, next, dateFrom, dateTo)
+  }
+
+  function handleDateChange(from: string, to: string) {
+    setDateFrom(from)
+    setDateTo(to)
+    setOffset(0)
+    doSearch(query, 0, typeFilter, tagFilter, from, to)
   }
 
   function handlePageChange(newOffset: number) {
     setOffset(newOffset)
-    doSearch(query, newOffset, typeFilter, tagFilter)
+    doSearch(query, newOffset, typeFilter, tagFilter, dateFrom, dateTo)
   }
 
   function handleSelect(item: SearchResult) {
@@ -188,6 +199,27 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
                 {label}
               </Button>
             ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm text-muted-foreground mr-1">{t('search.filterDate')}:</span>
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => handleDateChange(e.target.value, dateTo)}
+              className="h-7 w-36 text-xs"
+            />
+            <span className="text-sm text-muted-foreground">–</span>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => handleDateChange(dateFrom, e.target.value)}
+              className="h-7 w-36 text-xs"
+            />
+            {(dateFrom || dateTo) && (
+              <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => handleDateChange('', '')}>
+                <X size={12} />
+              </Button>
+            )}
           </div>
           {allTags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
