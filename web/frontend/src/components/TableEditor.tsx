@@ -55,15 +55,15 @@ export function TableEditor({ memoId, columns, onColumnsChange }: TableEditorPro
   }, [editingCell])
 
   function handleCellClick(rowId: string, colId: string, currentValue: string) {
+    // Save current cell first
+    commitEdit()
     setEditingCell({ rowId, colId })
     setEditValue(currentValue || '')
   }
 
-  function handleCellBlur(rowId: string) {
+  function commitEdit() {
     if (!editingCell) return
-    const colId = editingCell.colId
-    setEditingCell(null)
-
+    const { rowId, colId } = editingCell
     const row = rows.find(r => r.id === rowId)
     if (!row) return
     if (row.row_data[colId] === editValue) return
@@ -77,23 +77,52 @@ export function TableEditor({ memoId, columns, onColumnsChange }: TableEditorPro
     }, 1000)
   }
 
+  function handleCellBlur() {
+    // Delay to allow click on another cell to fire first
+    setTimeout(() => {
+      commitEdit()
+      setEditingCell(prev => {
+        // Only clear if no new cell was selected
+        return prev
+      })
+    }, 100)
+  }
+
+  function handleCellChange(value: string) {
+    setEditValue(value)
+    if (!editingCell) return
+    const { rowId, colId } = editingCell
+
+    // Update local state immediately for responsiveness
+    const newData = { ...rows.find(r => r.id === rowId)?.row_data, [colId]: value }
+    setRows(prev => prev.map(r => r.id === rowId ? { ...r, row_data: { ...r.row_data, [colId]: value } } : r))
+
+    // Debounced save
+    if (saveTimers.current[rowId]) clearTimeout(saveTimers.current[rowId])
+    saveTimers.current[rowId] = setTimeout(async () => {
+      await api.updateMemoRow(memoId, rowId, newData as Record<string, string>)
+    }, 1000)
+  }
+
   function handleCellKeyDown(e: React.KeyboardEvent, rowId: string, colId: string) {
     if (e.key === 'Tab') {
       e.preventDefault()
-      handleCellBlur(rowId)
+      commitEdit()
       const colIdx = columns.findIndex(c => c.id === colId)
       if (colIdx < columns.length - 1) {
         const nextCol = columns[colIdx + 1]
         const row = rows.find(r => r.id === rowId)
-        handleCellClick(rowId, nextCol.id, row?.row_data[nextCol.id] || '')
+        setEditingCell({ rowId, colId: nextCol.id })
+        setEditValue(row?.row_data[nextCol.id] || '')
       }
     } else if (e.key === 'Enter') {
       e.preventDefault()
-      handleCellBlur(rowId)
+      commitEdit()
       const rowIdx = rows.findIndex(r => r.id === rowId)
       if (rowIdx < rows.length - 1) {
         const nextRow = rows[rowIdx + 1]
-        handleCellClick(nextRow.id, colId, nextRow.row_data[colId] || '')
+        setEditingCell({ rowId: nextRow.id, colId })
+        setEditValue(nextRow.row_data[colId] || '')
       }
     } else if (e.key === 'Escape') {
       setEditingCell(null)
@@ -305,13 +334,13 @@ export function TableEditor({ memoId, columns, onColumnsChange }: TableEditorPro
                       <input
                         ref={inputRef}
                         value={editValue}
-                        onChange={e => setEditValue(e.target.value)}
-                        onBlur={() => handleCellBlur(row.id)}
+                        onChange={e => handleCellChange(e.target.value)}
+                        onBlur={handleCellBlur}
                         onKeyDown={e => handleCellKeyDown(e, row.id, col.id)}
                         className="w-full bg-transparent focus:outline-none"
                       />
                     ) : (
-                      <span className="truncate block">{row.row_data[col.id] || ''}</span>
+                      <span className="truncate block min-h-[1.25rem]">{row.row_data[col.id] || ''}</span>
                     )}
                   </td>
                 ))}
