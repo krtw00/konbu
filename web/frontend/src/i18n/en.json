@@ -126,6 +126,7 @@
     "resultCount": "{{count}} results",
     "filterType": "Type",
     "filterTag": "Tag",
+    "filterDate": "Date",
     "didYouMean": "Did you mean?"
   },
   "date": {

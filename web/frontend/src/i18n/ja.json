@@ -126,6 +126,7 @@
     "resultCount": "{{count}}件の結果",
     "filterType": "種類",
     "filterTag": "タグ",
+    "filterDate": "期間",
     "didYouMean": "もしかして"
   },
   "date": {
