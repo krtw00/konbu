@@ -178,36 +178,52 @@ go run ./cmd/server migrate down
 
 ## セッションメモ（2026-03-15〜16）
 
-### 完了した作業
-- #3 AIチャット（BYOK、OpenAI/Anthropic、SSEストリーミング、15ツール function calling）
+### 完了した作業（3/15-16）
+- #3 AIチャット（BYOK、OpenAI/Anthropic、SSEストリーミング、15+2ツール）
 - #5 MCP Server（`konbu mcp` サブコマンド、stdio、18ツール）
 - #6 画像添付（Cloudflare R2、ドラッグ&ドロップ/ペースト）
-- #8 レート制限（IPベース、認証10req/分、API 100req/分）
-- #12 ツール機能改善（favicon自動取得、アイコンUI削除、定期リフレッシュ）
+- #8 レート制限（Web UI免除、CLI/API 100req/分）
+- #12 ツール機能改善（favicon自動取得、定期リフレッシュ）
 - #13 旧Supabase削除
 - #14 Google OAuth設定（メール正規化修正含む）
-- #15 GitHub Sponsors設定（tier作成、Webhook設定）
-- #16 セルフホスト版停止（apps-vps systemd/DB削除）
+- #15 GitHub Sponsors設定
+- #16 セルフホスト版停止
 - #17 パフォーマンス改善（Monaco lazy load、Cache-Control）
-- #19 課金導線（Ko-fi連携、Webhook、アプリ/LP導線変更）
+- #18 ツールのドラッグ&ドロップ並び替え
+- #19 課金導線（Ko-fi連携、Webhook、アプリ内Ko-fi埋め込み）
+- #20 AIチャット改善（web_search/web_fetch、Shift+Enter、SSEパース修正）
+- #21 スポンサー向けUI改善
 - CD: GitHub Actions → Fly.io自動デプロイ
 - 自動マイグレーション（サーバー起動時にSQL適用）
 - ランディングページ（konbu.codenica.dev、Cloudflare Pages）
-- ディスク容量対策（Docker→/home移動、journal/pacman自動掃除）
+- ダークモード切り替え（ライト/ダーク/システム）
+- PWA対応（manifest.json）
+- iCal URL公開（GET /calendar.ics?token=xxx）
+- セキュリティ修正（XSS: DOMPurify、セキュリティヘッダー、npm audit）
+- Admin全機能アクセス（is_admin=true → Sponsor機能利用可）
+- ヘルスチェック機能削除（不要・誤検知多い）
+- Supabase Pooler接続に切り替え（IPv6直接接続廃止対応）
+- SearXNGセルフホスト（apps-vps、チャットのWeb検索用）
+- ディスク容量対策（Docker→/home移動）
+- hotateコピペ修正（tmux mouse mode対応）
+- ブックマーク移植（CLI経由、20件カテゴリ付き）
+- コード剽窃・ライセンスチェック（問題なし）
 
 ### 判断・決定事項
 - 課金: Ko-fi（寄付型、特商法回避）→ 規模拡大時にStripe移行
 - ランディング: 非エンジニア向け、OSS/GitHub/セルフホストは訴求しない
-- ブックマーク機能をランディングの訴求ポイントに含める
+- Web検索: 公開SearXNG → セルフホスト（apps-vps）に切り替え
+- ヘルスチェック: 削除（Uptime Kumaに任せる）
+- レート制限: Web UI(Cookie)は免除、CLI/API(Bearer)のみ制限
 
 ### 未解決の問題
 - Ko-fi Webhookの実際の動作確認（テスト支払い未実施）
-- AIチャットの実際の動作確認（APIキー設定→チャット→ツール実行の一連テスト）
+- チャットのメッセージ消失が完全に解消されたか未確認
 - デバッグログ（favicon refresh）がまだ残っている
 
 ### 次回の優先事項
-1. #18 ツールのドラッグ&ドロップ並び替え
-2. #7 リマインダー通知（方針: Brevoメール通知 + ブラウザ内バナー）
-3. #9 CIにテスト追加
-4. AIチャット・Ko-fi Webhookの動作確認
-5. デバッグログの削除
+1. X/Bluesky アカウント作成・宣伝開始
+2. #7 リマインダー通知（Brevoメール + ブラウザ内バナー）
+3. #22 スマホUI残り（MemoEditPageツールバー等）
+4. #9 CIにテスト追加
+5. Ko-fi Webhook動作確認
