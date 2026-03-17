@@ -176,7 +176,7 @@ go run ./cmd/server migrate down
 - WebSocket
 - ORM（sqlc でコード生成。手書き SQL を基本とする）
 
-## セッションメモ（2026-03-15〜16）
+## セッションメモ（2026-03-15〜17）
 
 ### 完了した作業（3/15-16）
 - #3 AIチャット（BYOK、OpenAI/Anthropic、SSEストリーミング、15+2ツール）
@@ -209,21 +209,45 @@ go run ./cmd/server migrate down
 - ブックマーク移植（CLI経由、20件カテゴリ付き）
 - コード剽窃・ライセンスチェック（問題なし）
 
+### 完了した作業（3/16-17）
+- #25 テーブル型メモUI強化（インラインセル編集、CSV入出力）
+- #26 チャット入力欄の改行機能
+- #28 AIチャット無料枠（月20回制限）
+- #29 メモのデフォルト表示をプレビューに変更
+- #30 CONTRIBUTING.md / Issue・PRテンプレート整備
+- #31 CLI画像添付機能（memo attach）
+- #32 デモGIF作成
+- #33 ハイコントラスト・カラフルテーマ
+- #34 ツールD&D修正
+- #9 CI追加（go vet/build/test + npm lint/build）
+- フロントエンドlintエラー全修正（eslint 0エラー化）
+- CLI機能拡充（テーブル行操作、繰り返しイベント、ツール並び替え、iCal出力）
+- Issue/実装の乖離洗い出し・整理
+- @Muhlifainfirgana をコラボレーターとして #27 にassign
+
 ### 判断・決定事項
 - 課金: Ko-fi（寄付型、特商法回避）→ 規模拡大時にStripe移行
 - ランディング: 非エンジニア向け、OSS/GitHub/セルフホストは訴求しない
 - Web検索: 公開SearXNG → セルフホスト（apps-vps）に切り替え
 - ヘルスチェック: 削除（Uptime Kumaに任せる）
 - レート制限: Web UI(Cookie)は免除、CLI/API(Bearer)のみ制限
+- ブランチ保護: mainへの直pushスタイルを維持（設定しない）
 
 ### 未解決の問題
 - Ko-fi Webhookの実際の動作確認（テスト支払い未実施）
 - チャットのメッセージ消失が完全に解消されたか未確認
 - デバッグログ（favicon refresh）がまだ残っている
 
+### 残りのOPEN Issue（5件）
+1. #7 リマインダー通知（ToDo / カレンダー）— priority:medium
+2. #22 スマホUI全体の見直し — priority:high
+3. #23 グループカレンダー（共有カレンダー）— priority:low
+4. #24 検索機能の大幅強化 — priority:high
+5. #27 メモのMarkdown画像が描画されない — @Muhlifainfirgana assign済
+
 ### 次回の優先事項
 1. X/Bluesky アカウント作成・宣伝開始
 2. #7 リマインダー通知（Brevoメール + ブラウザ内バナー）
 3. #22 スマホUI残り（MemoEditPageツールバー等）
-4. #9 CIにテスト追加
+4. #24 検索機能強化
 5. Ko-fi Webhook動作確認
