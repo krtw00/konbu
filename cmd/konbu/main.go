@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -14,8 +15,8 @@ import (
 )
 
 var (
-	apiURL string
-	apiKey string
+	apiURL  string
+	apiKey  string
 	jsonOut bool
 )
 
@@ -98,6 +99,33 @@ func printJSON(v any) {
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
 	enc.Encode(v)
+}
+
+func parseRowData(data string) (map[string]string, error) {
+	if strings.TrimSpace(data) == "" {
+		return nil, fmt.Errorf("--data is required")
+	}
+	rowData := map[string]string{}
+	for _, pair := range strings.Split(data, ",") {
+		pair = strings.TrimSpace(pair)
+		parts := strings.SplitN(pair, "=", 2)
+		if len(parts) != 2 || strings.TrimSpace(parts[0]) == "" {
+			return nil, fmt.Errorf("invalid --data entry: %s", pair)
+		}
+		rowData[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+	}
+	if len(rowData) == 0 {
+		return nil, fmt.Errorf("--data is required")
+	}
+	return rowData, nil
+}
+
+func formatRowData(rowData map[string]string) string {
+	b, err := json.Marshal(rowData)
+	if err != nil {
+		return "{}"
+	}
+	return string(b)
 }
 
 func main() {
@@ -256,6 +284,144 @@ func memoCmd() *cobra.Command {
 				return err
 			}
 			fmt.Println("Deleted.")
+			return nil
+		},
+	})
+
+	rows := &cobra.Command{
+		Use:   "rows",
+		Short: "Manage table memo rows",
+	}
+
+	rows.AddCommand(&cobra.Command{
+		Use:   "list [memo_id]",
+		Short: "List memo rows",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			memoID := resolveMemoID(args[0])
+			rows, err := cli().ListMemoRows(memoID)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(rows)
+				return nil
+			}
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(w, "ID\tROW_DATA")
+			for _, row := range rows {
+				fmt.Fprintf(w, "%s\t%s\n", row.ID[:8], formatRowData(row.RowData))
+			}
+			w.Flush()
+			return nil
+		},
+	})
+
+	addRow := &cobra.Command{
+		Use:   "add [memo_id]",
+		Short: "Add a memo row",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			memoID := resolveMemoID(args[0])
+			dataArg, _ := cmd.Flags().GetString("data")
+			rowData, err := parseRowData(dataArg)
+			if err != nil {
+				return err
+			}
+			row, err := cli().CreateMemoRow(memoID, rowData)
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(row)
+				return nil
+			}
+			fmt.Printf("Created: %s\n", row.ID[:8])
+			return nil
+		},
+	}
+	addRow.Flags().String("data", "", "Row data (col_id=value,col_id2=value2)")
+	_ = addRow.MarkFlagRequired("data")
+	rows.AddCommand(addRow)
+
+	rows.AddCommand(&cobra.Command{
+		Use:   "rm [memo_id] [row_id]",
+		Short: "Delete a memo row",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			memoID := resolveMemoID(args[0])
+			rowID := args[1]
+			if err := cli().DeleteMemoRow(memoID, rowID); err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(map[string]string{"status": "deleted", "memo_id": memoID, "row_id": rowID})
+				return nil
+			}
+			fmt.Println("Deleted.")
+			return nil
+		},
+	})
+
+	exportRows := &cobra.Command{
+		Use:   "export [memo_id]",
+		Short: "Export memo rows as CSV",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			memoID := resolveMemoID(args[0])
+			csvData, err := cli().ExportMemoRowsCSV(memoID)
+			if err != nil {
+				return err
+			}
+			out, _ := cmd.Flags().GetString("output")
+			if out != "" {
+				if err := os.WriteFile(out, []byte(csvData), 0o644); err != nil {
+					return err
+				}
+				if jsonOut {
+					printJSON(map[string]string{"memo_id": memoID, "output": out})
+					return nil
+				}
+				fmt.Printf("Exported to %s\n", out)
+				return nil
+			}
+			if jsonOut {
+				printJSON(map[string]string{"memo_id": memoID, "csv": csvData})
+				return nil
+			}
+			fmt.Print(csvData)
+			return nil
+		},
+	}
+	exportRows.Flags().StringP("output", "o", "", "Output file path")
+	rows.AddCommand(exportRows)
+
+	memo.AddCommand(rows)
+
+	memo.AddCommand(&cobra.Command{
+		Use: "attach [memo_id] [image_path]", Short: "Attach an image to a memo",
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			id := resolveMemoID(args[0])
+			imagePath := args[1]
+			attached, err := cli().UploadAttachment(imagePath)
+			if err != nil {
+				return err
+			}
+			m, err := cli().GetMemo(id)
+			if err != nil {
+				return err
+			}
+			newContent := m.Content + "\n![" + filepath.Base(imagePath) + "](" + attached.URL + ")"
+			updated, err := cli().UpdateMemo(id, map[string]any{"content": newContent})
+			if err != nil {
+				return err
+			}
+			if jsonOut {
+				printJSON(map[string]any{"url": attached.URL, "memo": updated})
+				return nil
+			}
+			fmt.Printf("Attached: %s\n", attached.URL)
 			return nil
 		},
 	})
@@ -449,7 +615,6 @@ func todoCmd() *cobra.Command {
 	return todo
 }
 
-
 // --- event ---
 
 func eventCmd() *cobra.Command {
@@ -467,11 +632,12 @@ func eventCmd() *cobra.Command {
 				return nil
 			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "ID\tTITLE\tSTART\tEND\tALL_DAY")
+			fmt.Fprintln(w, "ID\tTITLE\tSTART\tEND\tALL_DAY\tRECUR")
 			for _, e := range events {
 				start := e.StartAt[:16]
 				end := "-"
 				allDay := ""
+				recur := ""
 				if e.AllDay {
 					allDay = "✓"
 					start = e.StartAt[:10]
@@ -483,7 +649,10 @@ func eventCmd() *cobra.Command {
 						end = (*e.EndAt)[:16]
 					}
 				}
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", e.ID[:8], e.Title, start, end, allDay)
+				if e.RecurrenceRule != nil && *e.RecurrenceRule != "" {
+					recur = *e.RecurrenceRule
+				}
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\t%s\n", e.ID[:8], e.Title, start, end, allDay, recur)
 			}
 			w.Flush()
 			return nil
@@ -552,6 +721,12 @@ func eventCmd() *cobra.Command {
 			if endStr != "" {
 				fields["end_at"] = endStr
 			}
+			if recurrence, _ := cmd.Flags().GetString("recurrence"); recurrence != "" {
+				fields["recurrence_rule"] = recurrence
+			}
+			if recurrenceEnd, _ := cmd.Flags().GetString("recurrence-end"); recurrenceEnd != "" {
+				fields["recurrence_end"] = recurrenceEnd
+			}
 
 			e, err := cli().CreateEvent(fields)
 			if err != nil {
@@ -569,6 +744,8 @@ func eventCmd() *cobra.Command {
 	add.Flags().StringP("end", "e", "", "End time (RFC3339)")
 	add.Flags().StringP("desc", "d", "", "Description")
 	add.Flags().Bool("all-day", false, "All day event")
+	add.Flags().StringP("recurrence", "r", "", "Recurrence rule (daily, weekly, monthly, yearly)")
+	add.Flags().String("recurrence-end", "", "Recurrence end date (YYYY-MM-DD or RFC3339)")
 	event.AddCommand(add)
 
 	edit := &cobra.Command{
@@ -593,6 +770,22 @@ func eventCmd() *cobra.Command {
 				v, _ := cmd.Flags().GetBool("all-day")
 				fields["all_day"] = v
 			}
+			if cmd.Flags().Changed("recurrence") {
+				v, _ := cmd.Flags().GetString("recurrence")
+				if v == "none" {
+					fields["recurrence_rule"] = nil
+				} else {
+					fields["recurrence_rule"] = v
+				}
+			}
+			if cmd.Flags().Changed("recurrence-end") {
+				v, _ := cmd.Flags().GetString("recurrence-end")
+				if v == "" {
+					fields["recurrence_end"] = nil
+				} else {
+					fields["recurrence_end"] = v
+				}
+			}
 			e, err := cli().UpdateEvent(id, fields)
 			if err != nil {
 				return err
@@ -610,6 +803,8 @@ func eventCmd() *cobra.Command {
 	edit.Flags().StringP("end", "e", "", "End time (RFC3339)")
 	edit.Flags().StringP("desc", "d", "", "Description")
 	edit.Flags().Bool("all-day", false, "All day event")
+	edit.Flags().StringP("recurrence", "r", "", "Recurrence rule (daily, weekly, monthly, yearly, none to remove)")
+	edit.Flags().String("recurrence-end", "", "Recurrence end date (YYYY-MM-DD or RFC3339)")
 	event.AddCommand(edit)
 
 	event.AddCommand(&cobra.Command{
@@ -709,6 +904,38 @@ func toolCmd() *cobra.Command {
 	edit.Flags().String("icon", "", "Icon (emoji or letter)")
 	edit.Flags().String("category", "", "Category")
 	tool.AddCommand(edit)
+
+	tool.AddCommand(&cobra.Command{
+		Use: "reorder [id1] [id2] ...", Short: "Reorder tools",
+		Args: cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			tools, err := cli().ListTools()
+			if err != nil {
+				return err
+			}
+			seen := map[string]bool{}
+			completeOrder := make([]string, 0, len(tools))
+			for _, arg := range args {
+				id := resolveToolID(arg)
+				if seen[id] {
+					continue
+				}
+				seen[id] = true
+				completeOrder = append(completeOrder, id)
+			}
+			for _, t := range tools {
+				if seen[t.ID] {
+					continue
+				}
+				completeOrder = append(completeOrder, t.ID)
+			}
+			if err := cli().ReorderTools(completeOrder); err != nil {
+				return err
+			}
+			fmt.Println("Reordered.")
+			return nil
+		},
+	})
 
 	tool.AddCommand(&cobra.Command{
 		Use: "rm [id]", Short: "Delete a tool",
@@ -901,6 +1128,22 @@ func exportCmd() *cobra.Command {
 	}
 	mdCmd.Flags().StringP("output", "o", "", "Output file path")
 	export.AddCommand(mdCmd)
+
+	icalCmd := &cobra.Command{
+		Use: "ical", Short: "Export calendar as iCal",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			out, _ := cmd.Flags().GetString("output")
+			if err := cli().ExportICal(out); err != nil {
+				return err
+			}
+			if out != "" {
+				fmt.Printf("Exported to %s\n", out)
+			}
+			return nil
+		},
+	}
+	icalCmd.Flags().StringP("output", "o", "", "Output file path")
+	export.AddCommand(icalCmd)
 
 	return export
 }

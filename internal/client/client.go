@@ -92,6 +92,18 @@ type Tag struct {
 	Name string `json:"name"`
 }
 
+type MemoRow struct {
+	ID        string            `json:"id"`
+	MemoID    string            `json:"memo_id"`
+	RowData   map[string]string `json:"row_data"`
+	SortOrder int               `json:"sort_order"`
+}
+
+type MemoRowsResponse struct {
+	Data  []MemoRow `json:"data"`
+	Total int       `json:"total"`
+}
+
 func (c *Client) ListMemos() ([]Memo, error) {
 	data, err := c.do("GET", "/api/v1/memos", nil)
 	if err != nil {
@@ -133,6 +145,54 @@ func (c *Client) UpdateMemo(id string, fields map[string]any) (*Memo, error) {
 func (c *Client) DeleteMemo(id string) error {
 	_, err := c.do("DELETE", "/api/v1/memos/"+id, nil)
 	return err
+}
+
+func (c *Client) ListMemoRows(memoID string) ([]MemoRow, error) {
+	data, err := c.do("GET", "/api/v1/memos/"+memoID+"/rows?limit=100", nil)
+	if err != nil {
+		return nil, err
+	}
+	var rows []MemoRow
+	if err := json.Unmarshal(data, &rows); err == nil {
+		return rows, nil
+	}
+	var resp MemoRowsResponse
+	if err := json.Unmarshal(data, &resp); err != nil {
+		return nil, err
+	}
+	return resp.Data, nil
+}
+
+func (c *Client) CreateMemoRow(memoID string, rowData map[string]string) (*MemoRow, error) {
+	data, err := c.do("POST", "/api/v1/memos/"+memoID+"/rows", map[string]any{
+		"row_data": rowData,
+	})
+	if err != nil {
+		return nil, err
+	}
+	var row MemoRow
+	return &row, json.Unmarshal(data, &row)
+}
+
+func (c *Client) DeleteMemoRow(memoID, rowID string) error {
+	_, err := c.do("DELETE", "/api/v1/memos/"+memoID+"/rows/"+rowID, nil)
+	return err
+}
+
+func (c *Client) ExportMemoRowsCSV(memoID string) (string, error) {
+	resp, err := c.doRaw("GET", "/api/v1/memos/"+memoID+"/rows/export")
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode >= 400 {
+		return "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+	}
+	return string(body), nil
 }
 
 // --- Todo ---
@@ -307,6 +367,11 @@ func (c *Client) DeleteTool(id string) error {
 	return err
 }
 
+func (c *Client) ReorderTools(order []string) error {
+	_, err := c.do("PUT", "/api/v1/tools/reorder", map[string]any{"order": order})
+	return err
+}
+
 // --- Tag ---
 
 func (c *Client) ListTags() ([]Tag, error) {
@@ -374,6 +439,10 @@ func (c *Client) Search(query string) ([]SearchResult, error) {
 	return results, json.Unmarshal(data, &results)
 }
 
+type AttachmentResult struct {
+	URL string `json:"url"`
+}
+
 // --- Export ---
 
 func (c *Client) ExportJSON(outPath string) error {
@@ -404,6 +473,33 @@ func (c *Client) ExportMarkdown(outPath string) error {
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+	}
+	f, err := os.Create(outPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = io.Copy(f, resp.Body)
+	return err
+}
+
+func (c *Client) ExportICal(outPath string) error {
+	req, err := http.NewRequest("GET", c.BaseURL+"/api/v1/calendar.ics?token="+url.QueryEscape(c.APIKey), nil)
+	if err != nil {
+		return err
+	}
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+	}
+	if outPath == "" {
+		_, err = io.Copy(os.Stdout, resp.Body)
+		return err
 	}
 	f, err := os.Create(outPath)
 	if err != nil {
@@ -455,4 +551,50 @@ func (c *Client) ImportICal(filePath string) (json.RawMessage, error) {
 		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(raw))
 	}
 	return raw, nil
+}
+
+func (c *Client) UploadAttachment(filePath string) (*AttachmentResult, error) {
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	var buf bytes.Buffer
+	writer := multipart.NewWriter(&buf)
+	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
+	if err != nil {
+		return nil, err
+	}
+	if _, err := io.Copy(part, f); err != nil {
+		return nil, err
+	}
+	writer.Close()
+
+	req, err := http.NewRequest("POST", c.BaseURL+"/api/v1/attachments", &buf)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	}
+	resp, err := c.HTTPClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(raw))
+	}
+	var ar apiResponse
+	if err := json.Unmarshal(raw, &ar); err != nil {
+		return nil, err
+	}
+	var result AttachmentResult
+	return &result, json.Unmarshal(ar.Data, &result)
 }
