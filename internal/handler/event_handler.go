@@ -34,7 +34,19 @@ func (h *EventHandler) list(w http.ResponseWriter, r *http.Request) {
 	user := middleware.UserFromContext(r.Context())
 	params := parseListParams(r)
 
-	result, err := h.eventSvc.ListEvents(r.Context(), user.ID, params)
+	var result *model.PaginatedResult
+	var err error
+
+	if calIDStr := r.URL.Query().Get("calendar_id"); calIDStr != "" {
+		calID, parseErr := uuid.Parse(calIDStr)
+		if parseErr != nil {
+			writeError(w, parseErr)
+			return
+		}
+		result, err = h.eventSvc.ListEventsByCalendar(r.Context(), user.ID, calID, params)
+	} else {
+		result, err = h.eventSvc.ListEvents(r.Context(), user.ID, params)
+	}
 	if err != nil {
 		writeError(w, err)
 		return

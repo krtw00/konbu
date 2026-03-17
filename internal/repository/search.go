@@ -144,7 +144,7 @@ func (q *Queries) SearchEvents(ctx context.Context, userID uuid.UUID, pattern st
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT id, title, COALESCE(description, ''), updated_at
 		 FROM calendar_events
-		 WHERE user_id = $1 AND deleted_at IS NULL
+		 WHERE created_by = $1 AND deleted_at IS NULL
 		   AND (title ILIKE $2 OR description ILIKE $2)
 		 ORDER BY updated_at DESC LIMIT $3`,
 		userID, pattern, limit)
@@ -167,7 +167,7 @@ func (q *Queries) SearchEvents(ctx context.Context, userID uuid.UUID, pattern st
 func (q *Queries) SearchEventsFiltered(ctx context.Context, userID uuid.UUID, pattern string, from, to *time.Time, limit, offset int) ([]SearchRow, error) {
 	query := `SELECT id, title, COALESCE(description, ''), updated_at
 		 FROM calendar_events
-		 WHERE user_id = $1 AND deleted_at IS NULL
+		 WHERE created_by = $1 AND deleted_at IS NULL
 		   AND (title ILIKE $2 OR description ILIKE $2)`
 	args := []any{userID, pattern}
 	idx := 3
@@ -225,7 +225,7 @@ func (q *Queries) SearchEventsByTag(ctx context.Context, userID uuid.UUID, patte
 		 FROM calendar_events e
 		 JOIN calendar_event_tags et ON et.event_id = e.id
 		 JOIN tags t ON t.id = et.tag_id
-		 WHERE e.user_id = $1 AND e.deleted_at IS NULL AND t.deleted_at IS NULL
+		 WHERE e.created_by = $1 AND e.deleted_at IS NULL AND t.deleted_at IS NULL
 		   AND t.name ILIKE $2
 		 ORDER BY e.updated_at DESC LIMIT $3 OFFSET $4`,
 		[]any{userID, pattern, limit, offset})
@@ -281,7 +281,7 @@ func (q *Queries) FuzzySearchEvents(ctx context.Context, userID uuid.UUID, query
 	return q.fuzzySearch(ctx,
 		`SELECT id, title, similarity(title, $2) AS sim
 		 FROM calendar_events
-		 WHERE user_id = $1 AND deleted_at IS NULL
+		 WHERE created_by = $1 AND deleted_at IS NULL
 		   AND similarity(title, $2) > 0.3`,
 		"event", userID, query, excludeIDs, limit)
 }
@@ -370,7 +370,7 @@ func (q *Queries) CountSearchTodos(ctx context.Context, userID uuid.UUID, patter
 
 func (q *Queries) CountSearchEvents(ctx context.Context, userID uuid.UUID, pattern string, from, to *time.Time) (int, error) {
 	query := `SELECT COUNT(*) FROM calendar_events
-		 WHERE user_id = $1 AND deleted_at IS NULL
+		 WHERE created_by = $1 AND deleted_at IS NULL
 		   AND (title ILIKE $2 OR description ILIKE $2)`
 	args := []any{userID, pattern}
 	idx := 3
@@ -471,7 +471,7 @@ func (q *Queries) SearchEventsWithTagFilter(ctx context.Context, userID uuid.UUI
 		 FROM calendar_events e
 		 JOIN calendar_event_tags et ON et.event_id = e.id
 		 JOIN tags t ON t.id = et.tag_id
-		 WHERE e.user_id = $1 AND e.deleted_at IS NULL AND t.deleted_at IS NULL
+		 WHERE e.created_by = $1 AND e.deleted_at IS NULL AND t.deleted_at IS NULL
 		   AND (e.title ILIKE $2 OR e.description ILIKE $2)
 		   AND t.name = $3`
 	args := []any{userID, pattern, tagName}

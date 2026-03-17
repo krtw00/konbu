@@ -15,22 +15,41 @@ type EventService struct {
 	queries *repository.Queries
 	db      *sql.DB
 	tagSvc  *TagService
+	calSvc  *CalendarService
 }
 
-func NewEventService(db *sql.DB, tagSvc *TagService) *EventService {
+func NewEventService(db *sql.DB, tagSvc *TagService, calSvc *CalendarService) *EventService {
 	return &EventService{
 		queries: repository.New(db),
 		db:      db,
 		tagSvc:  tagSvc,
+		calSvc:  calSvc,
 	}
 }
 
 func (s *EventService) ListEvents(ctx context.Context, userID uuid.UUID, params model.ListParams) (*model.PaginatedResult, error) {
-	rows, err := s.queries.ListEventsByUserID(ctx, userID, params.Limit, params.Offset)
+	rows, err := s.queries.ListEventsByUserID(ctx, userID, nil, params.Limit, params.Offset)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
-	total, err := s.queries.CountEventsByUserID(ctx, userID)
+	total, err := s.queries.CountEventsByUserID(ctx, userID, nil)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+
+	items := make([]model.CalendarEvent, len(rows))
+	for i, r := range rows {
+		items[i] = toModelEvent(r)
+	}
+	return &model.PaginatedResult{Data: items, Total: total, Limit: params.Limit, Offset: params.Offset}, nil
+}
+
+func (s *EventService) ListEventsByCalendar(ctx context.Context, userID uuid.UUID, calendarID uuid.UUID, params model.ListParams) (*model.PaginatedResult, error) {
+	rows, err := s.queries.ListEventsByUserID(ctx, userID, &calendarID, params.Limit, params.Offset)
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	total, err := s.queries.CountEventsByUserID(ctx, userID, &calendarID)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -64,6 +83,15 @@ func (s *EventService) GetEvent(ctx context.Context, id, userID uuid.UUID) (*mod
 }
 
 func (s *EventService) CreateEvent(ctx context.Context, userID uuid.UUID, req model.CreateEventRequest) (*model.CalendarEvent, error) {
+	calendarID := req.CalendarID
+	if calendarID == nil {
+		defaultCalID, err := s.calSvc.EnsureDefaultCalendar(ctx, userID)
+		if err != nil {
+			return nil, err
+		}
+		calendarID = &defaultCalID
+	}
+
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, apperror.Internal(err)
@@ -71,7 +99,7 @@ func (s *EventService) CreateEvent(ctx context.Context, userID uuid.UUID, req mo
 	defer tx.Rollback()
 
 	q := s.queries.WithTx(tx)
-	r, err := q.CreateEvent(ctx, userID, req.Title, req.Description, req.StartAt, req.EndAt, req.AllDay, req.RecurrenceRule, req.RecurrenceEnd)
+	r, err := q.CreateEvent(ctx, userID, calendarID, req.Title, req.Description, req.StartAt, req.EndAt, req.AllDay, req.RecurrenceRule, req.RecurrenceEnd)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -158,6 +186,8 @@ func (s *EventService) DeleteEvent(ctx context.Context, id, userID uuid.UUID) er
 func toModelEvent(r repository.EventRow) model.CalendarEvent {
 	return model.CalendarEvent{
 		ID:             r.ID,
+		CalendarID:     r.CalendarID,
+		CreatedBy:      r.CreatedBy,
 		Title:          r.Title,
 		Description:    r.Description,
 		StartAt:        r.StartAt,

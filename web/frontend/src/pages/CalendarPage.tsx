@@ -7,8 +7,8 @@ import { getHolidays } from '@/lib/holidays'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { ChevronLeft, ChevronRight, Repeat, Plus } from 'lucide-react'
-import type { CalendarEvent } from '@/types/api'
+import { ChevronLeft, ChevronRight, Repeat, Plus, ChevronDown } from 'lucide-react'
+import type { CalendarEvent, Calendar } from '@/types/api'
 
 type ViewMode = 'month' | 'week' | 'list'
 
@@ -54,17 +54,39 @@ export function CalendarPage() {
   const [year, setYear] = useState(() => new Date().getFullYear())
   const [month, setMonth] = useState(() => new Date().getMonth())
   const [weekStart, setWeekStart] = useState<Date>(() => getWeekStart(new Date(), 0))
-  const fetchCalendar = useCallback(() => Promise.all([api.listEvents(100), api.getSettings().catch(() => null)]).then(([r, sRes]) => ({
+  const [selectedCalendarId, setSelectedCalendarId] = useState<string | null>(null)
+  const [calSelectorOpen, setCalSelectorOpen] = useState(false)
+
+  const fetchCalendars = useCallback(() => api.listCalendars().then(r => r.data || []), [])
+  const { data: calendars } = useCache<Calendar[]>('calendars', fetchCalendars)
+  const calendarList = useMemo(() => calendars ?? [], [calendars])
+
+  const fetchCalendar = useCallback(() => Promise.all([
+    selectedCalendarId ? api.listEvents(100, selectedCalendarId) : api.listEvents(100),
+    api.getSettings().catch(() => null),
+  ]).then(([r, sRes]) => ({
     events: r.data || [] as CalendarEvent[],
     firstDay: sRes?.data?.first_day_of_week ?? 0,
-  })), [])
-  const { data: calData } = useCache('calendar', fetchCalendar)
+  })), [selectedCalendarId])
+  const { data: calData } = useCache(selectedCalendarId ? `calendar-${selectedCalendarId}` : 'calendar', fetchCalendar)
   const events = useMemo(() => calData?.events ?? [], [calData?.events])
   const [selectedDay, setSelectedDay] = useState<[number, number, number] | null>(null)
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
   const [newRecurrence, setNewRecurrence] = useState('')
   const [firstDayOfWeek] = useState(calData?.firstDay ?? 0)
   const [listNewEventDate, setListNewEventDate] = useState<string | null>(null)
+
+  const selectedCalendar = useMemo(() =>
+    calendarList.find(c => c.id === selectedCalendarId) ?? null,
+  [calendarList, selectedCalendarId])
+
+  function getEventColorDot(ev: CalendarEvent): string | null {
+    if (ev.calendar_id && selectedCalendarId === null) {
+      const cal = calendarList.find(c => c.id === ev.calendar_id)
+      if (cal?.color) return cal.color
+    }
+    return null
+  }
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setWeekStart(getWeekStart(new Date(), firstDayOfWeek)) }, [firstDayOfWeek])
@@ -198,9 +220,10 @@ export function CalendarPage() {
       recurrence_rule: newRecurrence || null,
       recurrence_end: null,
       tags: [],
+      calendar_id: selectedCalendarId || undefined,
     })
     setNewRecurrence('')
-    invalidateCache('calendar', 'home')
+    invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
   }
 
   async function handleNewEventList(_targetDk: string) {
@@ -218,9 +241,10 @@ export function CalendarPage() {
       recurrence_rule: null,
       recurrence_end: null,
       tags: [],
+      calendar_id: selectedCalendarId || undefined,
     })
     setListNewEventDate(null)
-    invalidateCache('calendar', 'home')
+    invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
   }
 
   async function saveEvent() {
@@ -236,14 +260,14 @@ export function CalendarPage() {
       tags: editingEvent.tags?.map((tag) => tag.name) || [],
     })
     setEditingEvent(null)
-    invalidateCache('calendar', 'home')
+    invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
   }
 
   async function deleteEvent(id: string) {
     if (!confirm(t('calendar.confirmDelete'))) return
     await api.deleteEvent(id)
     setEditingEvent(null)
-    invalidateCache('calendar', 'home')
+    invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
   }
 
   const dk = selectedDay ? dateKey(selectedDay[0], selectedDay[1], selectedDay[2]) : null
@@ -559,7 +583,10 @@ export function CalendarPage() {
                     className="px-3 py-2.5 hover:bg-accent/30 cursor-pointer transition-colors"
                   >
                     <div className="flex items-center gap-2">
-                      <div className={`w-1 h-8 rounded-full ${EVENT_COLORS[idx % 4].split(' ')[0]}`} />
+                      <div
+                        className={`w-1 h-8 rounded-full shrink-0 ${getEventColorDot(ev) ? '' : EVENT_COLORS[idx % 4].split(' ')[0]}`}
+                        style={getEventColorDot(ev) ? { backgroundColor: getEventColorDot(ev)! } : undefined}
+                      />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           {ev.recurrence_rule && <Repeat size={12} className="text-muted-foreground shrink-0" />}
@@ -570,6 +597,9 @@ export function CalendarPage() {
                             ? t('common.allDay')
                             : `${formatTime(ev.start_at)}${ev.end_at ? ' - ' + formatTime(ev.end_at) : ''}`
                           }
+                          {ev.created_by && selectedCalendarId && (
+                            <span className="ml-2">{t('calendar.createdBy')}: {ev.created_by}</span>
+                          )}
                         </div>
                         {ev.description && (
                           <div className="text-xs text-muted-foreground mt-1 truncate">{ev.description}</div>
@@ -636,7 +666,53 @@ export function CalendarPage() {
 
   return (
     <div className="h-full flex flex-col">
-      <h1 className="text-lg font-semibold mb-2">{t('calendar.title')}</h1>
+      <div className="flex items-center gap-3 mb-2">
+        <h1 className="text-lg font-semibold">{t('calendar.title')}</h1>
+        {calendarList.length > 0 && (
+          <div className="relative">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1.5 text-xs"
+              onClick={() => setCalSelectorOpen(!calSelectorOpen)}
+            >
+              {selectedCalendar ? (
+                <>
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: selectedCalendar.color || '#3b82f6' }} />
+                  {selectedCalendar.name}
+                </>
+              ) : (
+                t('calendar.allCalendars')
+              )}
+              <ChevronDown size={12} />
+            </Button>
+            {calSelectorOpen && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setCalSelectorOpen(false)} />
+                <div className="absolute top-full left-0 mt-1 w-48 bg-background border border-border rounded-lg shadow-lg z-40 py-1">
+                  <button
+                    className={`w-full text-left px-3 py-1.5 text-sm hover:bg-accent/50 ${!selectedCalendarId ? 'font-medium bg-accent/30' : ''}`}
+                    onClick={() => { setSelectedCalendarId(null); setCalSelectorOpen(false) }}
+                  >
+                    {t('calendar.allCalendars')}
+                  </button>
+                  {calendarList.map(cal => (
+                    <button
+                      key={cal.id}
+                      className={`w-full text-left px-3 py-1.5 text-sm hover:bg-accent/50 flex items-center gap-2 ${selectedCalendarId === cal.id ? 'font-medium bg-accent/30' : ''}`}
+                      onClick={() => { setSelectedCalendarId(cal.id); setCalSelectorOpen(false) }}
+                    >
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cal.color || '#3b82f6' }} />
+                      <span className="truncate">{cal.name}</span>
+                      {cal.member_count > 1 && <span className="text-xs text-muted-foreground ml-auto">{cal.member_count}</span>}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {viewMode === 'month' && (
         <div className="flex gap-4 flex-1 min-h-0">

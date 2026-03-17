@@ -55,13 +55,37 @@ export const api = {
   deleteTodo: (id: string) => request<null>('DELETE', `/todos/${id}`),
 
   // Events
-  listEvents: (limit = 100) => request<{ data: import('@/types/api').CalendarEvent[] }>('GET', `/events?limit=${limit}&sort=start_at:asc`),
+  listEvents: (limit = 100, calendarId?: string) => {
+    const p = new URLSearchParams()
+    p.set('limit', String(limit))
+    p.set('sort', 'start_at:asc')
+    if (calendarId) p.set('calendar_id', calendarId)
+    return request<{ data: import('@/types/api').CalendarEvent[] }>('GET', `/events?${p.toString()}`)
+  },
   getEvent: (id: string) => request<{ data: import('@/types/api').CalendarEvent }>('GET', `/events/${id}`),
-  createEvent: (body: { title: string; description: string; start_at: string; end_at: string | null; all_day: boolean; recurrence_rule?: string | null; recurrence_end?: string | null; tags: string[] }) =>
+  createEvent: (body: { title: string; description: string; start_at: string; end_at: string | null; all_day: boolean; recurrence_rule?: string | null; recurrence_end?: string | null; tags: string[]; calendar_id?: string }) =>
     request<{ data: import('@/types/api').CalendarEvent }>('POST', '/events', body),
   updateEvent: (id: string, body: { title: string; description: string; start_at: string; end_at: string | null; all_day: boolean; recurrence_rule?: string | null; recurrence_end?: string | null; tags: string[] }) =>
     request<{ data: import('@/types/api').CalendarEvent }>('PUT', `/events/${id}`, body),
   deleteEvent: (id: string) => request<null>('DELETE', `/events/${id}`),
+
+  // Calendars
+  listCalendars: () => request<{ data: import('@/types/api').Calendar[] }>('GET', '/calendars'),
+  createCalendar: (body: { name: string; color: string }) =>
+    request<{ data: import('@/types/api').Calendar }>('POST', '/calendars', body),
+  getCalendar: (id: string) => request<{ data: import('@/types/api').CalendarDetail }>('GET', `/calendars/${id}`),
+  updateCalendar: (id: string, body: { name?: string; color?: string }) =>
+    request<{ data: import('@/types/api').Calendar }>('PUT', `/calendars/${id}`, body),
+  deleteCalendar: (id: string) => request<null>('DELETE', `/calendars/${id}`),
+  createShareLink: (id: string) => request<{ data: { token: string } }>('POST', `/calendars/${id}/share-link`),
+  deleteShareLink: (id: string) => request<null>('DELETE', `/calendars/${id}/share-link`),
+  joinCalendar: (token: string) => request<{ data: import('@/types/api').Calendar }>('POST', `/calendars/join/${token}`),
+  addCalendarMember: (id: string, body: { user_email: string; role: string }) =>
+    request<null>('POST', `/calendars/${id}/members`, body),
+  updateCalendarMember: (id: string, uid: string, body: { role?: string; color?: string }) =>
+    request<null>('PUT', `/calendars/${id}/members/${uid}`, body),
+  removeCalendarMember: (id: string, uid: string) =>
+    request<null>('DELETE', `/calendars/${id}/members/${uid}`),
 
   // Tools
   listTools: () => request<{ data: import('@/types/api').Tool[] }>('GET', '/tools'),

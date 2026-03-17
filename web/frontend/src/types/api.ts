@@ -43,6 +43,7 @@ export interface Todo {
 
 export interface CalendarEvent {
   id: string
+  calendar_id?: string
   title: string
   description: string
   start_at: string
@@ -50,9 +51,35 @@ export interface CalendarEvent {
   all_day: boolean
   recurrence_rule: string | null
   recurrence_end: string | null
+  created_by?: string
   tags: Tag[]
   created_at: string
   updated_at: string
+}
+
+export interface Calendar {
+  id: string
+  owner_id: string
+  name: string
+  is_default: boolean
+  token: string | null
+  color: string
+  member_count: number
+  created_at: string
+}
+
+export interface CalendarMember {
+  calendar_id: string
+  user_id: string
+  user_name: string
+  user_email: string
+  role: 'admin' | 'member' | 'viewer'
+  color: string
+  joined_at: string
+}
+
+export interface CalendarDetail extends Calendar {
+  members: CalendarMember[]
 }
 
 export interface Tool {
