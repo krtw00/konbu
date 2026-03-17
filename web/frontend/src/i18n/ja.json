@@ -20,6 +20,7 @@
     "home": "ホーム",
     "memos": "メモ",
     "memo": "メモ",
+    "tables": "テーブル",
     "todo": "ToDo",
     "calendar": "カレンダー",
     "cal": "カレンダー",
@@ -38,7 +39,11 @@
   "memos": {
     "title": "メモ",
     "noMemos": "メモはありません",
-    "newTable": "テーブル",
+    "confirmDelete": "「{{title}}」を削除しますか？"
+  },
+  "tables": {
+    "title": "テーブル",
+    "noTables": "テーブルはありません",
     "confirmDelete": "「{{title}}」を削除しますか？"
   },
   "table": {
