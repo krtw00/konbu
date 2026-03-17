@@ -137,6 +137,20 @@
     "categoryPlaceholder": "例: 開発, インフラ, ドキュメント",
     "healthCheck": "ヘルスチェック"
   },
+  "publicShare": {
+    "button": "公開",
+    "title": "公開リンク",
+    "description": "閲覧専用の公開URLを発行します。受け取った人はログインなしで内容を見られます。",
+    "url": "公開URL",
+    "publish": "公開を開始",
+    "notPublished": "まだ公開されていません。",
+    "copied": "公開URLをコピーしました",
+    "loadError": "公開状態の取得に失敗しました",
+    "publishError": "公開リンクの作成に失敗しました",
+    "deleteError": "公開リンクの削除に失敗しました",
+    "unavailable": "公開ページを表示できません",
+    "unavailableDescription": "リンクが無効になっているか、公開が解除されています。"
+  },
   "command": {
     "searchPlaceholder": "すべてを検索…",
     "noResults": "見つかりませんでした",
@@ -182,12 +196,12 @@
     "googleLogin": "Google でログイン"
   },
   "login": {
-    "heroTitle": "パーソナルワークスペース",
-    "heroDescription": "メモ・ToDo・カレンダー・ツールをひとつに。",
-    "featureMemos": "タグ付きMarkdownメモ & ライブプレビュー",
-    "featureTodos": "期限・ステータス管理付きタスク",
-    "featureCalendar": "月表示カレンダー & 予定管理",
-    "featureSearch": "すべてを横断して即座に検索"
+    "heroTitle": "電子版AI組み込みスケジュール帳",
+    "heroDescription": "予定を軸に、メモやToDoも同じ場所で扱える。話しかければ AI が検索・整理・登録までやる。",
+    "featureMemos": "予定・メモ・ToDo・リンクを1つの場所で扱える",
+    "featureTodos": "スケジュール帳を軸に、情報ごとに見やすい UI で整理できる",
+    "featureCalendar": "AI が予定確認、検索、整理、登録まで手伝う",
+    "featureSearch": "あとから探すときも、どこに置いたかで迷わない"
   },
   "settings": {
     "title": "設定",

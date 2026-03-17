@@ -79,11 +79,11 @@ type Memo struct {
 }
 
 type MemoRow struct {
-	ID        uuid.UUID        `json:"id"`
-	MemoID    uuid.UUID        `json:"memo_id,omitempty"`
-	RowData   json.RawMessage  `json:"row_data"`
-	SortOrder int              `json:"sort_order"`
-	CreatedAt time.Time        `json:"created_at"`
+	ID        uuid.UUID       `json:"id"`
+	MemoID    uuid.UUID       `json:"memo_id,omitempty"`
+	RowData   json.RawMessage `json:"row_data"`
+	SortOrder int             `json:"sort_order"`
+	CreatedAt time.Time       `json:"created_at"`
 }
 
 type CreateMemoRowRequest struct {
@@ -116,15 +116,15 @@ type UpdateMemoRequest struct {
 // --- Todo ---
 
 type Todo struct {
-	ID          uuid.UUID  `json:"id"`
-	UserID      uuid.UUID  `json:"user_id,omitempty"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Status      string     `json:"status"`
-	DueDate     *string    `json:"due_date,omitempty"`
-	Tags        []Tag      `json:"tags,omitempty"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	ID          uuid.UUID `json:"id"`
+	UserID      uuid.UUID `json:"user_id,omitempty"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Status      string    `json:"status"`
+	DueDate     *string   `json:"due_date,omitempty"`
+	Tags        []Tag     `json:"tags,omitempty"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type CreateTodoRequest struct {
@@ -262,6 +262,40 @@ type ReorderRequest struct {
 	Order []uuid.UUID `json:"order"`
 }
 
+// --- Public Shares ---
+
+type PublicShare struct {
+	ResourceType string    `json:"resource_type"`
+	ResourceID   uuid.UUID `json:"resource_id"`
+	Token        string    `json:"token"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}
+
+type PublicMemoView struct {
+	Memo
+	Rows []MemoRow `json:"rows,omitempty"`
+}
+
+type PublicCalendarView struct {
+	ID        uuid.UUID       `json:"id"`
+	Name      string          `json:"name"`
+	Color     string          `json:"color"`
+	Events    []CalendarEvent `json:"events"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at"`
+}
+
+type PublicShareView struct {
+	Token        string              `json:"token"`
+	ResourceType string              `json:"resource_type"`
+	Memo         *PublicMemoView     `json:"memo,omitempty"`
+	Todo         *Todo               `json:"todo,omitempty"`
+	Tool         *Tool               `json:"tool,omitempty"`
+	Event        *CalendarEvent      `json:"event,omitempty"`
+	Calendar     *PublicCalendarView `json:"calendar,omitempty"`
+}
+
 // --- Common ---
 
 type PaginatedResult struct {
@@ -317,12 +351,12 @@ type ChatSession struct {
 }
 
 type ChatMessage struct {
-	ID           uuid.UUID        `json:"id"`
-	Role         string           `json:"role"`
-	Content      string           `json:"content"`
-	ToolCalls    *json.RawMessage `json:"tool_calls,omitempty"`
-	ToolCallID   string           `json:"tool_call_id,omitempty"`
-	CreatedAt    time.Time        `json:"created_at"`
+	ID         uuid.UUID        `json:"id"`
+	Role       string           `json:"role"`
+	Content    string           `json:"content"`
+	ToolCalls  *json.RawMessage `json:"tool_calls,omitempty"`
+	ToolCallID string           `json:"tool_call_id,omitempty"`
+	CreatedAt  time.Time        `json:"created_at"`
 }
 
 type ChatSessionDetail struct {

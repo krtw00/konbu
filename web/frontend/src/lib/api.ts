@@ -1,4 +1,4 @@
-const BASE = '/api/v1'
+import { apiPath } from '@/lib/runtime'
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const opts: RequestInit = {
@@ -6,7 +6,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     headers: { 'Content-Type': 'application/json' },
   }
   if (body) opts.body = JSON.stringify(body)
-  const res = await fetch(BASE + path, opts)
+  const res = await fetch(apiPath(path), opts)
   if (res.status === 204) return null as T
   const data = await res.json()
   if (!res.ok) throw new Error(data.error?.message || 'Request failed')
@@ -148,11 +148,25 @@ export const api = {
   getChatConfig: () => request<{ data: import('@/types/api').AIChatConfig }>('GET', '/chat/config'),
   updateChatConfig: (body: import('@/types/api').AIChatConfig) => request<{ data: import('@/types/api').AIChatConfig }>('PUT', '/chat/config', body),
 
+  // Public shares
+  getPublicShare: (resourceType: import('@/types/api').PublicResourceType, id: string) =>
+    request<{ data: import('@/types/api').PublicShare | null }>('GET', `/public-shares/${resourceType}/${id}`),
+  createPublicShare: (resourceType: import('@/types/api').PublicResourceType, id: string) =>
+    request<{ data: import('@/types/api').PublicShare }>('POST', `/public-shares/${resourceType}/${id}`),
+  deletePublicShare: (resourceType: import('@/types/api').PublicResourceType, id: string) =>
+    request<null>('DELETE', `/public-shares/${resourceType}/${id}`),
+  getPublicShareView: async (token: string): Promise<{ data: import('@/types/api').PublicShareView }> => {
+    const res = await fetch(apiPath(`/public/${token}`))
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error?.message || 'Request failed')
+    return data
+  },
+
   // Attachments
   uploadAttachment: async (file: File): Promise<{ data: { url: string } }> => {
     const form = new FormData()
     form.append('file', file)
-    const res = await fetch(BASE + '/attachments', { method: 'POST', body: form })
+    const res = await fetch(apiPath('/attachments'), { method: 'POST', body: form })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error?.message || 'Upload failed')
     return data

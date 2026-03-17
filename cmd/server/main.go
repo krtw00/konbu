@@ -60,6 +60,7 @@ func main() {
 	todoSvc := service.NewTodoService(db, tagSvc)
 	eventSvc := service.NewEventService(db, tagSvc, calSvc)
 	searchSvc := service.NewSearchService(db)
+	publicShareSvc := service.NewPublicShareService(db)
 
 	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc, toolSvc)
 	chatSvc := service.NewChatService(db, cfg, memoSvc, todoSvc, eventSvc, searchSvc)
@@ -79,6 +80,7 @@ func main() {
 	todoH := handler.NewTodoHandler(todoSvc)
 	eventH := handler.NewEventHandler(eventSvc)
 	searchH := handler.NewSearchHandler(searchSvc)
+	publicShareH := handler.NewPublicShareHandler(publicShareSvc)
 	exportH := handler.NewExportHandler(exportSvc)
 	importH := handler.NewImportHandler(eventSvc)
 	chatH := handler.NewChatHandler(chatSvc)
@@ -113,6 +115,9 @@ func main() {
 
 	// Attachment serving (unauthenticated, for Markdown image display)
 	r.Get("/api/v1/attachments/*", attachH.Serve)
+
+	// Public shares (unauthenticated read-only views)
+	r.Mount("/api/v1/public", publicShareH.PublicRoutes())
 
 	// Static files (unauthenticated, immutable hashed assets)
 	staticDir := http.Dir("web/static")
@@ -181,6 +186,7 @@ func main() {
 			r.Mount("/events", eventH.Routes())
 			r.Mount("/calendars", calendarH.Routes())
 			r.Get("/search", searchH.HandleSearch)
+			r.Mount("/public-shares", publicShareH.AuthRoutes())
 			r.Mount("/export", exportH.Routes())
 			r.Mount("/import", importH.Routes())
 			r.Mount("/chat", chatH.Routes())

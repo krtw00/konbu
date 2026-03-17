@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { api } from '@/lib/api'
@@ -15,14 +15,17 @@ export function SetupPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const submitLock = useRef(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (submitLock.current) return
     setError('')
     if (password !== confirmPassword) {
       setError(t('settings.passwordMismatch'))
       return
     }
+    submitLock.current = true
     setLoading(true)
     try {
       await api.register({ email, password, name })
@@ -31,6 +34,7 @@ export function SetupPage() {
       setError(err instanceof Error ? err.message : t('auth.loginError'))
     } finally {
       setLoading(false)
+      submitLock.current = false
     }
   }
 

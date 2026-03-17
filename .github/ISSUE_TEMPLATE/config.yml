@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/krtw00/konbu/blob/main/README.md
+    about: Check setup, CLI, deployment, and feature docs before opening an issue.

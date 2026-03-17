@@ -2,14 +2,14 @@ import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { api } from '@/lib/api'
-import { invalidateCache } from '@/hooks/useCache'
-import type { ApiKey, Calendar, CalendarDetail } from '@/types/api'
+import { appURL } from '@/lib/runtime'
+import type { ApiKey } from '@/types/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Copy, Trash2, Plus, Key, ExternalLink, Sun, Moon, Monitor, Calendar as CalendarIcon, Palette, Contrast, Users, Link, UserPlus, X } from 'lucide-react'
+import { Copy, Trash2, Plus, Key, ExternalLink, Sun, Moon, Monitor, Calendar as CalendarIcon, Palette, Contrast } from 'lucide-react'
 
 function ProfileTab() {
   const { t } = useTranslation()
@@ -483,7 +483,7 @@ function DataTab() {
       </Card>
 
       {apiKeys.length > 0 && (() => {
-        const icalUrl = `${window.location.origin}/api/v1/calendar.ics?token=YOUR_API_KEY`
+        const icalUrl = appURL('/api/v1/calendar.ics?token=YOUR_API_KEY')
         return (
           <Card>
             <CardHeader>
@@ -597,323 +597,6 @@ function AITab() {
   )
 }
 
-const CALENDAR_COLORS = ['#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#f97316']
-
-function CalendarsTab() {
-  const { t } = useTranslation()
-  const [calendars, setCalendars] = useState<Calendar[]>([])
-  const [selectedCalId, setSelectedCalId] = useState<string | null>(null)
-  const [calDetail, setCalDetail] = useState<CalendarDetail | null>(null)
-  const [newCalName, setNewCalName] = useState('')
-  const [newCalColor, setNewCalColor] = useState(CALENDAR_COLORS[0])
-  const [showNewCal, setShowNewCal] = useState(false)
-  const [joinToken, setJoinToken] = useState('')
-  const [joinMsg, setJoinMsg] = useState('')
-  const [newMemberEmail, setNewMemberEmail] = useState('')
-  const [newMemberRole, setNewMemberRole] = useState('member')
-  const [memberMsg, setMemberMsg] = useState('')
-  const [shareMsg, setShareMsg] = useState('')
-
-  useEffect(() => {
-    api.listCalendars().then(r => setCalendars(r.data || [])).catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    if (!selectedCalId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setCalDetail(null)
-      return
-    }
-    api.getCalendar(selectedCalId).then(r => setCalDetail(r.data)).catch(() => {})
-  }, [selectedCalId])
-
-  async function handleCreateCalendar(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!newCalName.trim()) return
-    await api.createCalendar({ name: newCalName.trim(), color: newCalColor })
-    setNewCalName('')
-    setShowNewCal(false)
-    const r = await api.listCalendars()
-    setCalendars(r.data || [])
-    invalidateCache('calendars')
-  }
-
-  async function handleDeleteCalendar(id: string) {
-    const cal = calendars.find(c => c.id === id)
-    if (cal?.is_default) return
-    if (!confirm(t('common.confirmDelete', { name: cal?.name }))) return
-    await api.deleteCalendar(id)
-    setSelectedCalId(null)
-    const r = await api.listCalendars()
-    setCalendars(r.data || [])
-    invalidateCache('calendars', 'calendar')
-  }
-
-  async function handleJoin(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setJoinMsg('')
-    let token = joinToken.trim()
-    const match = token.match(/join\/([a-zA-Z0-9_-]+)/)
-    if (match) token = match[1]
-    if (!token) return
-    try {
-      await api.joinCalendar(token)
-      setJoinToken('')
-      setJoinMsg(t('calendar.joined'))
-      const r = await api.listCalendars()
-      setCalendars(r.data || [])
-      invalidateCache('calendars')
-    } catch (err) {
-      setJoinMsg(err instanceof Error ? err.message : 'Error')
-    }
-  }
-
-  async function handleGenerateLink() {
-    if (!selectedCalId) return
-    setShareMsg('')
-    await api.createShareLink(selectedCalId)
-    const r = await api.getCalendar(selectedCalId)
-    setCalDetail(r.data)
-  }
-
-  async function handleRevokeLink() {
-    if (!selectedCalId) return
-    setShareMsg('')
-    await api.deleteShareLink(selectedCalId)
-    const r = await api.getCalendar(selectedCalId)
-    setCalDetail(r.data)
-  }
-
-  async function handleCopyLink(token: string) {
-    const url = `${window.location.origin}/api/v1/calendars/join/${token}`
-    await navigator.clipboard.writeText(url)
-    setShareMsg(t('calendar.linkCopied'))
-    setTimeout(() => setShareMsg(''), 2000)
-  }
-
-  async function handleAddMember(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    if (!selectedCalId || !newMemberEmail.trim()) return
-    setMemberMsg('')
-    try {
-      await api.addCalendarMember(selectedCalId, { user_email: newMemberEmail.trim(), role: newMemberRole })
-      setNewMemberEmail('')
-      setMemberMsg(t('calendar.memberAdded'))
-      const r = await api.getCalendar(selectedCalId)
-      setCalDetail(r.data)
-      setTimeout(() => setMemberMsg(''), 2000)
-    } catch (err) {
-      setMemberMsg(err instanceof Error ? err.message : 'Error')
-    }
-  }
-
-  async function handleRemoveMember(uid: string) {
-    if (!selectedCalId) return
-    if (!confirm(t('calendar.removeMember') + '?')) return
-    await api.removeCalendarMember(selectedCalId, uid)
-    const r = await api.getCalendar(selectedCalId)
-    setCalDetail(r.data)
-  }
-
-  async function handleUpdateMemberRole(uid: string, role: string) {
-    if (!selectedCalId) return
-    await api.updateCalendarMember(selectedCalId, uid, { role })
-    const r = await api.getCalendar(selectedCalId)
-    setCalDetail(r.data)
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>{t('calendar.manageCalendars')}</span>
-            <Button size="sm" variant="outline" onClick={() => setShowNewCal(!showNewCal)}>
-              <Plus size={14} className="mr-1" />
-              {t('calendar.newCalendar')}
-            </Button>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          {showNewCal && (
-            <form onSubmit={handleCreateCalendar} className="flex flex-col gap-2 p-3 border border-border rounded-lg">
-              <Input
-                placeholder={t('calendar.calendarName')}
-                value={newCalName}
-                onChange={e => setNewCalName(e.target.value)}
-                required
-              />
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-muted-foreground">{t('calendar.calendarColor')}</label>
-                <div className="flex gap-1.5">
-                  {CALENDAR_COLORS.map(c => (
-                    <button
-                      key={c}
-                      type="button"
-                      className={`w-6 h-6 rounded-full border-2 ${newCalColor === c ? 'border-foreground' : 'border-transparent'}`}
-                      style={{ backgroundColor: c }}
-                      onClick={() => setNewCalColor(c)}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" size="sm">{t('common.create')}</Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => setShowNewCal(false)}>{t('common.cancel')}</Button>
-              </div>
-            </form>
-          )}
-
-          {calendars.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t('calendar.noEvents')}</p>
-          ) : (
-            <div className="flex flex-col gap-1">
-              {calendars.map(cal => (
-                <button
-                  key={cal.id}
-                  onClick={() => setSelectedCalId(selectedCalId === cal.id ? null : cal.id)}
-                  className={`flex items-center gap-2 p-2 rounded-lg text-left hover:bg-accent/50 transition-colors ${selectedCalId === cal.id ? 'bg-accent/30' : ''}`}
-                >
-                  <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: cal.color || '#3b82f6' }} />
-                  <span className="flex-1 text-sm font-medium truncate">{cal.name}</span>
-                  {cal.is_default && <span className="text-xs text-muted-foreground">{t('calendar.defaultCalendar')}</span>}
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <Users size={12} />
-                    {cal.member_count}
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {calDetail && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: calDetail.color || '#3b82f6' }} />
-              {calDetail.name}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <div>
-              <h3 className="text-sm font-medium flex items-center gap-1.5 mb-2">
-                <Link size={14} />
-                {t('calendar.shareLink')}
-              </h3>
-              {calDetail.token ? (
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs bg-muted p-2 rounded truncate">
-                    {window.location.origin}/api/v1/calendars/join/{calDetail.token}
-                  </code>
-                  <Button variant="ghost" size="icon-xs" onClick={() => handleCopyLink(calDetail.token!)}>
-                    <Copy size={14} />
-                  </Button>
-                  <Button variant="ghost" size="icon-xs" onClick={handleRevokeLink}>
-                    <X size={14} />
-                  </Button>
-                </div>
-              ) : (
-                <Button variant="outline" size="sm" onClick={handleGenerateLink}>
-                  <Link size={14} className="mr-1" />
-                  {t('calendar.generateLink')}
-                </Button>
-              )}
-              {shareMsg && <p className="text-xs text-green-600 mt-1">{shareMsg}</p>}
-            </div>
-
-            <Separator />
-
-            <div>
-              <h3 className="text-sm font-medium flex items-center gap-1.5 mb-2">
-                <Users size={14} />
-                {t('calendar.members')} ({calDetail.members.length})
-              </h3>
-              <div className="flex flex-col gap-1.5">
-                {calDetail.members.map(m => (
-                  <div key={m.user_id} className="flex items-center gap-2 p-2 rounded border border-border text-sm">
-                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: m.color || calDetail.color || '#3b82f6' }} />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium truncate">{m.user_name}</div>
-                      <div className="text-xs text-muted-foreground truncate">{m.user_email}</div>
-                    </div>
-                    <select
-                      className="text-xs rounded border border-input bg-background px-1.5 py-0.5"
-                      value={m.role}
-                      onChange={e => handleUpdateMemberRole(m.user_id, e.target.value)}
-                    >
-                      <option value="admin">{t('calendar.roleAdmin')}</option>
-                      <option value="member">{t('calendar.roleMember')}</option>
-                      <option value="viewer">{t('calendar.roleViewer')}</option>
-                    </select>
-                    <Button variant="ghost" size="icon-xs" onClick={() => handleRemoveMember(m.user_id)}>
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-
-              <form onSubmit={handleAddMember} className="flex gap-2 mt-2">
-                <Input
-                  placeholder={t('auth.email')}
-                  type="email"
-                  value={newMemberEmail}
-                  onChange={e => setNewMemberEmail(e.target.value)}
-                  className="flex-1"
-                />
-                <select
-                  className="rounded border border-input bg-background px-2 text-sm"
-                  value={newMemberRole}
-                  onChange={e => setNewMemberRole(e.target.value)}
-                >
-                  <option value="admin">{t('calendar.roleAdmin')}</option>
-                  <option value="member">{t('calendar.roleMember')}</option>
-                  <option value="viewer">{t('calendar.roleViewer')}</option>
-                </select>
-                <Button type="submit" variant="outline" size="sm">
-                  <UserPlus size={14} />
-                </Button>
-              </form>
-              {memberMsg && <p className="text-xs text-green-600 mt-1">{memberMsg}</p>}
-            </div>
-
-            <Separator />
-
-            {!calDetail.is_default && (
-              <Button variant="destructive" size="sm" onClick={() => handleDeleteCalendar(calDetail.id)}>
-                <Trash2 size={14} className="mr-1" />
-                {t('common.delete')}
-              </Button>
-            )}
-            {calDetail.is_default && (
-              <p className="text-xs text-muted-foreground">{t('calendar.cannotDeleteDefault')}</p>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('calendar.joinCalendar')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleJoin} className="flex gap-2">
-            <Input
-              placeholder={t('calendar.joinToken')}
-              value={joinToken}
-              onChange={e => setJoinToken(e.target.value)}
-              className="flex-1"
-            />
-            <Button type="submit" variant="outline" size="sm">{t('calendar.joinCalendar')}</Button>
-          </form>
-          {joinMsg && <p className="text-sm text-green-600 mt-2">{joinMsg}</p>}
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
-
 export function SettingsPage() {
   const { t } = useTranslation()
 
@@ -921,10 +604,9 @@ export function SettingsPage() {
     <div>
       <h1 className="text-lg font-semibold mb-4">{t('settings.title')}</h1>
       <Tabs defaultValue="profile">
-        <TabsList className="w-full grid grid-cols-6">
+        <TabsList className="w-full grid grid-cols-5">
           <TabsTrigger value="profile" className="text-xs sm:text-sm">{t('settings.profile')}</TabsTrigger>
           <TabsTrigger value="appearance" className="text-xs sm:text-sm">{t('settings.appearance')}</TabsTrigger>
-          <TabsTrigger value="calendars" className="text-xs sm:text-sm">{t('settings.calendars')}</TabsTrigger>
           <TabsTrigger value="security" className="text-xs sm:text-sm">{t('settings.security')}</TabsTrigger>
           <TabsTrigger value="data" className="text-xs sm:text-sm">{t('settings.data')}</TabsTrigger>
           <TabsTrigger value="ai" className="text-xs sm:text-sm">{t('settings.ai')}</TabsTrigger>
@@ -934,9 +616,6 @@ export function SettingsPage() {
         </TabsContent>
         <TabsContent value="appearance" className="mt-4">
           <AppearanceTab />
-        </TabsContent>
-        <TabsContent value="calendars" className="mt-4">
-          <CalendarsTab />
         </TabsContent>
         <TabsContent value="security" className="mt-4">
           <SecurityTab />

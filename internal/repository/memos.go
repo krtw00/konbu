@@ -45,6 +45,16 @@ func (q *Queries) GetMemoByID(ctx context.Context, id, userID uuid.UUID) (Memo, 
 	return m, err
 }
 
+func (q *Queries) GetMemoByIDPublic(ctx context.Context, id uuid.UUID) (Memo, error) {
+	row := q.db.QueryRowContext(ctx,
+		`SELECT id, user_id, title, type, content, table_columns, created_at, updated_at
+		 FROM memos WHERE id = $1 AND deleted_at IS NULL`,
+		id)
+	var m Memo
+	err := row.Scan(&m.ID, &m.UserID, &m.Title, &m.Type, &m.Content, &m.TableColumns, &m.CreatedAt, &m.UpdatedAt)
+	return m, err
+}
+
 func (q *Queries) ListMemosByUserID(ctx context.Context, userID uuid.UUID, limit, offset int) ([]Memo, error) {
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT id, user_id, title, type, created_at, updated_at

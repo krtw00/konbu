@@ -42,6 +42,13 @@ func (q *Queries) GetToolByID(ctx context.Context, id, userID uuid.UUID) (Tool, 
 	return scanTool(row)
 }
 
+func (q *Queries) GetToolByIDPublic(ctx context.Context, id uuid.UUID) (Tool, error) {
+	row := q.db.QueryRowContext(ctx,
+		`SELECT `+toolCols+` FROM tools WHERE id = $1 AND deleted_at IS NULL`,
+		id)
+	return scanTool(row)
+}
+
 func (q *Queries) ListToolsByUserID(ctx context.Context, userID uuid.UUID) ([]Tool, error) {
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT `+toolCols+` FROM tools WHERE user_id = $1 AND deleted_at IS NULL

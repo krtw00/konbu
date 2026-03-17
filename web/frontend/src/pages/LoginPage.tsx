@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { api } from '@/lib/api'
@@ -18,14 +18,17 @@ export function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const submitLock = useRef(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    if (submitLock.current) return
     setError('')
     if (mode === 'register' && password !== confirmPassword) {
       setError(t('settings.passwordMismatch'))
       return
     }
+    submitLock.current = true
     setLoading(true)
     try {
       if (mode === 'register') {
@@ -37,6 +40,7 @@ export function LoginPage() {
       setError(err instanceof Error ? err.message : t('auth.loginError'))
     } finally {
       setLoading(false)
+      submitLock.current = false
     }
   }
 
@@ -165,6 +169,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={switchMode}
+                  disabled={loading}
                   className="text-primary underline-offset-4 hover:underline"
                 >
                   {mode === 'login' ? t('auth.createAccount') : t('auth.backToLogin')}

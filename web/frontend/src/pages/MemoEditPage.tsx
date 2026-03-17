@@ -17,6 +17,7 @@ if (!(globalThis as unknown as Record<string, unknown>).MonacoEnvironment) {
 import { renderMarkdown } from '@/lib/markdown'
 import { registerMarkdownFeatures } from '@/lib/monaco-markdown'
 import { ArrowLeft, Tag, Trash2, Eye, EyeOff, Bold, Italic, Strikethrough, Code, Link, List, ListOrdered, CheckSquare, Heading1, Heading2, Heading3, Quote, Minus, Table, ImageIcon } from 'lucide-react'
+import { PublicShareDialog } from '@/components/PublicShareDialog'
 import { TableEditor } from '@/components/TableEditor'
 import type { Memo, TableColumn } from '@/types/api'
 
@@ -235,6 +236,7 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
+        <PublicShareDialog resourceType="memo" resourceId={memoId} iconOnly />
         <Button variant="ghost" size="sm" className="h-8 px-2 text-destructive md:h-6 md:px-1.5" onClick={handleDelete}>
           <Trash2 size={12} />
         </Button>

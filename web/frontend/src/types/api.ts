@@ -73,7 +73,7 @@ export interface CalendarMember {
   user_id: string
   user_name: string
   user_email: string
-  role: 'admin' | 'member' | 'viewer'
+  role: 'admin' | 'editor' | 'viewer'
   color: string
   joined_at: string
 }
@@ -173,6 +173,39 @@ export interface AIChatConfig {
   anthropic_key_masked?: string
   openai_key?: string
   anthropic_key?: string
+}
+
+export type PublicResourceType = 'memo' | 'todo' | 'calendar' | 'tool' | 'event'
+
+export interface PublicShare {
+  resource_type: PublicResourceType
+  resource_id: string
+  token: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PublicMemoView extends Memo {
+  rows?: MemoRow[]
+}
+
+export interface PublicCalendarView {
+  id: string
+  name: string
+  color: string
+  events: CalendarEvent[]
+  created_at: string
+  updated_at: string
+}
+
+export interface PublicShareView {
+  token: string
+  resource_type: PublicResourceType
+  memo?: PublicMemoView
+  todo?: Todo
+  tool?: Tool
+  event?: CalendarEvent
+  calendar?: PublicCalendarView
 }
 
 export interface ListResponse<T> {
