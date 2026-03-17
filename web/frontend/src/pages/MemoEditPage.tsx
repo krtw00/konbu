@@ -201,7 +201,7 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
     <div className="relative flex flex-col h-full overflow-hidden">
       {/* Compact toolbar */}
       <div className="flex items-center gap-1 px-2 py-0.5 border-b border-border shrink-0" style={{ minHeight: 32 }}>
-        <Button variant="ghost" size="sm" className="h-6 px-1.5 text-xs" onClick={() => { save(); onClose() }}>
+        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs md:h-6 md:px-1.5" onClick={() => { save(); onClose() }}>
           <ArrowLeft size={14} />
         </Button>
         <input
@@ -212,15 +212,15 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
           className="flex-1 bg-transparent text-xs font-medium outline-none min-w-0"
         />
         {tags.map((name) => (
-          <Badge key={name} variant="secondary" className="text-[10px] h-5 px-1.5 shrink-0">
+          <Badge key={name} variant="secondary" className="text-xs h-6 px-2 md:text-[10px] md:h-5 md:px-1.5 shrink-0">
             {name}
             <button className="ml-0.5 hover:text-destructive" onClick={() => toggleTag(name)}>×</button>
           </Badge>
         ))}
-        <span className="text-[10px] text-muted-foreground shrink-0">{status}</span>
+        <span className="text-xs md:text-[10px] text-muted-foreground shrink-0">{status}</span>
         <DropdownMenu>
           <DropdownMenuTrigger>
-            <Button variant="ghost" size="sm" className="h-6 px-1.5">
+            <Button variant="ghost" size="sm" className="h-8 px-2 md:h-6 md:px-1.5">
               <Tag size={12} />
             </Button>
           </DropdownMenuTrigger>
@@ -235,37 +235,37 @@ export function MemoEditPage({ memoId, onClose }: MemoEditPageProps) {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="ghost" size="sm" className="h-6 px-1.5 text-destructive" onClick={handleDelete}>
+        <Button variant="ghost" size="sm" className="h-8 px-2 text-destructive md:h-6 md:px-1.5" onClick={handleDelete}>
           <Trash2 size={12} />
         </Button>
       </div>
 
       {/* Format toolbar */}
-      <div className="flex items-center gap-0.5 px-1.5 py-0.5 border-b border-border bg-muted/50 shrink-0 overflow-x-auto" style={{ minHeight: 30 }}>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Bold" onClick={() => wrapSelection('**')}><Bold size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Italic" onClick={() => wrapSelection('*')}><Italic size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Strikethrough" onClick={() => wrapSelection('~~')}><Strikethrough size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Code" onClick={() => wrapSelection('`')}><Code size={13} /></Button>
+      <div className="flex items-center gap-1 md:gap-0.5 px-1.5 py-0.5 border-b border-border bg-muted/50 shrink-0 overflow-x-auto" style={{ minHeight: 30 }}>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Bold" onClick={() => wrapSelection('**')}><Bold size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Italic" onClick={() => wrapSelection('*')}><Italic size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Strikethrough" onClick={() => wrapSelection('~~')}><Strikethrough size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Code" onClick={() => wrapSelection('`')}><Code size={13} /></Button>
         <div className="w-px h-4 bg-border mx-0.5" />
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="H1" onClick={() => insertLinePrefix('# ')}><Heading1 size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="H2" onClick={() => insertLinePrefix('## ')}><Heading2 size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="H3" onClick={() => insertLinePrefix('### ')}><Heading3 size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="H1" onClick={() => insertLinePrefix('# ')}><Heading1 size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="H2" onClick={() => insertLinePrefix('## ')}><Heading2 size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="H3" onClick={() => insertLinePrefix('### ')}><Heading3 size={13} /></Button>
         <div className="w-px h-4 bg-border mx-0.5" />
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Bullet list" onClick={() => insertLinePrefix('- ')}><List size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Numbered list" onClick={() => insertLinePrefix('1. ')}><ListOrdered size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Task list" onClick={() => insertLinePrefix('- [ ] ')}><CheckSquare size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Blockquote" onClick={() => insertLinePrefix('> ')}><Quote size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Bullet list" onClick={() => insertLinePrefix('- ')}><List size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Numbered list" onClick={() => insertLinePrefix('1. ')}><ListOrdered size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Task list" onClick={() => insertLinePrefix('- [ ] ')}><CheckSquare size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Blockquote" onClick={() => insertLinePrefix('> ')}><Quote size={13} /></Button>
         <div className="w-px h-4 bg-border mx-0.5" />
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Link" onClick={() => insertText('[text](url)')}><Link size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title={t('attachment.upload')} onClick={() => {
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Link" onClick={() => insertText('[text](url)')}><Link size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title={t('attachment.upload')} onClick={() => {
           const input = document.createElement('input')
           input.type = 'file'
           input.accept = 'image/*'
           input.onchange = () => { if (input.files?.[0]) handleImageUpload(input.files[0]) }
           input.click()
         }} disabled={uploading}><ImageIcon size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Table" onClick={() => insertText('| Header | Header |\n| --- | --- |\n| Cell | Cell |')}><Table size={13} /></Button>
-        <Button variant="ghost" size="sm" className="h-6 w-6 p-0" title="Horizontal rule" onClick={() => insertText('\n---\n')}><Minus size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Table" onClick={() => insertText('| Header | Header |\n| --- | --- |\n| Cell | Cell |')}><Table size={13} /></Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 md:h-6 md:w-6" title="Horizontal rule" onClick={() => insertText('\n---\n')}><Minus size={13} /></Button>
         <div className="flex-1" />
         <Button
           variant={showPreview ? 'default' : 'outline'}

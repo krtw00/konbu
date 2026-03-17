@@ -133,7 +133,7 @@ export function TodosPage() {
                   >
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleDone(todo) }}
-                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+                      className={`w-6 h-6 min-w-8 min-h-8 md:min-w-6 md:min-h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
                         todo.status === 'done'
                           ? 'bg-primary border-primary text-primary-foreground'
                           : 'border-muted-foreground/40 hover:border-primary'
