@@ -42,7 +42,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 | メソッド | パス | 説明 |
 |----------|------|------|
-| GET | `/public/:token` | 公開リンクの閲覧用データ取得（read-only） |
+| GET | `/public/:token` | 共有リンクの閲覧用データ取得（read-only） |
 
 ### Auth（認証済み）
 
@@ -128,9 +128,9 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 | メソッド | パス | 説明 |
 |----------|------|------|
-| GET | `/public-shares/:resourceType/:id` | リソースの公開リンク取得 |
-| POST | `/public-shares/:resourceType/:id` | 閲覧専用の公開リンク作成 |
-| DELETE | `/public-shares/:resourceType/:id` | 公開リンク削除 |
+| GET | `/public-shares/:resourceType/:id` | リソースの共有リンク取得 |
+| POST | `/public-shares/:resourceType/:id` | 閲覧専用の共有リンク作成 |
+| DELETE | `/public-shares/:resourceType/:id` | 共有リンク削除 |
 
 対応する `resourceType`: `memo`, `todo`, `calendar`, `event`
 
@@ -210,7 +210,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | セッションCookie | `konbu_session` (HMAC-SHA256署名) | Web UI |
 | 開発モード | `DEV_USER` 環境変数 | ローカル開発 |
 | iCal feed | `GET /api/v1/calendar.ics?token=...` | 外部カレンダー購読 |
-| 公開リンク | `GET /api/v1/public/:token` | ログイン不要の閲覧専用ページ |
+| 共有リンク | `GET /api/v1/public/:token` | ログイン不要の閲覧専用ページ |
 
 ### エラーレスポンス
 

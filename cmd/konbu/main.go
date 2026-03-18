@@ -1254,10 +1254,10 @@ func toolCmd() *cobra.Command {
 // --- public ---
 
 func publicCmd() *cobra.Command {
-	public := &cobra.Command{Use: "public", Short: "Manage public share links"}
+	public := &cobra.Command{Use: "public", Short: "Manage share links"}
 
 	public.AddCommand(&cobra.Command{
-		Use: "get [resource_type] [id]", Short: "Get public share for a resource",
+		Use: "get [resource_type] [id]", Short: "Get share link for a resource",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resourceType := normalizeResourceType(args[0])
@@ -1273,7 +1273,7 @@ func publicCmd() *cobra.Command {
 				return nil
 			}
 			if share == nil {
-				fmt.Println("Not published.")
+				fmt.Println("No share link.")
 				return nil
 			}
 			fmt.Println(cli().PublicURL(share.Token))
@@ -1282,7 +1282,7 @@ func publicCmd() *cobra.Command {
 	})
 
 	public.AddCommand(&cobra.Command{
-		Use: "create [resource_type] [id]", Short: "Create a public share for a resource",
+		Use: "create [resource_type] [id]", Short: "Create a share link for a resource",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resourceType := normalizeResourceType(args[0])
@@ -1303,7 +1303,7 @@ func publicCmd() *cobra.Command {
 	})
 
 	public.AddCommand(&cobra.Command{
-		Use: "rm [resource_type] [id]", Short: "Delete a public share for a resource",
+		Use: "rm [resource_type] [id]", Short: "Delete a share link for a resource",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resourceType := normalizeResourceType(args[0])
