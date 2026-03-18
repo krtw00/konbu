@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { sectionColors, sectionBgColors, sectionBorderColors } from '@/lib/colors'
-import { Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
+import { Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut, Megaphone } from 'lucide-react'
 
 const navItems = [
   { page: 'home' as const, icon: Home, labelKey: 'nav.home' },
@@ -53,6 +53,21 @@ export function Sidebar() {
         })}
       </div>
       <div className={`pb-4 flex flex-col gap-0.5 ${collapsed ? 'px-1' : 'px-2'}`}>
+        <a
+          href="/feedback"
+          title={collapsed ? t('feedback.link') : undefined}
+          className={`mb-2 flex items-center rounded-xl border border-primary/20 bg-primary/8 text-sm text-sidebar-foreground transition-colors hover:bg-primary/12 ${
+            collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-3'
+          }`}
+        >
+          <Megaphone size={18} className="text-primary" />
+          {!collapsed && (
+            <div className="min-w-0">
+              <div className="font-medium">{t('feedback.sidebarTitle')}</div>
+              <div className="text-xs text-sidebar-foreground/70">{t('feedback.sidebarDescription')}</div>
+            </div>
+          )}
+        </a>
         <button
           onClick={() => setCommandOpen(true)}
           title={collapsed ? t('common.search') : undefined}

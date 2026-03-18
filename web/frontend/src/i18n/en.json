@@ -203,6 +203,12 @@
     "featureCalendar": "Let AI check your schedule, search, organize, and add things",
     "featureSearch": "Find things later without remembering where you put them"
   },
+  "appError": {
+    "title": "This screen failed to load",
+    "description": "A page update or chunk load likely interrupted the current view. Reload the app or go back home.",
+    "reload": "Reload app",
+    "home": "Go home"
+  },
   "settings": {
     "title": "Settings",
     "profile": "Profile",
@@ -268,7 +274,15 @@
     "aiKeyPlaceholder": "sk-... or sk-ant-...",
     "icalUrl": "iCal URL",
     "icalDescription": "Add to Google Calendar, Apple Calendar, or other apps",
+    "icalReadOnly": "This URL is read-only and separate from your API key.",
+    "icalGenerate": "Generate URL",
+    "icalRegenerate": "Regenerate URL",
+    "icalRevoke": "Revoke URL",
+    "icalReady": "A new iCal URL is ready.",
+    "icalActiveHidden": "A feed token is active. Regenerate to reveal and copy a new URL.",
+    "icalNotGenerated": "No iCal URL has been generated yet.",
     "icalCopied": "URL copied",
+    "exportFailed": "Export failed",
     "calendars": "Calendars"
   },
   "attachment": {
@@ -293,5 +307,59 @@
     "attachment": "Image attachments are available for supporters. You can become one in Settings.",
     "apiKey": "App integrations are available for supporters. You can become one in Settings.",
     "cta": "Learn more"
+  },
+  "feedback": {
+    "link": "Feedback or contact",
+    "openForm": "Open feedback form",
+    "optional": "optional",
+    "back": "Back to konbu",
+    "title": "Feedback",
+    "description": "Send bugs, feature requests, or contact directly from here.",
+    "formTitle": "Send feedback",
+    "formDescription": "We read bug reports, ideas, and questions here.",
+    "homeTitle": "Found a bug or want to shape konbu?",
+    "homeDescription": "Send a structured report or request directly from the app.",
+    "sidebarTitle": "Send feedback",
+    "sidebarDescription": "Bug report, request, or contact",
+    "guideTitle": "What to send",
+    "guideDescription": "Use the category that best matches your intent.",
+    "guideBug": "Bug reports should include how to reproduce it, what you expected, and what actually happened.",
+    "guideFeature": "Feature requests should describe the current problem first, then the change you want.",
+    "guideResponse": "If the topic is sensitive, keep the message brief. A sanitized copy may be sent to GitHub Issues.",
+    "email": "Email",
+    "category": "Category",
+    "message": "Message",
+    "privacy": "A sanitized copy may be forwarded to GitHub Issues. Avoid including private details, credentials, or contact information in the message body.",
+    "validation": "Please fill in the required fields for this category.",
+    "placeholder": "What happened, what you expected, or what you want to add.",
+    "submit": "Send feedback",
+    "sending": "Sending...",
+    "submitError": "Failed to send feedback",
+    "thanks": "Thanks. Your feedback has been received.",
+    "github": "Open GitHub issues",
+    "categoryHints": {
+      "bug": "Report a reproducible problem",
+      "feature": "Ask for a concrete improvement",
+      "question": "Ask about product behavior or usage",
+      "other": "General contact or note"
+    },
+    "fields": {
+      "summary": "Summary",
+      "steps": "Steps to reproduce",
+      "expected": "Expected behavior",
+      "actual": "Actual behavior",
+      "environment": "Environment",
+      "problem": "Current problem",
+      "proposal": "Proposed change",
+      "benefit": "Expected benefit",
+      "subject": "Subject",
+      "details": "Details"
+    },
+    "categories": {
+      "bug": "Bug report",
+      "feature": "Feature request",
+      "question": "Question",
+      "other": "Other"
+    }
   }
 }

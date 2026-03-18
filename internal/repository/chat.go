@@ -84,6 +84,13 @@ func (q *Queries) TouchChatSession(ctx context.Context, id uuid.UUID) error {
 	return err
 }
 
+func (q *Queries) TouchChatSessionByUser(ctx context.Context, id, userID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx,
+		`UPDATE chat_sessions SET updated_at = now()
+		 WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL`, id, userID)
+	return err
+}
+
 func (q *Queries) SoftDeleteChatSession(ctx context.Context, id, userID uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx,
 		`UPDATE chat_sessions SET deleted_at = now() WHERE id = $1 AND user_id = $2`,
@@ -118,6 +125,29 @@ func (q *Queries) ListChatMessagesBySessionID(ctx context.Context, sessionID uui
 		`SELECT id, session_id, role, content, COALESCE(tool_calls, 'null'::jsonb), tool_call_id, provider, model, input_tokens, output_tokens, created_at
 		 FROM chat_messages WHERE session_id = $1
 		 ORDER BY created_at ASC`, sessionID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []ChatMessage
+	for rows.Next() {
+		var m ChatMessage
+		if err := rows.Scan(&m.ID, &m.SessionID, &m.Role, &m.Content, &m.ToolCalls, &m.ToolCallID, &m.Provider, &m.Model, &m.InputTokens, &m.OutputTokens, &m.CreatedAt); err != nil {
+			return nil, err
+		}
+		messages = append(messages, m)
+	}
+	return messages, rows.Err()
+}
+
+func (q *Queries) ListChatMessagesBySessionIDForUser(ctx context.Context, sessionID, userID uuid.UUID) ([]ChatMessage, error) {
+	rows, err := q.db.QueryContext(ctx,
+		`SELECT m.id, m.session_id, m.role, m.content, COALESCE(m.tool_calls, 'null'::jsonb), m.tool_call_id, m.provider, m.model, m.input_tokens, m.output_tokens, m.created_at
+		 FROM chat_messages m
+		 JOIN chat_sessions s ON s.id = m.session_id
+		 WHERE m.session_id = $1 AND s.user_id = $2 AND s.deleted_at IS NULL
+		 ORDER BY m.created_at ASC`, sessionID, userID)
 	if err != nil {
 		return nil, err
 	}

@@ -109,7 +109,7 @@ export const useAppStore = create<AppState>((set) => ({
         set({ user: me.data, isAuthenticated: true, isLoading: false, needsSetup: false, openRegistration: setup.data.open_registration, googleAuth: providers.data.google })
         prefetchHomeData()
       } else {
-        set({ user: null, isAuthenticated: false, isLoading: false, openRegistration: setup.data.open_registration, googleAuth: providers.data.google })
+        set({ user: null, isAuthenticated: false, isLoading: false, needsSetup: false, openRegistration: setup.data.open_registration, googleAuth: providers.data.google })
       }
     } catch {
       set({ user: null, isAuthenticated: false, isLoading: false })

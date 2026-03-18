@@ -7,8 +7,8 @@ import (
 )
 
 type visitor struct {
-	count    int
-	resetAt  time.Time
+	count   int
+	resetAt time.Time
 }
 
 type RateLimiter struct {
@@ -59,7 +59,7 @@ func (rl *RateLimiter) allow(ip string) bool {
 func (rl *RateLimiter) Middleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Skip rate limiting for session-based (Web UI) requests
-		if _, err := r.Cookie("session"); err == nil {
+		if _, err := r.Cookie(sessionCookieName); err == nil {
 			next.ServeHTTP(w, r)
 			return
 		}

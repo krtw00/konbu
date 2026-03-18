@@ -112,7 +112,7 @@ func (h *OAuthHandler) HandleGoogleCallback(w http.ResponseWriter, r *http.Reque
 		h.authSvc.UpdateUser(r.Context(), user.ID, model.UpdateUserRequest{Name: userInfo.Name})
 	}
 
-	middleware.SetSessionCookie(w, r, user.ID.String(), h.cfg.SessionSecret)
+	middleware.SetSessionCookie(w, r, user.ID.String(), h.cfg.SessionSecret, h.cfg)
 	http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 }
 

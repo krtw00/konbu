@@ -566,6 +566,19 @@ type APIKey struct {
 	CreatedAt string `json:"created_at"`
 }
 
+type CalendarFeedTokenStatus struct {
+	Exists     bool    `json:"exists"`
+	CreatedAt  *string `json:"created_at,omitempty"`
+	LastUsedAt *string `json:"last_used_at,omitempty"`
+}
+
+type CalendarFeedToken struct {
+	Token      string  `json:"token"`
+	URL        string  `json:"url"`
+	CreatedAt  string  `json:"created_at"`
+	LastUsedAt *string `json:"last_used_at,omitempty"`
+}
+
 func (c *Client) ListAPIKeys() ([]APIKey, error) {
 	data, err := c.do("GET", "/api/v1/api-keys", nil)
 	if err != nil {
@@ -586,6 +599,29 @@ func (c *Client) CreateAPIKey(name string) (*APIKey, error) {
 
 func (c *Client) DeleteAPIKey(id string) error {
 	_, err := c.do("DELETE", "/api/v1/api-keys/"+id, nil)
+	return err
+}
+
+func (c *Client) GetCalendarFeedTokenStatus() (*CalendarFeedTokenStatus, error) {
+	data, err := c.do("GET", "/api/v1/api-keys/calendar-feed", nil)
+	if err != nil {
+		return nil, err
+	}
+	var status CalendarFeedTokenStatus
+	return &status, json.Unmarshal(data, &status)
+}
+
+func (c *Client) RotateCalendarFeedToken() (*CalendarFeedToken, error) {
+	data, err := c.do("POST", "/api/v1/api-keys/calendar-feed", map[string]any{})
+	if err != nil {
+		return nil, err
+	}
+	var token CalendarFeedToken
+	return &token, json.Unmarshal(data, &token)
+}
+
+func (c *Client) DeleteCalendarFeedToken() error {
+	_, err := c.do("DELETE", "/api/v1/api-keys/calendar-feed", nil)
 	return err
 }
 
@@ -653,9 +689,12 @@ func (c *Client) ExportMarkdown(outPath string) error {
 }
 
 func (c *Client) ExportICal(outPath string) error {
-	req, err := http.NewRequest("GET", c.BaseURL+"/api/v1/calendar.ics?token="+url.QueryEscape(c.APIKey), nil)
+	req, err := http.NewRequest("GET", c.BaseURL+"/api/v1/calendar.ics", nil)
 	if err != nil {
 		return err
+	}
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+c.APIKey)
 	}
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {

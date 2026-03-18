@@ -55,7 +55,7 @@ func (s *ChatService) GetSession(ctx context.Context, sessionID, userID uuid.UUI
 		return nil, apperror.Internal(err)
 	}
 
-	rows, err := s.queries.ListChatMessagesBySessionID(ctx, sessionID)
+	rows, err := s.queries.ListChatMessagesBySessionIDForUser(ctx, sessionID, userID)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -94,6 +94,14 @@ type SSEEvent struct {
 }
 
 func (s *ChatService) SendMessage(ctx context.Context, userID uuid.UUID, sessionID uuid.UUID, content string, user *model.User) (<-chan SSEEvent, error) {
+	sess, err := s.queries.GetChatSessionByID(ctx, sessionID, userID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNoRows) {
+			return nil, apperror.NotFound("chat session")
+		}
+		return nil, apperror.Internal(err)
+	}
+
 	// Get AI config
 	provider, apiKey, err := s.getAIKey(ctx, userID)
 	if err != nil {
@@ -117,21 +125,26 @@ func (s *ChatService) SendMessage(ctx context.Context, userID uuid.UUID, session
 	}
 
 	// Save user message
-	s.queries.CreateChatMessage(ctx, sessionID, "user", content, nil, nil, nil, nil, nil, nil)
-	s.queries.TouchChatSession(ctx, sessionID)
+	if _, err := s.queries.CreateChatMessage(ctx, sessionID, "user", content, nil, nil, nil, nil, nil, nil); err != nil {
+		return nil, apperror.Internal(err)
+	}
+	if err := s.queries.TouchChatSessionByUser(ctx, sessionID, userID); err != nil {
+		return nil, apperror.Internal(err)
+	}
 
 	// Update session title if empty
-	sess, _ := s.queries.GetChatSessionByID(ctx, sessionID, userID)
 	if sess.Title == "" {
 		title := content
 		if len([]rune(title)) > 30 {
 			title = string([]rune(title)[:30]) + "..."
 		}
-		s.queries.UpdateChatSessionTitle(ctx, sessionID, userID, title)
+		if err := s.queries.UpdateChatSessionTitle(ctx, sessionID, userID, title); err == nil {
+			sess.Title = title
+		}
 	}
 
 	// Load messages
-	dbMessages, err := s.queries.ListChatMessagesBySessionID(ctx, sessionID)
+	dbMessages, err := s.queries.ListChatMessagesBySessionIDForUser(ctx, sessionID, userID)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}

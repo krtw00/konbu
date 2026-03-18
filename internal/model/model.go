@@ -43,6 +43,38 @@ type CreateAPIKeyRequest struct {
 	Name string `json:"name"`
 }
 
+type CalendarFeedToken struct {
+	Token      string     `json:"token"`
+	URL        string     `json:"url"`
+	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
+	CreatedAt  time.Time  `json:"created_at"`
+}
+
+type CalendarFeedTokenStatus struct {
+	Exists     bool       `json:"exists"`
+	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
+	CreatedAt  *time.Time `json:"created_at,omitempty"`
+}
+
+type FeedbackSubmission struct {
+	ID         uuid.UUID  `json:"id"`
+	UserID     *uuid.UUID `json:"user_id,omitempty"`
+	Email      string     `json:"email"`
+	Category   string     `json:"category"`
+	Message    string     `json:"message"`
+	SourcePage string     `json:"source_page"`
+	Status     string     `json:"status"`
+	CreatedAt  time.Time  `json:"created_at"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+}
+
+type CreateFeedbackSubmissionRequest struct {
+	Email      string `json:"email"`
+	Category   string `json:"category"`
+	Message    string `json:"message"`
+	SourcePage string `json:"source_page,omitempty"`
+}
+
 // --- Tag ---
 
 type Tag struct {

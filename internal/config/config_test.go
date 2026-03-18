@@ -2,7 +2,7 @@ package config
 
 import "testing"
 
-func TestLoadDefaults(t *testing.T) {
+func TestLoadRequiresSessionSecretOutsideDevelopment(t *testing.T) {
 	t.Setenv("DATABASE_URL", "")
 	t.Setenv("PORT", "")
 	t.Setenv("DEV_USER", "")
@@ -16,7 +16,30 @@ func TestLoadDefaults(t *testing.T) {
 	t.Setenv("ANTHROPIC_ENDPOINT", "")
 	t.Setenv("ANTHROPIC_MODEL", "")
 
-	cfg := Load()
+	_, err := Load()
+	if err == nil {
+		t.Fatal("expected missing SESSION_SECRET to fail outside development")
+	}
+}
+
+func TestLoadDefaultsInDevelopment(t *testing.T) {
+	t.Setenv("DATABASE_URL", "")
+	t.Setenv("PORT", "")
+	t.Setenv("DEV_USER", "dev@example.com")
+	t.Setenv("SESSION_SECRET", "")
+	t.Setenv("OPEN_REGISTRATION", "")
+	t.Setenv("R2_ENDPOINT", "")
+	t.Setenv("R2_BUCKET", "")
+	t.Setenv("DEFAULT_AI_PROVIDER", "")
+	t.Setenv("OPENAI_ENDPOINT", "")
+	t.Setenv("OPENAI_MODEL", "")
+	t.Setenv("ANTHROPIC_ENDPOINT", "")
+	t.Setenv("ANTHROPIC_MODEL", "")
+
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() returned error: %v", err)
+	}
 
 	if cfg.Port != "8080" {
 		t.Fatalf("expected default port 8080, got %s", cfg.Port)
@@ -61,7 +84,10 @@ func TestLoadEnvOverrides(t *testing.T) {
 	t.Setenv("ANTHROPIC_ENDPOINT", "https://anthropic.example.com")
 	t.Setenv("ANTHROPIC_MODEL", "claude-x")
 
-	cfg := Load()
+	cfg, err := Load()
+	if err != nil {
+		t.Fatalf("Load() returned error: %v", err)
+	}
 
 	if cfg.DatabaseURL != "postgres://example" || cfg.Port != "9090" || !cfg.OpenRegistration {
 		t.Fatalf("unexpected config core fields: %#v", cfg)

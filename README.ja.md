@@ -96,6 +96,9 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `GOOGLE_CLIENT_SECRET` | No | -- | Google OAuth ログイン有効化 |
 | `WEBHOOK_SECRET` | No | -- | GitHub Sponsors Webhook シークレット |
 | `KOFI_TOKEN` | No | -- | Ko-fi Webhook 検証トークン |
+| `GITHUB_FEEDBACK_TOKEN` | No | -- | 匿名化したフィードバックを GitHub issue 化するためのトークン |
+| `GITHUB_FEEDBACK_REPO` | No | -- | フィードバックを送るリポジトリ。例: `krtw00/konbu` |
+| `GITHUB_FEEDBACK_LABELS` | No | -- | issue に付けるカンマ区切りラベル |
 | `AI_ENCRYPTION_KEY` | No | -- | BYOK 用 AI キー暗号化に使う64桁hex |
 | `DEFAULT_AI_PROVIDER` | No | `openai` | サーバー提供の無料枠 AI プロバイダ |
 | `DEFAULT_AI_API_KEY` | No | -- | サーバー提供の無料枠 AI キー |

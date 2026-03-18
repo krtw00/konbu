@@ -22,7 +22,6 @@ var allowedImageTypes = map[string]bool{
 	"image/png":  true,
 	"image/gif":  true,
 	"image/webp": true,
-	"image/svg+xml": true,
 }
 
 type R2Service struct {

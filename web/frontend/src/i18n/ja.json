@@ -203,6 +203,12 @@
     "featureCalendar": "AI が予定確認、検索、整理、登録まで手伝う",
     "featureSearch": "あとから探すときも、どこに置いたかで迷わない"
   },
+  "appError": {
+    "title": "画面の読み込みに失敗しました",
+    "description": "ページ更新や chunk 読み込み失敗で現在の表示が壊れた可能性があります。アプリを再読み込みするか、ホームへ戻してください。",
+    "reload": "再読み込み",
+    "home": "ホームへ戻る"
+  },
   "settings": {
     "title": "設定",
     "profile": "プロフィール",
@@ -268,7 +274,15 @@
     "aiKeyPlaceholder": "sk-... または sk-ant-...",
     "icalUrl": "iCal URL",
     "icalDescription": "GoogleカレンダーやAppleカレンダーに追加できます",
+    "icalReadOnly": "このURLは読み取り専用で、通常のAPIキーとは分離されています。",
+    "icalGenerate": "URLを生成",
+    "icalRegenerate": "URLを再生成",
+    "icalRevoke": "URLを無効化",
+    "icalReady": "新しい iCal URL を生成しました。",
+    "icalActiveHidden": "feed token は有効です。再生成すると新しい URL を表示してコピーできます。",
+    "icalNotGenerated": "iCal URL はまだ生成されていません。",
     "icalCopied": "URLをコピーしました",
+    "exportFailed": "エクスポートに失敗しました",
     "calendars": "カレンダー"
   },
   "attachment": {
@@ -293,5 +307,59 @@
     "attachment": "画像の貼り付けはサポーター向けの機能です。設定画面からサポーターになれます。",
     "apiKey": "アプリ連携はサポーター向けの機能です。設定画面からサポーターになれます。",
     "cta": "くわしく見る"
+  },
+  "feedback": {
+    "link": "フィードバック・お問い合わせ",
+    "openForm": "フィードバックフォームを開く",
+    "optional": "任意",
+    "back": "konbu に戻る",
+    "title": "フィードバック",
+    "description": "不具合報告、機能要望、お問い合わせをここから送れます。",
+    "formTitle": "フィードバックを送る",
+    "formDescription": "不具合、要望、質問を受け付けます。",
+    "homeTitle": "不具合や要望をすぐ送れます",
+    "homeDescription": "アプリ内からそのまま、整理された形式で送信できます。",
+    "sidebarTitle": "フィードバックを送る",
+    "sidebarDescription": "不具合、要望、お問い合わせ",
+    "guideTitle": "書いてほしい内容",
+    "guideDescription": "内容に近いカテゴリを選んでください。",
+    "guideBug": "不具合は、再現手順、期待した動作、実際に起きた動作まで書くと確認が早くなります。",
+    "guideFeature": "機能要望は、いま困っていることと、欲しい変更を分けて書くと整理しやすいです。",
+    "guideResponse": "センシティブな内容は簡潔に書いてください。匿名化したうえで GitHub issue に転送される場合があります。",
+    "email": "メールアドレス",
+    "category": "種別",
+    "message": "内容",
+    "privacy": "内容は匿名化したうえで GitHub issue に転送される場合があります。本文には個人情報、認証情報、連絡先を書かないでください。",
+    "validation": "このカテゴリで必要な項目を入力してください。",
+    "placeholder": "起きたこと、期待したこと、追加したいものを書いてください。",
+    "submit": "送信",
+    "sending": "送信中...",
+    "submitError": "送信に失敗しました",
+    "thanks": "ありがとうございます。フィードバックを受け付けました。",
+    "github": "GitHub issue を開く",
+    "categoryHints": {
+      "bug": "再現できる不具合を報告する",
+      "feature": "具体的な改善案を送る",
+      "question": "使い方や挙動について質問する",
+      "other": "その他のお問い合わせ"
+    },
+    "fields": {
+      "summary": "概要",
+      "steps": "再現手順",
+      "expected": "期待した動作",
+      "actual": "実際の動作",
+      "environment": "利用環境",
+      "problem": "困っていること",
+      "proposal": "提案内容",
+      "benefit": "期待する効果",
+      "subject": "件名",
+      "details": "詳細"
+    },
+    "categories": {
+      "bug": "不具合報告",
+      "feature": "機能要望",
+      "question": "質問",
+      "other": "その他"
+    }
   }
 }

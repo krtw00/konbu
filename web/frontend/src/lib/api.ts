@@ -1,12 +1,19 @@
 import { apiPath } from '@/lib/runtime'
 
+export function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
+  return fetch(apiPath(path), {
+    ...init,
+    credentials: 'include',
+  })
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const opts: RequestInit = {
     method,
     headers: { 'Content-Type': 'application/json' },
   }
   if (body) opts.body = JSON.stringify(body)
-  const res = await fetch(apiPath(path), opts)
+  const res = await apiFetch(path, opts)
   if (res.status === 204) return null as T
   const data = await res.json()
   if (!res.ok) throw new Error(data.error?.message || 'Request failed')
@@ -41,7 +48,7 @@ export const api = {
   batchCreateMemoRows: (memoId: string, rows: Record<string, string>[]) =>
     request<{ data: import('@/types/api').MemoRow[] }>('POST', `/memos/${memoId}/rows/batch`, { rows: rows.map(r => JSON.stringify(r)).map(r => JSON.parse(r)) }),
   exportMemoRowsCSV: (memoId: string) =>
-    fetch(`/api/v1/memos/${memoId}/rows/export`).then(r => r.text()),
+    apiFetch(`/memos/${memoId}/rows/export`).then(r => r.text()),
 
   // Todos
   listTodos: (limit = 100) => request<{ data: import('@/types/api').Todo[] }>('GET', `/todos?limit=${limit}`),
@@ -138,6 +145,9 @@ export const api = {
   createApiKey: (body: { name: string }) =>
     request<{ data: import('@/types/api').ApiKey }>('POST', '/api-keys', body),
   deleteApiKey: (id: string) => request<null>('DELETE', `/api-keys/${id}`),
+  getCalendarFeedTokenStatus: () => request<{ data: import('@/types/api').CalendarFeedTokenStatus }>('GET', '/api-keys/calendar-feed'),
+  createCalendarFeedToken: () => request<{ data: import('@/types/api').CalendarFeedToken }>('POST', '/api-keys/calendar-feed', {}),
+  deleteCalendarFeedToken: () => request<null>('DELETE', '/api-keys/calendar-feed'),
 
   // Chat
   listChatSessions: () => request<{ data: import('@/types/api').ChatSession[] }>('GET', '/chat/sessions'),
@@ -166,9 +176,12 @@ export const api = {
   uploadAttachment: async (file: File): Promise<{ data: { url: string } }> => {
     const form = new FormData()
     form.append('file', file)
-    const res = await fetch(apiPath('/attachments'), { method: 'POST', body: form })
+    const res = await apiFetch('/attachments', { method: 'POST', body: form })
     const data = await res.json()
     if (!res.ok) throw new Error(data.error?.message || 'Upload failed')
     return data
   },
+
+  submitFeedback: (body: { email: string; category: string; message: string; source_page?: string }) =>
+    request<{ data: import('@/types/api').FeedbackSubmission }>('POST', '/feedback', body),
 }
