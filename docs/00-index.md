@@ -57,6 +57,7 @@ flowchart LR
 | [api.md](./03-details/api.md) | API設計 |
 | [ui.md](./03-details/ui.md) | UI設計 |
 | [flows.md](./03-details/flows.md) | 主要フロー・シーケンス |
+| [testing.md](./03-details/testing.md) | テスト戦略・責務分離 |
 
 ### 04 - Hosting（提供形態）
 
