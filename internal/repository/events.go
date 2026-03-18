@@ -117,13 +117,12 @@ func (q *Queries) ListAllEventsByUserID(ctx context.Context, userID uuid.UUID) (
 	return events, rows.Err()
 }
 
-func (q *Queries) ListEventsByCalendarPublic(ctx context.Context, calendarID uuid.UUID, limit int) ([]EventRow, error) {
+func (q *Queries) ListEventsByCalendarPublic(ctx context.Context, calendarID uuid.UUID) ([]EventRow, error) {
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT `+eventCols+` FROM calendar_events
 		 WHERE calendar_id = $1 AND deleted_at IS NULL
-		 ORDER BY start_at ASC
-		 LIMIT $2`,
-		calendarID, limit)
+		 ORDER BY start_at ASC`,
+		calendarID)
 	if err != nil {
 		return nil, err
 	}
@@ -181,6 +180,15 @@ func (q *Queries) SoftDeleteEvent(ctx context.Context, id, userID uuid.UUID) err
 		   AND (created_by = $2
 		        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $2 AND role IN ('admin', 'editor')))`,
 		id, userID)
+	return err
+}
+
+func (q *Queries) SoftDeleteEventsByCalendar(ctx context.Context, calendarID uuid.UUID) error {
+	_, err := q.db.ExecContext(ctx,
+		`UPDATE calendar_events
+		 SET deleted_at = now()
+		 WHERE calendar_id = $1 AND deleted_at IS NULL`,
+		calendarID)
 	return err
 }
 

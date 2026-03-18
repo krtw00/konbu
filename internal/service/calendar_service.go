@@ -144,7 +144,25 @@ func (s *CalendarService) DeleteCalendar(ctx context.Context, userID, calendarID
 	if r.IsDefault {
 		return apperror.BadRequest("cannot delete default calendar")
 	}
-	return s.queries.SoftDeleteCalendar(ctx, calendarID)
+
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return apperror.Internal(err)
+	}
+	defer tx.Rollback()
+
+	q := s.queries.WithTx(tx)
+	if err := q.SoftDeleteEventsByCalendar(ctx, calendarID); err != nil {
+		return apperror.Internal(err)
+	}
+	if err := q.SoftDeleteCalendar(ctx, calendarID); err != nil {
+		return apperror.Internal(err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return apperror.Internal(err)
+	}
+	return nil
 }
 
 func (s *CalendarService) CreateShareLink(ctx context.Context, userID, calendarID uuid.UUID) (string, error) {

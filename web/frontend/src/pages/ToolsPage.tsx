@@ -5,7 +5,6 @@ import { useCache, invalidateCache } from '@/hooks/useCache'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { PublicShareDialog } from '@/components/PublicShareDialog'
 import { Plus, X, Pencil, Loader2, GripVertical } from 'lucide-react'
 import type { Tool } from '@/types/api'
 
@@ -256,7 +255,6 @@ export function ToolsPage() {
             </div>
           </div>
           <DialogFooter>
-            {editingTool && <PublicShareDialog resourceType="tool" resourceId={editingTool.id} />}
             <Button variant="ghost" onClick={() => setDialogOpen(false)}>{t('common.cancel')}</Button>
             <Button onClick={saveTool}>{editingTool ? t('common.save') : t('common.create')}</Button>
           </DialogFooter>

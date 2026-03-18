@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -31,15 +32,16 @@ func VerifySessionToken(token, secret string) (string, bool) {
 	return parts[0], hmac.Equal([]byte(token), []byte(expected))
 }
 
-func SetSessionCookie(w http.ResponseWriter, r *http.Request, userID, secret string) {
+func SetSessionCookie(w http.ResponseWriter, r *http.Request, userID, secret string, cfg *config.Config) {
 	token := MakeSessionToken(userID, secret)
+	sameSite := sessionSameSiteMode(r, cfg)
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookieName,
 		Value:    token,
 		Path:     "/",
 		MaxAge:   sessionMaxAge,
 		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: sameSite,
 		Secure:   r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
 	})
 }
@@ -68,4 +70,33 @@ func SessionAuth(cfg *config.Config) func(http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func sessionSameSiteMode(r *http.Request, cfg *config.Config) http.SameSite {
+	if !(r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https") {
+		return http.SameSiteLaxMode
+	}
+
+	origin := r.Header.Get("Origin")
+	if origin != "" && origin != requestOrigin(r) {
+		return http.SameSiteNoneMode
+	}
+
+	if cfg != nil && cfg.BaseURL != "" {
+		if u, err := url.Parse(cfg.BaseURL); err == nil && u.Scheme != "" && u.Host != "" {
+			if u.Scheme+"://"+u.Host != requestOrigin(r) {
+				return http.SameSiteNoneMode
+			}
+		}
+	}
+
+	return http.SameSiteLaxMode
+}
+
+func requestOrigin(r *http.Request) string {
+	scheme := "http"
+	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme = "https"
+	}
+	return scheme + "://" + r.Host
 }

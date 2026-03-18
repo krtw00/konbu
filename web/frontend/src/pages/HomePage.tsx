@@ -189,6 +189,20 @@ export function HomePage({ onEditMemo }: HomePageProps) {
           />
         </div>
       </form>
+      <div className="mb-4 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/10 via-background to-sidebar-accent/70 p-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="text-sm font-medium">{t('feedback.homeTitle')}</div>
+            <div className="text-sm text-muted-foreground">{t('feedback.homeDescription')}</div>
+          </div>
+          <a
+            href="/feedback"
+            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
+          >
+            {t('feedback.openForm')}
+          </a>
+        </div>
+      </div>
       <h1 className="text-2xl font-semibold mb-6">
         {new Date().toLocaleDateString(locale, {
           year: 'numeric', month: 'long', day: 'numeric', weekday: 'short',

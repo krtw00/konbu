@@ -1182,7 +1182,12 @@ export function CalendarPage() {
             <DialogTitle>{t('calendar.newCalendar')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
-            <Input placeholder={t('calendar.calendarName')} value={newCalName} onChange={e => setNewCalName(e.target.value)} />
+            <Input
+              aria-label={t('calendar.calendarName')}
+              placeholder={t('calendar.calendarName')}
+              value={newCalName}
+              onChange={e => setNewCalName(e.target.value)}
+            />
             <div>
               <label className="text-xs text-muted-foreground">{t('calendar.calendarColor')}</label>
               <div className="flex gap-1.5 mt-1">
@@ -1227,7 +1232,12 @@ export function CalendarPage() {
               <div className="space-y-3 rounded-xl border border-border p-3">
                 <div>
                   <label className="text-sm font-medium">{t('calendar.calendarName')}</label>
-                  <Input className="mt-1" value={manageName} onChange={e => setManageName(e.target.value)} />
+                  <Input
+                    aria-label={t('calendar.calendarName')}
+                    className="mt-1"
+                    value={manageName}
+                    onChange={e => setManageName(e.target.value)}
+                  />
                 </div>
                 <div>
                   <label className="text-sm font-medium">{t('calendar.calendarColor')}</label>

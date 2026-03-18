@@ -89,7 +89,7 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	middleware.SetSessionCookie(w, r, user.ID.String(), h.cfg.SessionSecret)
+	middleware.SetSessionCookie(w, r, user.ID.String(), h.cfg.SessionSecret, h.cfg)
 	writeData(w, user)
 }
 
@@ -214,6 +214,9 @@ func (h *APIKeyHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 
 	r.Get("/", h.list)
+	r.Get("/calendar-feed", h.calendarFeedStatus)
+	r.Post("/calendar-feed", h.rotateCalendarFeed)
+	r.Delete("/calendar-feed", h.deleteCalendarFeed)
 	r.Post("/", h.create)
 	r.Delete("/{id}", h.delete)
 
@@ -259,4 +262,42 @@ func (h *APIKeyHandler) delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeNoContent(w)
+}
+
+func (h *APIKeyHandler) calendarFeedStatus(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	status, err := h.authSvc.GetCalendarFeedTokenStatus(r.Context(), user.ID)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeData(w, status)
+}
+
+func (h *APIKeyHandler) rotateCalendarFeed(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	baseURL := h.baseURL(r)
+	token, err := h.authSvc.RotateCalendarFeedToken(r.Context(), user.ID, baseURL)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeCreated(w, token)
+}
+
+func (h *APIKeyHandler) deleteCalendarFeed(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	if err := h.authSvc.DeleteCalendarFeedToken(r.Context(), user.ID); err != nil {
+		writeError(w, err)
+		return
+	}
+	writeNoContent(w)
+}
+
+func (h *APIKeyHandler) baseURL(r *http.Request) string {
+	scheme := "http"
+	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
+		scheme = "https"
+	}
+	return scheme + "://" + r.Host
 }

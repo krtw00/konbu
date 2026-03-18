@@ -20,13 +20,7 @@ func NewICalHandler(authSvc *service.AuthService, eventSvc *service.EventService
 }
 
 func (h *ICalHandler) HandleCalendarICS(w http.ResponseWriter, r *http.Request) {
-	token := r.URL.Query().Get("token")
-	if token == "" {
-		http.Error(w, "missing token", http.StatusUnauthorized)
-		return
-	}
-
-	user, err := h.authSvc.AuthenticateByAPIKey(r.Context(), token)
+	user, err := h.authenticate(r)
 	if err != nil {
 		http.Error(w, "invalid token", http.StatusUnauthorized)
 		return
@@ -43,6 +37,18 @@ func (h *ICalHandler) HandleCalendarICS(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "text/calendar; charset=utf-8")
 	w.Header().Set("Content-Disposition", "inline; filename=\"calendar.ics\"")
 	w.Write([]byte(ical))
+}
+
+func (h *ICalHandler) authenticate(r *http.Request) (*model.User, error) {
+	auth := r.Header.Get("Authorization")
+	if strings.HasPrefix(auth, "Bearer ") {
+		return h.authSvc.AuthenticateByAPIKey(r.Context(), strings.TrimPrefix(auth, "Bearer "))
+	}
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		return nil, fmt.Errorf("missing token")
+	}
+	return h.authSvc.AuthenticateByCalendarFeedToken(r.Context(), token)
 }
 
 func buildICalendar(events []model.CalendarEvent) string {

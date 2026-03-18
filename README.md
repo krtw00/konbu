@@ -91,6 +91,9 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `GOOGLE_CLIENT_SECRET` | No | -- | Enable Google OAuth login |
 | `WEBHOOK_SECRET` | No | -- | GitHub Sponsors webhook secret |
 | `KOFI_TOKEN` | No | -- | Ko-fi webhook verification token |
+| `GITHUB_FEEDBACK_TOKEN` | No | -- | GitHub token used to create anonymized feedback issues |
+| `GITHUB_FEEDBACK_REPO` | No | -- | Repository to receive feedback issues, e.g. `krtw00/konbu` |
+| `GITHUB_FEEDBACK_LABELS` | No | -- | Comma-separated labels added to forwarded feedback issues |
 | `AI_ENCRYPTION_KEY` | No | -- | 64 hex chars used to encrypt BYOK AI keys |
 | `DEFAULT_AI_PROVIDER` | No | `openai` | Server-side free-tier AI provider |
 | `DEFAULT_AI_API_KEY` | No | -- | Server-side free-tier AI key |

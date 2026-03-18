@@ -194,7 +194,7 @@ func (s *PublicShareService) GetPublicView(ctx context.Context, token string) (*
 			}
 			return nil, apperror.Internal(err)
 		}
-		rows, err := s.queries.ListEventsByCalendarPublic(ctx, cal.ID, 100)
+		rows, err := s.queries.ListEventsByCalendarPublic(ctx, cal.ID)
 		if err != nil {
 			return nil, apperror.Internal(err)
 		}

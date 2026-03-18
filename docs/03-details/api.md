@@ -132,7 +132,9 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | POST | `/public-shares/:resourceType/:id` | 閲覧専用の公開リンク作成 |
 | DELETE | `/public-shares/:resourceType/:id` | 公開リンク削除 |
 
-対応する `resourceType`: `memo`, `todo`, `calendar`, `tool`, `event`
+対応する `resourceType`: `memo`, `todo`, `calendar`, `event`
+
+補足: `tool` の public share は旧実装として backend に残る可能性があるが、現行仕様では対象外とする。
 
 ### Tools
 

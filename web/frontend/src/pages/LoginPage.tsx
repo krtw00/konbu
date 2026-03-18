@@ -176,6 +176,11 @@ export function LoginPage() {
                 </button>
               </p>
             )}
+            <p className="mt-3 text-center text-xs text-muted-foreground">
+              <a href="/feedback" className="text-primary underline-offset-4 hover:underline">
+                {t('feedback.link')}
+              </a>
+            </p>
           </CardContent>
         </Card>
       </div>

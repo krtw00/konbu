@@ -20,7 +20,11 @@ import (
 )
 
 func main() {
-	cfg := config.Load()
+	cfg, err := config.Load()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	if cfg.DatabaseURL == "" {
 		fmt.Fprintln(os.Stderr, "DATABASE_URL is required")
@@ -61,9 +65,11 @@ func main() {
 	eventSvc := service.NewEventService(db, tagSvc, calSvc)
 	searchSvc := service.NewSearchService(db)
 	publicShareSvc := service.NewPublicShareService(db)
+	feedbackReporter := service.NewGitHubFeedbackReporter(cfg)
 
 	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc, toolSvc)
 	chatSvc := service.NewChatService(db, cfg, memoSvc, todoSvc, eventSvc, searchSvc)
+	feedbackSvc := service.NewFeedbackService(db, feedbackReporter)
 
 	// Background tasks
 	toolSvc.StartIconRefreshLoop(6 * time.Hour)
@@ -85,17 +91,20 @@ func main() {
 	importH := handler.NewImportHandler(eventSvc)
 	chatH := handler.NewChatHandler(chatSvc)
 	attachH := handler.NewAttachmentHandler(r2Svc)
+	feedbackH := handler.NewFeedbackHandler(feedbackSvc)
 
 	icalH := handler.NewICalHandler(authSvc, eventSvc)
 
 	// Rate limiters
 	apiLimiter := middleware.NewRateLimiter(100, time.Minute)
 	authLimiter := middleware.NewRateLimiter(10, time.Minute)
+	feedbackLimiter := middleware.NewRateLimiter(5, time.Minute)
 
 	// Router
 	r := chi.NewRouter()
 	r.Use(chimw.Recoverer)
 	r.Use(chimw.RealIP)
+	r.Use(middleware.CORS(cfg))
 	r.Use(middleware.SecurityHeaders)
 	r.Use(middleware.Logging)
 
@@ -118,6 +127,12 @@ func main() {
 
 	// Public shares (unauthenticated read-only views)
 	r.Mount("/api/v1/public", publicShareH.PublicRoutes())
+
+	// Feedback/contact intake (unauthenticated, rate limited)
+	r.Group(func(r chi.Router) {
+		r.Use(feedbackLimiter.Middleware)
+		r.Mount("/api/v1/feedback", feedbackH.Routes())
+	})
 
 	// Static files (unauthenticated, immutable hashed assets)
 	staticDir := http.Dir("web/static")

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { api } from '@/lib/api'
+import { api, apiFetch } from '@/lib/api'
 import type { ChatSession, ChatMessage } from '@/types/api'
 
 interface ChatState {
@@ -78,7 +78,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
         set({ currentSessionId: sessionId })
       }
 
-      const res = await fetch(`/api/v1/chat/sessions/${sessionId}/messages`, {
+      const res = await apiFetch(`/chat/sessions/${sessionId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content }),

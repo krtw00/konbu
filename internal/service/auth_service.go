@@ -9,6 +9,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -284,6 +286,58 @@ func (s *AuthService) DeleteAPIKey(ctx context.Context, id, userID uuid.UUID) er
 	return s.queries.DeleteAPIKey(ctx, id, userID)
 }
 
+func (s *AuthService) AuthenticateByCalendarFeedToken(ctx context.Context, rawToken string) (*model.User, error) {
+	hash := hashAPIKey(rawToken)
+	token, err := s.queries.GetCalendarFeedTokenByHash(ctx, hash)
+	if err != nil {
+		if errors.Is(err, repository.ErrNoRows) {
+			return nil, apperror.Unauthorized("invalid calendar feed token")
+		}
+		return nil, apperror.Internal(err)
+	}
+	_ = s.queries.UpdateCalendarFeedTokenLastUsed(ctx, token.ID)
+	return s.GetUserByID(ctx, token.UserID)
+}
+
+func (s *AuthService) GetCalendarFeedTokenStatus(ctx context.Context, userID uuid.UUID) (*model.CalendarFeedTokenStatus, error) {
+	row, err := s.queries.GetCalendarFeedTokenByUserID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, repository.ErrNoRows) {
+			return &model.CalendarFeedTokenStatus{Exists: false}, nil
+		}
+		return nil, apperror.Internal(err)
+	}
+	return &model.CalendarFeedTokenStatus{
+		Exists:     true,
+		LastUsedAt: row.LastUsedAt,
+		CreatedAt:  &row.CreatedAt,
+	}, nil
+}
+
+func (s *AuthService) RotateCalendarFeedToken(ctx context.Context, userID uuid.UUID, baseURL string) (*model.CalendarFeedToken, error) {
+	rawToken, err := generateCalendarFeedToken()
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	row, err := s.queries.UpsertCalendarFeedToken(ctx, userID, hashAPIKey(rawToken))
+	if err != nil {
+		return nil, apperror.Internal(err)
+	}
+	return &model.CalendarFeedToken{
+		Token:      rawToken,
+		URL:        strings.TrimRight(baseURL, "/") + "/api/v1/calendar.ics?token=" + url.QueryEscape(rawToken),
+		LastUsedAt: row.LastUsedAt,
+		CreatedAt:  row.CreatedAt,
+	}, nil
+}
+
+func (s *AuthService) DeleteCalendarFeedToken(ctx context.Context, userID uuid.UUID) error {
+	if err := s.queries.DeleteCalendarFeedToken(ctx, userID); err != nil {
+		return apperror.Internal(err)
+	}
+	return nil
+}
+
 func (s *AuthService) UpdateSettings(ctx context.Context, userID uuid.UUID, settings json.RawMessage) error {
 	return s.queries.UpdateUserSettings(ctx, userID, settings)
 }
@@ -315,6 +369,14 @@ func generateAPIKey() (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("konbu_%s", hex.EncodeToString(b)), nil
+}
+
+func generateCalendarFeedToken() (string, error) {
+	b := make([]byte, 24)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("konbu_cal_%s", hex.EncodeToString(b)), nil
 }
 
 func hashAPIKey(key string) string {
