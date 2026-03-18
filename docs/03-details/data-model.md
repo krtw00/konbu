@@ -7,7 +7,7 @@ ai_summary: "konbuのエンティティ定義・ER図・論理削除パターン
 
 # データモデル
 
-> **Status**: Active | 最終更新: 2026-03-14
+> **Status**: Active | 最終更新: 2026-03-18
 
 本ドキュメントは、konbuのデータモデルを定義する。完全なDDLは [schema.sql](../schema.sql) を参照。
 
@@ -127,6 +127,8 @@ erDiagram
 | calendar_events | カレンダー予定（終日/時間指定、繰り返し対応） | UUID |
 | calendar_event_tags | 予定-タグ中間テーブル | (event_id, tag_id) |
 | tools | ツールランチャー（カテゴリ分類、並び順） | UUID |
+| public_shares | token ベースの共有リンク | UUID |
+| published_resources | slug ベースの publish metadata | UUID |
 
 ---
 
@@ -159,6 +161,8 @@ erDiagram
 | users | tools | 1:N | ユーザーごとのツール |
 | users | tags | 1:N | ユーザーごとのタグ |
 | users | api_keys | 1:N | ユーザーごとのAPIキー |
+| users | public_shares | 1:N | ユーザーが発行した共有リンク |
+| users | published_resources | 1:N | ユーザーが管理する publish metadata |
 | memos | memo_rows | 1:N | テーブル型メモの行データ |
 | memos - tags | memo_tags | N:M | メモへのタグ付け |
 | todos - tags | todo_tags | N:M | ToDoへのタグ付け |
@@ -183,6 +187,10 @@ erDiagram
 | calendar_events | user_id | INDEX (partial) | ユーザーごとの予定検索 |
 | calendar_events | (user_id, start_at) | INDEX (partial) | 日時範囲クエリ |
 | tools | (user_id, sort_order) | INDEX (partial) | 並び順取得 |
+| public_shares | token | UNIQUE INDEX | token lookup |
+| public_shares | (resource_type, resource_id) | UNIQUE | リソースごとの共有リンク一意制約 |
+| published_resources | (resource_type, resource_id) | UNIQUE | リソースごとの publish metadata 一意制約 |
+| published_resources | (resource_type, slug) | UNIQUE | slug lookup |
 
 全partial indexは `WHERE deleted_at IS NULL` 条件付き。
 

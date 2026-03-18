@@ -197,6 +197,8 @@ Base path: `/api/v1`
 | ToDos | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done`, `PATCH /todos/:id/reopen` |
 | Events | `GET/POST /events`, `GET/PUT/DELETE /events/:id` |
 | Calendars | `GET/POST /calendars`, `GET/PUT/DELETE /calendars/:id`, `POST /calendars/join/:token`, share-link and member management, `GET /calendar.ics` |
+| Shares | `GET/POST/DELETE /public-shares/:resourceType/:id`, `GET /public/:token` |
+| Publishes | `GET/PUT/DELETE /publishes/:resourceType/:id`, `GET /published/:resourceType/:slug` |
 | Tools | `GET/POST /tools`, `PUT/DELETE /tools/:id` |
 | Tags | `GET/POST /tags`, `PUT/DELETE /tags/:id` |
 | Search | `GET /search?q=...` |

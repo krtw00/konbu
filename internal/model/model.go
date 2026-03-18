@@ -328,6 +328,27 @@ type PublicShareView struct {
 	Calendar     *PublicCalendarView `json:"calendar,omitempty"`
 }
 
+// --- Published Resources ---
+
+type PublishedResource struct {
+	ResourceType string     `json:"resource_type"`
+	ResourceID   uuid.UUID  `json:"resource_id"`
+	Slug         string     `json:"slug"`
+	Title        string     `json:"title"`
+	Description  string     `json:"description,omitempty"`
+	Visibility   string     `json:"visibility"`
+	PublishedAt  *time.Time `json:"published_at,omitempty"`
+	CreatedAt    time.Time  `json:"created_at"`
+	UpdatedAt    time.Time  `json:"updated_at"`
+}
+
+type UpsertPublishedResourceRequest struct {
+	Slug        string `json:"slug"`
+	Title       string `json:"title"`
+	Description string `json:"description"`
+	Visibility  string `json:"visibility"`
+}
+
 // --- Common ---
 
 type PaginatedResult struct {
