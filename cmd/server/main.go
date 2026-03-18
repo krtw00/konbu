@@ -65,6 +65,7 @@ func main() {
 	eventSvc := service.NewEventService(db, tagSvc, calSvc)
 	searchSvc := service.NewSearchService(db)
 	publicShareSvc := service.NewPublicShareService(db)
+	publishSvc := service.NewPublishService(db)
 	feedbackReporter := service.NewGitHubFeedbackReporter(cfg)
 
 	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc, toolSvc)
@@ -87,6 +88,7 @@ func main() {
 	eventH := handler.NewEventHandler(eventSvc)
 	searchH := handler.NewSearchHandler(searchSvc)
 	publicShareH := handler.NewPublicShareHandler(publicShareSvc)
+	publishH := handler.NewPublishHandler(publishSvc)
 	exportH := handler.NewExportHandler(exportSvc)
 	importH := handler.NewImportHandler(eventSvc)
 	chatH := handler.NewChatHandler(chatSvc)
@@ -127,6 +129,7 @@ func main() {
 
 	// Public shares (unauthenticated read-only views)
 	r.Mount("/api/v1/public", publicShareH.PublicRoutes())
+	r.Mount("/api/v1/published", publishH.PublicRoutes())
 
 	// Feedback/contact intake (unauthenticated, rate limited)
 	r.Group(func(r chi.Router) {
@@ -202,6 +205,7 @@ func main() {
 			r.Mount("/calendars", calendarH.Routes())
 			r.Get("/search", searchH.HandleSearch)
 			r.Mount("/public-shares", publicShareH.AuthRoutes())
+			r.Mount("/publishes", publishH.AuthRoutes())
 			r.Mount("/export", exportH.Routes())
 			r.Mount("/import", importH.Routes())
 			r.Mount("/chat", chatH.Routes())

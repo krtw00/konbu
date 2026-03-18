@@ -202,6 +202,8 @@ IDは先頭8文字の短縮形で指定できます。
 | ToDo | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done`, `PATCH /todos/:id/reopen` |
 | 予定 | `GET/POST /events`, `GET/PUT/DELETE /events/:id` |
 | カレンダー | `GET/POST /calendars`, `GET/PUT/DELETE /calendars/:id`, `POST /calendars/join/:token`, 共有リンク・メンバー管理, `GET /calendar.ics` |
+| 共有 | `GET/POST/DELETE /public-shares/:resourceType/:id`, `GET /public/:token` |
+| 公開 | `GET/PUT/DELETE /publishes/:resourceType/:id`, `GET /published/:resourceType/:slug` |
 | ツール | `GET/POST /tools`, `PUT/DELETE /tools/:id` |
 | タグ | `GET/POST /tags`, `PUT/DELETE /tags/:id` |
 | 検索 | `GET /search?q=...` |

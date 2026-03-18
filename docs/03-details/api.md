@@ -8,7 +8,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 # API設計
 
-> **Status**: Active | 最終更新: 2026-03-17
+> **Status**: Active | 最終更新: 2026-03-18
 
 本ドキュメントは、konbuのREST API設計を定義する。
 
@@ -43,6 +43,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | メソッド | パス | 説明 |
 |----------|------|------|
 | GET | `/public/:token` | 共有リンクの閲覧用データ取得（read-only） |
+| GET | `/published/:resourceType/:slug` | publish metadata の取得（slug lookup） |
 
 ### Auth（認証済み）
 
@@ -136,6 +137,21 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 補足: `tool` の public share は旧実装として backend に残る可能性があるが、現行仕様では対象外とする。
 
+### Publishes
+
+| メソッド | パス | 説明 |
+|----------|------|------|
+| GET | `/publishes/:resourceType/:id` | リソースの publish metadata 取得 |
+| PUT | `/publishes/:resourceType/:id` | slug / title / description / visibility を upsert |
+| DELETE | `/publishes/:resourceType/:id` | publish metadata 削除 |
+
+対応する `resourceType`: `memo`, `event`, `calendar`
+
+補足:
+
+- 現段階の publish API は metadata 管理と slug lookup まで
+- 実際の公開ページ本文や表示 UI は後続 issue (`memo publish`, `event / calendar publish`) で扱う
+
 ### Tools
 
 | メソッド | パス | 説明 |
@@ -211,6 +227,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | 開発モード | `DEV_USER` 環境変数 | ローカル開発 |
 | iCal feed | `GET /api/v1/calendar.ics?token=...` | 外部カレンダー購読 |
 | 共有リンク | `GET /api/v1/public/:token` | ログイン不要の閲覧専用ページ |
+| publish metadata | `GET /api/v1/published/:resourceType/:slug` | ログイン不要の slug lookup |
 
 ### エラーレスポンス
 
