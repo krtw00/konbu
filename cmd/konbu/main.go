@@ -178,7 +178,7 @@ func main() {
 	root.PersistentFlags().StringVar(&apiKey, "api-key", "", "API key (or KONBU_API_KEY env)")
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "Output as JSON")
 
-	root.AddCommand(memoCmd(), todoCmd(), calendarCmd(), eventCmd(), toolCmd(), publicCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
+	root.AddCommand(memoCmd(), todoCmd(), calendarCmd(), eventCmd(), toolCmd(), shareCmd(), legacyPublicCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
@@ -1251,12 +1251,12 @@ func toolCmd() *cobra.Command {
 	return tool
 }
 
-// --- public ---
+// --- share ---
 
-func publicCmd() *cobra.Command {
-	public := &cobra.Command{Use: "public", Short: "Manage share links"}
+func shareCmd() *cobra.Command {
+	share := &cobra.Command{Use: "share", Short: "Manage share links"}
 
-	public.AddCommand(&cobra.Command{
+	share.AddCommand(&cobra.Command{
 		Use: "get [resource_type] [id]", Short: "Get share link for a resource",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -1281,7 +1281,7 @@ func publicCmd() *cobra.Command {
 		},
 	})
 
-	public.AddCommand(&cobra.Command{
+	share.AddCommand(&cobra.Command{
 		Use: "create [resource_type] [id]", Short: "Create a share link for a resource",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -1302,7 +1302,7 @@ func publicCmd() *cobra.Command {
 		},
 	})
 
-	public.AddCommand(&cobra.Command{
+	share.AddCommand(&cobra.Command{
 		Use: "rm [resource_type] [id]", Short: "Delete a share link for a resource",
 		Args: cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -1318,6 +1318,14 @@ func publicCmd() *cobra.Command {
 		},
 	})
 
+	return share
+}
+
+func legacyPublicCmd() *cobra.Command {
+	public := shareCmd()
+	public.Use = "public"
+	public.Hidden = true
+	public.Deprecated = "use 'konbu share' instead"
 	return public
 }
 

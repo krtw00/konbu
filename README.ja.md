@@ -164,6 +164,10 @@ konbu event add "タイトル" -s <RFC3339> # 予定作成
 konbu event edit <id> --title "新名"   # 予定更新
 konbu event rm <id>                    # 削除
 
+konbu share get memo <id>              # 共有リンク表示
+konbu share create memo <id>           # 共有リンク作成
+konbu share rm memo <id>               # 共有リンク削除
+
 konbu tool list                        # ツール一覧
 konbu tool add "名前" "https://..."    # ツール追加
 konbu tool edit <id> --category "開発" # ツール更新

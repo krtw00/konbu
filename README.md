@@ -159,6 +159,10 @@ konbu event add "title" -s <RFC3339>   # Create event
 konbu event edit <id> --title "new"    # Update event
 konbu event rm <id>                    # Delete
 
+konbu share get memo <id>              # Show share link
+konbu share create memo <id>           # Create share link
+konbu share rm memo <id>               # Delete share link
+
 konbu tool list                        # List tools
 konbu tool add "name" "https://..."    # Add tool
 konbu tool edit <id> --category "Dev"  # Update tool
@@ -218,6 +222,8 @@ go build -o bin/konbu ./cmd/konbu
 
 # Run tests
 go test ./...
+cd web/frontend && npm test
+cd web/frontend && npm run test:e2e
 ```
 
 ### Project Structure
