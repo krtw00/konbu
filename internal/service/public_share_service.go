@@ -17,8 +17,8 @@ const (
 	PublicShareMemo     = "memo"
 	PublicShareTodo     = "todo"
 	PublicShareCalendar = "calendar"
-	PublicShareTool     = "tool"
 	PublicShareEvent    = "event"
+	PublicShareTool     = "tool" // legacy read-only support
 )
 
 type PublicShareService struct {
@@ -158,16 +158,6 @@ func (s *PublicShareService) GetPublicView(ctx context.Context, token string) (*
 			modelTodo.Tags[i] = model.Tag{ID: t.ID, Name: t.Name}
 		}
 		view.Todo = &modelTodo
-	case PublicShareTool:
-		tool, err := s.queries.GetToolByIDPublic(ctx, row.ResourceID)
-		if err != nil {
-			if errors.Is(err, repository.ErrNoRows) {
-				return nil, apperror.NotFound("tool")
-			}
-			return nil, apperror.Internal(err)
-		}
-		modelTool := toModelTool(tool)
-		view.Tool = &modelTool
 	case PublicShareEvent:
 		event, err := s.queries.GetEventByIDPublic(ctx, row.ResourceID)
 		if err != nil {
@@ -210,6 +200,16 @@ func (s *PublicShareService) GetPublicView(ctx context.Context, token string) (*
 			CreatedAt: cal.CreatedAt,
 			UpdatedAt: cal.UpdatedAt,
 		}
+	case PublicShareTool:
+		tool, err := s.queries.GetToolByIDPublic(ctx, row.ResourceID)
+		if err != nil {
+			if errors.Is(err, repository.ErrNoRows) {
+				return nil, apperror.NotFound("tool")
+			}
+			return nil, apperror.Internal(err)
+		}
+		modelTool := toModelTool(tool)
+		view.Tool = &modelTool
 	default:
 		return nil, apperror.BadRequest("unsupported public share type")
 	}
@@ -232,14 +232,6 @@ func (s *PublicShareService) ensurePublishable(ctx context.Context, userID uuid.
 		if err != nil {
 			if errors.Is(err, repository.ErrNoRows) {
 				return apperror.NotFound("todo")
-			}
-			return apperror.Internal(err)
-		}
-	case PublicShareTool:
-		_, err := s.queries.GetToolByID(ctx, resourceID, userID)
-		if err != nil {
-			if errors.Is(err, repository.ErrNoRows) {
-				return apperror.NotFound("tool")
 			}
 			return apperror.Internal(err)
 		}

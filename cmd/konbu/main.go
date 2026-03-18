@@ -152,8 +152,6 @@ func resolveResourceID(resourceType, prefix string) string {
 		return resolveTodoID(prefix)
 	case "calendar":
 		return resolveCalendarID(prefix)
-	case "tool":
-		return resolveToolID(prefix)
 	case "event":
 		return resolveEventID(prefix)
 	default:
@@ -163,7 +161,7 @@ func resolveResourceID(resourceType, prefix string) string {
 
 func normalizeResourceType(resourceType string) string {
 	switch strings.ToLower(resourceType) {
-	case "memo", "todo", "calendar", "tool", "event":
+	case "memo", "todo", "calendar", "event":
 		return strings.ToLower(resourceType)
 	default:
 		return ""

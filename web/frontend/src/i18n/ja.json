@@ -138,18 +138,18 @@
     "healthCheck": "ヘルスチェック"
   },
   "publicShare": {
-    "button": "公開",
-    "title": "公開リンク",
-    "description": "閲覧専用の公開URLを発行します。受け取った人はログインなしで内容を見られます。",
-    "url": "公開URL",
-    "publish": "公開を開始",
-    "notPublished": "まだ公開されていません。",
-    "copied": "公開URLをコピーしました",
-    "loadError": "公開状態の取得に失敗しました",
-    "publishError": "公開リンクの作成に失敗しました",
-    "deleteError": "公開リンクの削除に失敗しました",
-    "unavailable": "公開ページを表示できません",
-    "unavailableDescription": "リンクが無効になっているか、公開が解除されています。"
+    "button": "共有",
+    "title": "共有リンク",
+    "description": "閲覧専用の共有URLを発行します。受け取った人はログインなしで内容を見られます。",
+    "url": "共有URL",
+    "publish": "共有リンクを作成",
+    "notPublished": "共有リンクはまだありません。",
+    "copied": "共有URLをコピーしました",
+    "loadError": "共有状態の取得に失敗しました",
+    "publishError": "共有リンクの作成に失敗しました",
+    "deleteError": "共有リンクの削除に失敗しました",
+    "unavailable": "共有ページを表示できません",
+    "unavailableDescription": "リンクが無効になっているか、共有が解除されています。"
   },
   "command": {
     "searchPlaceholder": "すべてを検索…",

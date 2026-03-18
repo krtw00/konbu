@@ -138,18 +138,18 @@
     "healthCheck": "Health Check"
   },
   "publicShare": {
-    "button": "Publish",
-    "title": "Public link",
-    "description": "Create a read-only public URL. Anyone with the link can view it without signing in.",
-    "url": "Public URL",
-    "publish": "Start publishing",
-    "notPublished": "This item is not published yet.",
-    "copied": "Public URL copied",
-    "loadError": "Failed to load publish status",
-    "publishError": "Failed to create public link",
-    "deleteError": "Failed to delete public link",
-    "unavailable": "This public page is unavailable",
-    "unavailableDescription": "The link may be invalid or the item is no longer published."
+    "button": "Share",
+    "title": "Share link",
+    "description": "Create a read-only share URL. Anyone with the link can view it without signing in.",
+    "url": "Share URL",
+    "publish": "Create share link",
+    "notPublished": "No share link yet.",
+    "copied": "Share URL copied",
+    "loadError": "Failed to load share status",
+    "publishError": "Failed to create share link",
+    "deleteError": "Failed to delete share link",
+    "unavailable": "This shared page is unavailable",
+    "unavailableDescription": "The link may be invalid or the share has been removed."
   },
   "command": {
     "searchPlaceholder": "Search everything...",

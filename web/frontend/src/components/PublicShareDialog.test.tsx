@@ -49,7 +49,7 @@ describe('PublicShareDialog', () => {
 
     render(<PublicShareDialog resourceType="memo" resourceId="memo-1" />)
 
-    await userEvent.click(screen.getByRole('button', { name: /publish/i }))
+    await userEvent.click(screen.getByRole('button', { name: /share|publish/i }))
 
     expect(getPublicShareMock).toHaveBeenCalledWith('memo', 'memo-1')
 
@@ -65,10 +65,10 @@ describe('PublicShareDialog', () => {
 
     render(<PublicShareDialog resourceType="event" resourceId="event-1" />)
 
-    await userEvent.click(screen.getByRole('button', { name: /publish/i }))
-    await screen.findByText('This item is not published yet.')
+    await userEvent.click(screen.getByRole('button', { name: /share|publish/i }))
+    await screen.findByText(/No share link yet.|This item is not published yet./i)
 
-    await userEvent.click(screen.getByRole('button', { name: /start publishing/i }))
+    await userEvent.click(screen.getByRole('button', { name: /create share link|start publishing/i }))
 
     await screen.findByText('https://public.example.com/public/event-token')
     expect(createPublicShareMock).toHaveBeenCalledWith('event', 'event-1')
@@ -85,7 +85,7 @@ describe('PublicShareDialog', () => {
 
     render(<PublicShareDialog resourceType="calendar" resourceId="calendar-1" />)
 
-    await userEvent.click(screen.getByRole('button', { name: /publish/i }))
+    await userEvent.click(screen.getByRole('button', { name: /share|publish/i }))
 
     await waitFor(() => {
       expect(screen.getByText('load failed')).toBeInTheDocument()
