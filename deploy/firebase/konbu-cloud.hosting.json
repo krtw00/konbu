@@ -1,7 +1,7 @@
 {
   "hosting": {
     "site": "konbu-cloud",
-    "public": "empty-public",
+    "public": "proxy-public",
     "ignore": [
       "firebase.json",
       "**/.*",
