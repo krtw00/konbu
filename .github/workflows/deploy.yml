@@ -1,4 +1,4 @@
-name: Deploy to Cloud Run and Cloudflare
+name: Deploy to Cloud Run
 
 on:
   push:
@@ -21,7 +21,6 @@ jobs:
       GOOGLE_CLOUD_REGION: ${{ vars.GOOGLE_CLOUD_REGION || 'asia-northeast1' }}
       ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY || 'apps' }}
       CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE || 'konbu' }}
-      CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID || '7a4bdd42ddce5841858a7d6fe6119430' }}
       RUNTIME_ENV_FILE: deploy/google/konbu.runtime.env
 
     steps:
@@ -46,8 +45,3 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: bash scripts/deploy-cloudrun-konbu.sh
-
-      - name: Deploy Cloudflare edge
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: bash scripts/deploy-cloudflare-konbu-cloud.sh
