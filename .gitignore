@@ -17,6 +17,8 @@ bin/
 .env
 .env.*
 !.env.example
+deploy/google/*.env
+!deploy/google/*.env.example
 
 # Dependencies
 vendor/
