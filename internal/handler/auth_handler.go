@@ -94,7 +94,7 @@ func (h *AuthHandler) HandleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) HandleLogout(w http.ResponseWriter, r *http.Request) {
-	middleware.ClearSessionCookie(w)
+	middleware.ClearSessionCookie(w, r, h.cfg)
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"data": map[string]string{"message": "logged out"},
 	})
@@ -151,7 +151,7 @@ func (h *AuthHandler) HandleDeleteAccount(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	middleware.ClearSessionCookie(w)
+	middleware.ClearSessionCookie(w, r, h.cfg)
 	writeData(w, map[string]string{"message": "account deleted"})
 }
 

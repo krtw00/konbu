@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	sessionCookieName = "konbu_session"
+	sessionCookieName = "__session"
 	sessionMaxAge     = 30 * 24 * 3600 // 30 days
 )
 
@@ -46,13 +46,17 @@ func SetSessionCookie(w http.ResponseWriter, r *http.Request, userID, secret str
 	})
 }
 
-func ClearSessionCookie(w http.ResponseWriter) {
+func ClearSessionCookie(w http.ResponseWriter, r *http.Request, cfg *config.Config) {
+	sameSite := sessionSameSiteMode(r, cfg)
 	http.SetCookie(w, &http.Cookie{
-		Name:    sessionCookieName,
-		Value:   "",
-		Path:    "/",
-		MaxAge:  -1,
-		Expires: time.Unix(0, 0),
+		Name:     sessionCookieName,
+		Value:    "",
+		Path:     "/",
+		MaxAge:   -1,
+		Expires:  time.Unix(0, 0),
+		HttpOnly: true,
+		SameSite: sameSite,
+		Secure:   r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https",
 	})
 }
 
