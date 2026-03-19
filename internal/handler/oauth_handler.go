@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -47,15 +49,7 @@ func (h *OAuthHandler) HandleGoogleLogin(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "Google OAuth not configured", http.StatusNotFound)
 		return
 	}
-	state := generateState()
-	http.SetCookie(w, &http.Cookie{
-		Name:     "oauth_state",
-		Value:    state,
-		Path:     "/",
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   300,
-	})
+	state := generateState(h.cfg.SessionSecret)
 	url := h.google.AuthCodeURL(state)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
@@ -66,17 +60,10 @@ func (h *OAuthHandler) HandleGoogleCallback(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	cookie, err := r.Cookie("oauth_state")
-	if err != nil || cookie.Value != r.URL.Query().Get("state") {
+	if !verifyState(r.URL.Query().Get("state"), h.cfg.SessionSecret) {
 		http.Error(w, "invalid state", http.StatusBadRequest)
 		return
 	}
-	http.SetCookie(w, &http.Cookie{
-		Name:   "oauth_state",
-		Value:  "",
-		Path:   "/",
-		MaxAge: -1,
-	})
 
 	token, err := h.google.Exchange(context.Background(), r.URL.Query().Get("code"))
 	if err != nil {
@@ -123,8 +110,37 @@ func (h *OAuthHandler) HandleProviders(w http.ResponseWriter, r *http.Request) {
 	writeData(w, providers)
 }
 
-func generateState() string {
+func generateState(secret string) string {
 	b := make([]byte, 16)
 	rand.Read(b)
-	return base64.URLEncoding.EncodeToString(b)
+	return makeStateToken(time.Now().Add(5*time.Minute), b, secret)
+}
+
+func makeStateToken(expiresAt time.Time, nonce []byte, secret string) string {
+	payload := strconv.FormatInt(expiresAt.Unix(), 10) + "." + base64.RawURLEncoding.EncodeToString(nonce)
+	return middleware.MakeSessionToken(base64.RawURLEncoding.EncodeToString([]byte(payload)), secret)
+}
+
+func verifyState(token, secret string) bool {
+	payload, ok := middleware.VerifySessionToken(token, secret)
+	if !ok {
+		return false
+	}
+
+	decoded, err := base64.RawURLEncoding.DecodeString(payload)
+	if err != nil {
+		return false
+	}
+
+	parts := strings.SplitN(string(decoded), ".", 2)
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return false
+	}
+
+	expiresAt, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return false
+	}
+
+	return time.Now().Unix() <= expiresAt
 }

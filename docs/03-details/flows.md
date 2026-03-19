@@ -54,7 +54,7 @@ sequenceDiagram
     FE->>API: POST /auth/register
     API->>DB: INSERT INTO users (is_admin=true)
     DB-->>API: created
-    API-->>FE: 200 + Set-Cookie: konbu_session
+    API-->>FE: 200 + Set-Cookie: __session
     FE-->>User: ダッシュボード表示
 ```
 
@@ -81,7 +81,7 @@ sequenceDiagram
     DB-->>API: user record
     API->>API: bcrypt.Compare(password, hash)
     API->>API: HMAC-SHA256署名Cookie生成
-    API-->>FE: 200 + Set-Cookie: konbu_session
+    API-->>FE: 200 + Set-Cookie: __session
     FE-->>User: ダッシュボード表示
 ```
 

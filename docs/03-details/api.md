@@ -223,7 +223,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | 方式 | ヘッダー / Cookie | 用途 |
 |------|------------------|------|
 | APIキー | `Authorization: Bearer <api-key>` | CLI / 外部連携 |
-| セッションCookie | `konbu_session` (HMAC-SHA256署名) | Web UI |
+| セッションCookie | `__session` (HMAC-SHA256署名) | Web UI |
 | 開発モード | `DEV_USER` 環境変数 | ローカル開発 |
 | iCal feed | `GET /api/v1/calendar.ics?token=...` | 外部カレンダー購読 |
 | 共有リンク | `GET /api/v1/public/:token` | ログイン不要の閲覧専用ページ |
