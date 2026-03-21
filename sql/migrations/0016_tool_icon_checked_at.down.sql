@@ -1,2 +1,2 @@
 ALTER TABLE tools
-DROP COLUMN icon_checked_at;
+DROP COLUMN IF EXISTS icon_checked_at;
