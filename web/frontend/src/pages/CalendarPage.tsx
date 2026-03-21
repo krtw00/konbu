@@ -847,7 +847,7 @@ export function CalendarPage() {
   const weekRows = Math.ceil((startPad + lastDate + remainder) / 7)
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div className="flex min-h-full flex-col">
       <div className="mb-3 flex flex-col gap-3">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-lg font-semibold">{t('calendar.title')}</h1>
@@ -937,11 +937,14 @@ export function CalendarPage() {
       </div>
 
       {viewMode === 'month' && (
-        <div className="flex flex-1 min-h-0 gap-4">
-          <div className="flex min-w-0 flex-1 flex-col min-h-0">
+        <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start">
+          <div className="flex min-w-0 flex-1 flex-col">
             {renderNavigation()}
 
-            <div className={`grid grid-cols-7 gap-px bg-border rounded-lg overflow-hidden flex-1`} style={{ gridTemplateRows: `auto repeat(${weekRows}, 1fr)` }}>
+            <div
+              className="grid grid-cols-7 gap-px overflow-hidden rounded-lg bg-border"
+              style={{ gridTemplateRows: `auto repeat(${weekRows}, minmax(8rem, 1fr))` }}
+            >
               {daysHeader.map((d, i) => (
                 <div key={d} className={`bg-muted/50 text-center text-xs font-medium py-1 ${headerDayColor(i)}`}>
                   {d}
@@ -1010,7 +1013,10 @@ export function CalendarPage() {
           {selectedDay && (
             <>
             {/* Desktop: side panel */}
-            <div data-testid="calendar-day-panel" className="hidden md:flex w-72 shrink-0 min-h-0 flex-col border-l border-border pl-4">
+            <div
+              data-testid="calendar-day-panel"
+              className="hidden lg:flex w-80 shrink-0 self-start border-l border-border pl-4 lg:sticky lg:top-0 lg:max-h-[calc(100vh-8rem)] lg:overflow-hidden"
+            >
               <div className="flex items-center justify-between gap-2 pb-3">
                 <span className="font-medium text-sm">
                   {new Date(selectedDay[0], selectedDay[1], selectedDay[2]).toLocaleDateString(locale, {
@@ -1088,7 +1094,7 @@ export function CalendarPage() {
               </div>
             </div>
             {/* Mobile: bottom sheet */}
-            <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
+            <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
               <div className="absolute inset-0 bg-black/30" onClick={() => { setSelectedDay(null); setEditingEvent(null) }} />
               <div className="relative bg-background rounded-t-2xl border-t border-border p-4 space-y-3 max-h-[80vh] overflow-auto">
                 <div className="flex items-center justify-between">
