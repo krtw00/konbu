@@ -130,6 +130,23 @@ func (s *PublishService) GetPublicMetadata(ctx context.Context, resourceType, sl
 	return &pub, nil
 }
 
+func (s *PublishService) GetPublicMemoView(ctx context.Context, slug string) (*model.PublishedMemoView, error) {
+	pub, err := s.GetPublicMetadata(ctx, PublishedResourceMemo, slug)
+	if err != nil {
+		return nil, err
+	}
+
+	memo, err := loadPublicMemoView(ctx, s.queries, pub.ResourceID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.PublishedMemoView{
+		Publish: *pub,
+		Memo:    *memo,
+	}, nil
+}
+
 func (s *PublishService) ensurePublishable(ctx context.Context, userID uuid.UUID, resourceType string, resourceID uuid.UUID) (string, error) {
 	switch normalizePublishedResourceType(resourceType) {
 	case PublishedResourceMemo:

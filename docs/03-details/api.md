@@ -161,7 +161,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | PUT | `/tools/:id` | ツール更新 |
 | DELETE | `/tools/:id` | ツール削除（論理削除） |
 | PUT | `/tools/reorder` | 並び替え |
-| POST | `/tools/refresh-icons` | 全ツールのfavicon再取得 |
+| POST | `/tools/refresh-icons` | 全ツールのfavicon再取得（手動） |
 | POST | `/tools/health-check` | 全ツールのURL疎通確認 |
 
 ### Tags

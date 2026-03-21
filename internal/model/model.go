@@ -349,6 +349,11 @@ type UpsertPublishedResourceRequest struct {
 	Visibility  string `json:"visibility"`
 }
 
+type PublishedMemoView struct {
+	Publish PublishedResource `json:"publish"`
+	Memo    PublicMemoView    `json:"memo"`
+}
+
 // --- Common ---
 
 type PaginatedResult struct {

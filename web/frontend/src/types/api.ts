@@ -232,6 +232,25 @@ export interface PublicShareView {
   calendar?: PublicCalendarView
 }
 
+export type PublishedResourceType = 'memo' | 'event' | 'calendar'
+
+export interface PublishedResource {
+  resource_type: PublishedResourceType
+  resource_id: string
+  slug: string
+  title: string
+  description?: string
+  visibility: 'private' | 'unlisted' | 'public'
+  published_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface PublishedMemoView {
+  publish: PublishedResource
+  memo: PublicMemoView
+}
+
 export interface ListResponse<T> {
   data: T[]
   total: number

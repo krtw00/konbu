@@ -154,6 +154,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/manifest+json")
 		http.ServeFile(w, r, "web/static/manifest.json")
 	})
+	r.Get("/memo/{slug}", newPublishedMemoPageHandler(publishSvc))
 
 	// OAuth
 	oauthH := handler.NewOAuthHandler(authSvc, cfg)

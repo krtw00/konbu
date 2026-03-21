@@ -13,6 +13,8 @@ import (
 	"github.com/krtw00/konbu/internal/repository"
 )
 
+const automaticIconRefreshMaxAge = 24 * time.Hour
+
 type ToolService struct {
 	queries *repository.Queries
 	db      *sql.DB
@@ -44,7 +46,10 @@ func (s *ToolService) CreateTool(ctx context.Context, userID uuid.UUID, req mode
 
 	// Auto-fetch favicon
 	icon := ""
+	iconCheckedAt := (*time.Time)(nil)
 	if req.URL != "" {
+		now := time.Now().UTC()
+		iconCheckedAt = &now
 		icon = FetchFavicon(req.URL)
 	}
 
@@ -53,7 +58,7 @@ func (s *ToolService) CreateTool(ctx context.Context, userID uuid.UUID, req mode
 		return nil, apperror.Internal(err)
 	}
 
-	t, err := s.queries.CreateTool(ctx, userID, req.Name, req.URL, icon, req.Category, maxSort+1)
+	t, err := s.queries.CreateTool(ctx, userID, req.Name, req.URL, icon, iconCheckedAt, req.Category, maxSort+1)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -87,13 +92,24 @@ func (s *ToolService) UpdateTool(ctx context.Context, id, userID uuid.UUID, req 
 
 	// Re-fetch favicon if URL changed or icon is missing
 	icon := existing.Icon
-	if url != existing.URL || icon == "" {
-		if url != "" {
-			icon = FetchFavicon(url)
+	iconCheckedAt := existing.IconCheckedAt
+	if url != existing.URL {
+		icon = ""
+		iconCheckedAt = nil
+	}
+	if url != "" && (url != existing.URL || icon == "") {
+		now := time.Now().UTC()
+		iconCheckedAt = &now
+		fetched := FetchFavicon(url)
+		if fetched != "" {
+			icon = fetched
 		}
 	}
+	if url == "" {
+		iconCheckedAt = nil
+	}
 
-	t, err := s.queries.UpdateTool(ctx, id, userID, name, url, icon, category, existing.SortOrder)
+	t, err := s.queries.UpdateTool(ctx, id, userID, name, url, icon, iconCheckedAt, category, existing.SortOrder)
 	if err != nil {
 		return nil, apperror.Internal(err)
 	}
@@ -107,36 +123,36 @@ func (s *ToolService) RefreshToolIcons(ctx context.Context, userID uuid.UUID) (i
 	if err != nil {
 		return 0, apperror.Internal(err)
 	}
+	now := time.Now().UTC()
 	count := 0
 	for _, r := range rows {
-		if r.Icon != "" || r.URL == "" {
-			continue
+		updated, err := s.refreshToolIcon(ctx, r, now, true)
+		if err != nil {
+			return count, apperror.Internal(err)
 		}
-		icon := FetchFavicon(r.URL)
-		if icon == "" {
-			continue
+		if updated {
+			count++
 		}
-		s.queries.UpdateTool(ctx, r.ID, userID, r.Name, r.URL, icon, r.Category, r.SortOrder)
-		count++
 	}
 	return count, nil
 }
 
-func (s *ToolService) RefreshEmptyIcons(ctx context.Context) (int, error) {
-	rows, err := s.queries.ListToolsWithEmptyIcon(ctx)
+func (s *ToolService) RefreshStaleIcons(ctx context.Context, now time.Time) (int, error) {
+	rows, err := s.queries.ListToolsNeedingIconRefresh(ctx, now.Add(-automaticIconRefreshMaxAge))
 	if err != nil {
 		return 0, err
 	}
-	log.Printf("icon refresh: found %d tools with empty icon", len(rows))
+	log.Printf("icon refresh: found %d stale tools", len(rows))
 	count := 0
 	for _, r := range rows {
-		icon := FetchFavicon(r.URL)
-		if icon == "" {
-			log.Printf("icon refresh: failed to fetch favicon for %s", r.URL)
+		updated, err := s.refreshToolIcon(ctx, r, now, false)
+		if err != nil {
+			log.Printf("icon refresh: failed to refresh %s: %v", r.URL, err)
 			continue
 		}
-		s.queries.UpdateTool(ctx, r.ID, r.UserID, r.Name, r.URL, icon, r.Category, r.SortOrder)
-		count++
+		if updated {
+			count++
+		}
 	}
 	return count, nil
 }
@@ -155,7 +171,7 @@ func (s *ToolService) StartIconRefreshLoop(interval time.Duration) {
 func (s *ToolService) runIconRefresh() {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()
-	count, err := s.RefreshEmptyIcons(ctx)
+	count, err := s.RefreshStaleIcons(ctx, time.Now().UTC())
 	if err != nil {
 		log.Printf("icon refresh error: %v", err)
 	} else {
@@ -183,6 +199,36 @@ func (s *ToolService) ReorderTools(ctx context.Context, userID uuid.UUID, order 
 	return tx.Commit()
 }
 
+func (s *ToolService) refreshToolIcon(ctx context.Context, tool repository.Tool, checkedAt time.Time, force bool) (bool, error) {
+	if !force && !toolNeedsIconRefresh(tool, checkedAt) {
+		return false, nil
+	}
+	if tool.URL == "" {
+		return false, nil
+	}
+
+	icon := tool.Icon
+	if fetched := FetchFavicon(tool.URL); fetched != "" {
+		icon = fetched
+	}
+
+	refreshedAt := checkedAt.UTC()
+	_, err := s.queries.UpdateTool(ctx, tool.ID, tool.UserID, tool.Name, tool.URL, icon, &refreshedAt, tool.Category, tool.SortOrder)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func toolNeedsIconRefresh(tool repository.Tool, now time.Time) bool {
+	if tool.URL == "" {
+		return false
+	}
+	if tool.IconCheckedAt == nil {
+		return true
+	}
+	return !tool.IconCheckedAt.After(now.Add(-automaticIconRefreshMaxAge))
+}
 
 func toModelTool(t repository.Tool) model.Tool {
 	return model.Tool{

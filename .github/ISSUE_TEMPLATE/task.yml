@@ -1,0 +1,85 @@
+name: Task / Implementation Slice
+description: Create a collaborator-ready implementation task with clear scope and acceptance criteria
+title: "[Task] "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What outcome should this task produce?
+      placeholder: Implement search page pagination UI using the existing API response.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: What is included in this task?
+      placeholder: |
+        - Update SearchPage pagination controls
+        - Wire next/previous state
+        - Keep current filters in URL or store
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Define the expected behavior as checkable points.
+      placeholder: |
+        - [ ] User can move between result pages
+        - [ ] Current filters are preserved when paging
+        - [ ] Empty state still renders correctly
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation
+      description: What should the assignee run or confirm before opening a PR?
+      placeholder: go test ./... and cd web/frontend && npm test
+    validations:
+      required: true
+  - type: textarea
+    id: out_of_scope
+    attributes:
+      label: Out of scope
+      description: What should explicitly not be changed in this task?
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies / references
+      description: Link related issues, docs, or plans.
+      placeholder: "Parent issue: #24, Plan: docs/plans/24-search-enhancement.md"
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - memo
+        - todo
+        - calendar
+        - search
+        - tool
+        - ai
+        - web
+        - api
+        - cli
+        - db
+        - auth
+        - infra
+        - docs
+    validations:
+      required: true
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      options:
+        - XS
+        - S
+        - M
+        - L
+        - XL
+    validations:
+      required: true

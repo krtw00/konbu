@@ -28,6 +28,7 @@ func (h *PublishHandler) AuthRoutes() chi.Router {
 
 func (h *PublishHandler) PublicRoutes() chi.Router {
 	r := chi.NewRouter()
+	r.Get("/memo/{slug}/view", h.memoView)
 	r.Get("/{resourceType}/{slug}", h.view)
 	return r
 }
@@ -88,4 +89,13 @@ func (h *PublishHandler) view(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeData(w, pub)
+}
+
+func (h *PublishHandler) memoView(w http.ResponseWriter, r *http.Request) {
+	view, err := h.svc.GetPublicMemoView(r.Context(), chi.URLParam(r, "slug"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeData(w, view)
 }
