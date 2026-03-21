@@ -2,6 +2,23 @@ import { expect, test } from '@playwright/test'
 import { openCalendar, selectCalendar } from './helpers'
 
 test.describe('calendar critical flows', () => {
+  test('month view side panel stays usable on shorter desktop screens', async ({ page }) => {
+    const eventTitle = `Month panel ${Date.now()}`
+
+    await page.setViewportSize({ width: 1280, height: 640 })
+    await openCalendar(page)
+
+    await page.getByTestId('calendar-month-day').nth(14).click()
+    await expect(page.getByTestId('calendar-day-panel')).toBeVisible()
+
+    await page.locator('#new-ev-title').fill(eventTitle)
+    await page.locator('#new-ev-desc').fill('layout regression check')
+    await page.getByRole('button', { name: 'Add' }).click()
+
+    await expect(page.getByText(eventTitle).first()).toBeVisible()
+    await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy()
+  })
+
   test('creates an all-day event from the calendar UI', async ({ page }) => {
     const eventTitle = `E2E all-day ${Date.now()}`
 
@@ -30,10 +47,10 @@ test.describe('calendar critical flows', () => {
 
     await expect(page.getByText(calendarName).first()).toBeVisible()
 
-    await page.getByRole('button', { name: 'Publish' }).click()
-    await page.getByRole('button', { name: 'Start publishing' }).click()
+    await page.getByRole('button', { name: 'Share' }).click()
+    await page.getByRole('dialog').getByRole('button', { name: 'Create share link' }).click()
 
-    const publicUrlText = page.locator('text=/http:\\/\\/127\\.0\\.0\\.1:8091\\/public\\//').first()
+    const publicUrlText = page.getByRole('dialog').locator('text=/http:\\/\\/127\\.0\\.0\\.1:8091\\/public\\//').first()
     await expect(publicUrlText).toBeVisible()
     const publicUrl = await publicUrlText.textContent()
     if (!publicUrl) throw new Error('public URL was not created')
