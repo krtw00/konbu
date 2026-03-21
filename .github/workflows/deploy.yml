@@ -2,7 +2,7 @@ name: Deploy to Cloud Run
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   workflow_dispatch:
 
 concurrency:
@@ -15,13 +15,15 @@ permissions:
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main' || (github.ref == 'refs/heads/staging' && vars.ENABLE_STAGING == 'true')
     runs-on: ubuntu-latest
     env:
       GOOGLE_CLOUD_PROJECT: ${{ vars.GOOGLE_CLOUD_PROJECT || 'oauthsetting-484201' }}
       GOOGLE_CLOUD_REGION: ${{ vars.GOOGLE_CLOUD_REGION || 'asia-northeast1' }}
       ARTIFACT_REGISTRY_REPOSITORY: ${{ vars.ARTIFACT_REGISTRY_REPOSITORY || 'apps' }}
-      CLOUD_RUN_SERVICE: ${{ vars.CLOUD_RUN_SERVICE || 'konbu' }}
-      RUNTIME_ENV_FILE: deploy/google/konbu.runtime.env
+      CLOUD_RUN_SERVICE: ${{ github.ref == 'refs/heads/staging' && (vars.STAGING_CLOUD_RUN_SERVICE || 'konbu-staging') || (vars.CLOUD_RUN_SERVICE || 'konbu') }}
+      RUNTIME_ENV_FILE: ${{ github.ref == 'refs/heads/staging' && 'deploy/google/konbu.staging.runtime.env' || 'deploy/google/konbu.runtime.env' }}
+      FIREBASE_HOSTING_SITE: ${{ github.ref == 'refs/heads/staging' && (vars.STAGING_FIREBASE_HOSTING_SITE || 'konbu-cloud-staging') || (vars.FIREBASE_HOSTING_SITE || 'konbu-cloud') }}
 
     steps:
       - uses: actions/checkout@v5
@@ -29,7 +31,7 @@ jobs:
       - name: Write runtime env
         run: |
           cat <<'EOF' > "$RUNTIME_ENV_FILE"
-          ${{ secrets.KONBU_RUNTIME_ENV }}
+          ${{ github.ref == 'refs/heads/staging' && secrets.KONBU_STAGING_RUNTIME_ENV || secrets.KONBU_RUNTIME_ENV }}
           EOF
 
       - id: auth
@@ -48,3 +50,6 @@ jobs:
 
       - name: Deploy Firebase Hosting proxy
         run: GOOGLE_CLOUD_PROJECT=${{ env.GOOGLE_CLOUD_PROJECT }} bash scripts/deploy-firebase-konbu.sh
+        env:
+          FIREBASE_HOSTING_SITE: ${{ env.FIREBASE_HOSTING_SITE }}
+          FIREBASE_CLOUD_RUN_SERVICE: ${{ env.CLOUD_RUN_SERVICE }}
