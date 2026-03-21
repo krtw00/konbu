@@ -937,8 +937,8 @@ export function CalendarPage() {
       </div>
 
       {viewMode === 'month' && (
-        <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start">
-          <div className="flex min-w-0 flex-1 flex-col">
+        <div className="min-w-0">
+          <div className="flex min-w-0 flex-col">
             {renderNavigation()}
 
             <div
@@ -1013,88 +1013,91 @@ export function CalendarPage() {
           {selectedDay && (
             <>
             {/* Desktop: side panel */}
-            <div
-              data-testid="calendar-day-panel"
-              className="hidden lg:flex w-80 shrink-0 self-start border-l border-border pl-4 lg:sticky lg:top-0 lg:max-h-[calc(100vh-8rem)] lg:overflow-hidden"
-            >
-              <div className="flex items-center justify-between gap-2 pb-3">
-                <span className="font-medium text-sm">
-                  {new Date(selectedDay[0], selectedDay[1], selectedDay[2]).toLocaleDateString(locale, {
-                    month: 'long', day: 'numeric', weekday: 'short',
-                  })}
-                </span>
-                <button className="text-muted-foreground hover:text-foreground" onClick={() => { setSelectedDay(null); setEditingEvent(null) }}>
-                  x
-                </button>
-              </div>
+            <div className="hidden md:flex fixed inset-0 z-50 items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/25" onClick={() => { setSelectedDay(null); setEditingEvent(null) }} />
+              <div
+                data-testid="calendar-day-panel"
+                className="relative z-10 flex w-full max-w-lg max-h-[85vh] flex-col overflow-hidden rounded-2xl border border-border bg-background p-4 shadow-xl"
+              >
+                <div className="flex items-center justify-between gap-3 pb-3">
+                  <span className="font-medium text-sm">
+                    {new Date(selectedDay[0], selectedDay[1], selectedDay[2]).toLocaleDateString(locale, {
+                      month: 'long', day: 'numeric', weekday: 'short',
+                    })}
+                  </span>
+                  <button className="text-muted-foreground hover:text-foreground" onClick={() => { setSelectedDay(null); setEditingEvent(null) }}>
+                    x
+                  </button>
+                </div>
 
-              <div data-testid="calendar-day-panel-scroll" className="min-h-0 space-y-3 overflow-y-auto pr-1">
-                {editingEvent ? (
-                  renderEditPanel(() => setEditingEvent(null))
-                ) : (
-                  <>
-                    <div className="space-y-1.5">
-                      {dk && eventsForDay(dk).length === 0 && (
-                        <p className="text-sm text-muted-foreground">{t('calendar.noEvents')}</p>
-                      )}
-                      {dk && eventsForDay(dk).map((ev, idx) => (
-                        <div
-                          key={`${ev.id}-${idx}`}
-                          onClick={() => setEditingEvent(ev)}
-                          className="text-sm p-2 rounded hover:bg-accent/50 cursor-pointer"
-                        >
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            {ev.recurrence_rule && <Repeat size={10} />}
-                            {ev.all_day ? t('common.allDay') : `${formatTime(ev.start_at)}${ev.end_at ? ' – ' + formatTime(ev.end_at) : ''}`}
-                          </div>
-                          <div>{ev.title}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="border-t border-border pt-3 space-y-2">
-                      <div className="text-xs text-muted-foreground font-medium">{t('calendar.newEvent')}</div>
-                      <Input id="new-ev-title" placeholder={t('calendar.eventTitle')} />
-                      <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={newEventAllDay} onChange={(e) => setNewEventAllDay(e.target.checked)} />
-                        {t('common.allDay')}
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          key={`new-ev-start-${newEventAllDay ? 'date' : 'time'}-${dk}`}
-                          id="new-ev-start"
-                          type={newEventAllDay ? 'date' : 'datetime-local'}
-                          defaultValue={newEventAllDay ? (dk ?? '') : `${dk ?? ''}T09:00`}
-                        />
-                        {!newEventAllDay && (
-                          <Input
-                            key={`new-ev-end-${dk}`}
-                            id="new-ev-end"
-                            type="datetime-local"
-                            defaultValue={`${dk ?? ''}T10:00`}
-                          />
+                <div data-testid="calendar-day-panel-scroll" className="min-h-0 space-y-3 overflow-y-auto pr-1">
+                  {editingEvent ? (
+                    renderEditPanel(() => setEditingEvent(null))
+                  ) : (
+                    <>
+                      <div className="space-y-1.5">
+                        {dk && eventsForDay(dk).length === 0 && (
+                          <p className="text-sm text-muted-foreground">{t('calendar.noEvents')}</p>
                         )}
+                        {dk && eventsForDay(dk).map((ev, idx) => (
+                          <div
+                            key={`${ev.id}-${idx}`}
+                            onClick={() => setEditingEvent(ev)}
+                            className="text-sm p-2 rounded hover:bg-accent/50 cursor-pointer"
+                          >
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              {ev.recurrence_rule && <Repeat size={10} />}
+                              {ev.all_day ? t('common.allDay') : `${formatTime(ev.start_at)}${ev.end_at ? ' – ' + formatTime(ev.end_at) : ''}`}
+                            </div>
+                            <div>{ev.title}</div>
+                          </div>
+                        ))}
                       </div>
-                      <Textarea id="new-ev-desc" placeholder={t('calendar.descriptionPlaceholder')} />
-                      <div>
-                        <label className="text-xs text-muted-foreground">{t('calendar.recurrence')}</label>
-                        <select
-                          value={newRecurrence}
-                          onChange={(e) => setNewRecurrence(e.target.value)}
-                          className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                          {RECURRENCE_OPTIONS.map((o) => (
-                            <option key={o.value} value={o.value}>{o.label}</option>
-                          ))}
-                        </select>
+                      <div className="border-t border-border pt-3 space-y-2">
+                        <div className="text-xs text-muted-foreground font-medium">{t('calendar.newEvent')}</div>
+                        <Input id="new-ev-title" placeholder={t('calendar.eventTitle')} />
+                        <label className="flex items-center gap-2 text-sm">
+                          <input type="checkbox" checked={newEventAllDay} onChange={(e) => setNewEventAllDay(e.target.checked)} />
+                          {t('common.allDay')}
+                        </label>
+                        <div className="flex flex-col gap-2">
+                          <Input
+                            key={`new-ev-start-${newEventAllDay ? 'date' : 'time'}-${dk}`}
+                            id="new-ev-start"
+                            type={newEventAllDay ? 'date' : 'datetime-local'}
+                            defaultValue={newEventAllDay ? (dk ?? '') : `${dk ?? ''}T09:00`}
+                          />
+                          {!newEventAllDay && (
+                            <Input
+                              key={`new-ev-end-${dk}`}
+                              id="new-ev-end"
+                              type="datetime-local"
+                              defaultValue={`${dk ?? ''}T10:00`}
+                            />
+                          )}
+                        </div>
+                        <Textarea id="new-ev-desc" placeholder={t('calendar.descriptionPlaceholder')} />
+                        <div>
+                          <label className="text-xs text-muted-foreground">{t('calendar.recurrence')}</label>
+                          <select
+                            value={newRecurrence}
+                            onChange={(e) => setNewRecurrence(e.target.value)}
+                            className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          >
+                            {RECURRENCE_OPTIONS.map((o) => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk)}>{t('common.add')}</Button>
                       </div>
-                      <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk)}>{t('common.add')}</Button>
-                    </div>
-                  </>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             {/* Mobile: bottom sheet */}
-            <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end">
+            <div className="md:hidden fixed inset-0 z-50 flex flex-col justify-end">
               <div className="absolute inset-0 bg-black/30" onClick={() => { setSelectedDay(null); setEditingEvent(null) }} />
               <div className="relative bg-background rounded-t-2xl border-t border-border p-4 space-y-3 max-h-[80vh] overflow-auto">
                 <div className="flex items-center justify-between">
