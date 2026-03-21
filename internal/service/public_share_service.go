@@ -96,50 +96,11 @@ func (s *PublicShareService) GetPublicView(ctx context.Context, token string) (*
 
 	switch row.ResourceType {
 	case PublicShareMemo:
-		memo, err := s.queries.GetMemoByIDPublic(ctx, row.ResourceID)
+		pubMemo, err := loadPublicMemoView(ctx, s.queries, row.ResourceID)
 		if err != nil {
-			if errors.Is(err, repository.ErrNoRows) {
-				return nil, apperror.NotFound("memo")
-			}
-			return nil, apperror.Internal(err)
+			return nil, err
 		}
-		tags, err := s.queries.GetMemoTags(ctx, memo.ID)
-		if err != nil {
-			return nil, apperror.Internal(err)
-		}
-		modelTags := make([]model.Tag, len(tags))
-		for i, t := range tags {
-			modelTags[i] = model.Tag{ID: t.ID, Name: t.Name}
-		}
-		pubMemo := model.PublicMemoView{
-			Memo: model.Memo{
-				ID:           memo.ID,
-				Title:        memo.Title,
-				Type:         memo.Type,
-				Content:      memo.Content,
-				TableColumns: memo.TableColumns,
-				Tags:         modelTags,
-				CreatedAt:    memo.CreatedAt,
-				UpdatedAt:    memo.UpdatedAt,
-			},
-		}
-		if memo.Type == "table" {
-			rows, err := s.queries.ListAllMemoRowsForExport(ctx, memo.ID)
-			if err != nil {
-				return nil, apperror.Internal(err)
-			}
-			pubMemo.Rows = make([]model.MemoRow, len(rows))
-			for i, r := range rows {
-				pubMemo.Rows[i] = model.MemoRow{
-					ID:        r.ID,
-					MemoID:    r.MemoID,
-					RowData:   r.RowData,
-					SortOrder: r.SortOrder,
-					CreatedAt: r.CreatedAt,
-				}
-			}
-		}
-		view.Memo = &pubMemo
+		view.Memo = pubMemo
 	case PublicShareTodo:
 		todo, err := s.queries.GetTodoByIDPublic(ctx, row.ResourceID)
 		if err != nil {

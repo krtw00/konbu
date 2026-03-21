@@ -3,3 +3,9 @@ contact_links:
   - name: Documentation
     url: https://github.com/krtw00/konbu/blob/main/README.md
     about: Check setup, CLI, deployment, and feature docs before opening an issue.
+  - name: Contributing Guide
+    url: https://github.com/krtw00/konbu/blob/main/CONTRIBUTING.md
+    about: Read the contribution workflow, coding conventions, and test expectations.
+  - name: Collaboration Workflow
+    url: https://github.com/krtw00/konbu/blob/main/docs/plans/27-collaboration-workflow.md
+    about: See the issue taxonomy and GitHub Project workflow used for collaborator tasks.

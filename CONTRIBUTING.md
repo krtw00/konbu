@@ -108,6 +108,15 @@ konbu/
 
 For large changes or new features, discuss the approach in an issue first. Small bug fixes and typos can go straight to a PR.
 
+For collaborator-facing issue slicing and project workflow, see [docs/plans/27-collaboration-workflow.md](docs/plans/27-collaboration-workflow.md).
+
+Recommended conventions:
+
+- Use one `type:*`, one `area:*`, and one `prio:*` label per issue
+- Track progress in GitHub Project `Status` instead of status labels
+- Split large initiatives into one parent issue plus `S`/`M` sized task issues
+- Keep one PR mapped to one issue whenever possible
+
 #### 2. Create a branch
 
 ```bash
@@ -332,6 +341,15 @@ konbu/
 #### 1. Issue で相談（推奨）
 
 大きな変更や新機能は、先に Issue で方針を相談してください。小さなバグ修正や typo 修正は直接 PR で OK です。
+
+コラボレーター向けの Issue 分割方針と Project 運用は [docs/plans/27-collaboration-workflow.md](docs/plans/27-collaboration-workflow.md) を参照してください。
+
+推奨ルール:
+
+- 各 Issue には `type:*`、`area:*`、`prio:*` をそれぞれ 1 つずつ付ける
+- 進捗管理は status ラベルではなく GitHub Project の `Status` フィールドで行う
+- 大きいテーマは親 Issue 1 つと `S` / `M` サイズの task issue に分割する
+- 可能な限り 1 PR = 1 Issue に対応させる
 
 #### 2. ブランチを切る
 

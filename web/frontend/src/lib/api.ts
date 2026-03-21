@@ -171,6 +171,8 @@ export const api = {
     if (!res.ok) throw new Error(data.error?.message || 'Request failed')
     return data
   },
+  getPublishedMemoView: (slug: string) =>
+    request<{ data: import('@/types/api').PublishedMemoView }>('GET', `/published/memo/${encodeURIComponent(slug)}/view`),
 
   // Attachments
   uploadAttachment: async (file: File): Promise<{ data: { url: string } }> => {
