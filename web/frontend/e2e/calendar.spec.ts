@@ -15,6 +15,7 @@ test.describe('calendar critical flows', () => {
     await page.locator('#new-ev-desc').fill('layout regression check')
     await page.getByRole('button', { name: 'Add' }).click()
 
+    await expect(page.getByTestId('calendar-day-panel')).not.toBeVisible()
     await expect(page.getByText(eventTitle).first()).toBeVisible()
     await expect.poll(async () => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy()
   })
