@@ -364,6 +364,8 @@ export function CalendarPage() {
     })
     setNewRecurrence('')
     setNewEventAllDay(false)
+    setSelectedDay(null)
+    setEditingEvent(null)
     invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
   }
 
