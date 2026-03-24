@@ -55,7 +55,14 @@ function prefetchHomeData() {
   })))
 }
 
-type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'tables' | 'table-edit' | 'chat' | 'settings' | 'search'
+type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'tables' | 'table-edit' | 'chat' | 'settings' | 'search' | 'help'
+
+function initCurrentPage(): Page {
+  if (typeof window !== 'undefined' && window.location.pathname === '/help') {
+    return 'help'
+  }
+  return 'home'
+}
 
 interface AppState {
   currentPage: Page
@@ -79,7 +86,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  currentPage: 'home',
+  currentPage: initCurrentPage(),
   commandOpen: false,
   searchQuery: '',
   user: null,

@@ -18,6 +18,7 @@ const TablesPage = lazyWithRetry(() => import('@/pages/TablesPage').then(m => ({
 const ToolsPage = lazyWithRetry(() => import('@/pages/ToolsPage').then(m => ({ default: m.ToolsPage })), 'tools')
 const SettingsPage = lazyWithRetry(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })), 'settings')
 const SearchPage = lazyWithRetry(() => import('@/pages/SearchPage').then(m => ({ default: m.SearchPage })), 'search')
+const HelpPage = lazyWithRetry(() => import('@/pages/HelpPage').then(m => ({ default: m.HelpPage })), 'help')
 const LoginPage = lazyWithRetry(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage })), 'login')
 const SetupPage = lazyWithRetry(() => import('@/pages/SetupPage').then(m => ({ default: m.SetupPage })), 'setup')
 const PublicPage = lazyWithRetry(() => import('@/pages/PublicPage').then(m => ({ default: m.PublicPage })), 'public')
@@ -162,6 +163,7 @@ function App() {
                   {currentPage === 'todos' && <TodosPage />}
                   {currentPage === 'tools' && <ToolsPage />}
                   {currentPage === 'search' && <SearchPage onOpenMemo={handleEditMemo} />}
+                  {currentPage === 'help' && <HelpPage />}
                   {currentPage === 'settings' && <SettingsPage />}
                 </div>
               </main>
