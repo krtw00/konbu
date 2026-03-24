@@ -27,6 +27,7 @@
     "tools": "Tools",
     "chat": "AI Chat",
     "search": "Search",
+    "help": "Help",
     "settings": "Settings"
   },
   "home": {
@@ -307,6 +308,85 @@
     "attachment": "Image attachments are available for supporters. You can become one in Settings.",
     "apiKey": "App integrations are available for supporters. You can become one in Settings.",
     "cta": "Learn more"
+  },
+  "help": {
+    "title": "Help",
+    "description": "Learn how to use konbu — your personal workspace for schedules, notes, tasks, and links.",
+    "toc": "Contents",
+    "tryIt": "Open {{page}}",
+    "githubFooter": "For CLI usage, keyboard shortcuts, and self-hosting details, see the",
+    "githubLink": "GitHub repository",
+    "memos": {
+      "title": "Memos",
+      "description": "Write and organize notes in Markdown. Each memo can have tags for easy filtering.",
+      "tips": [
+        "Use Markdown syntax for headings, lists, code blocks, and more",
+        "Add tags to organize memos — filter by tag on the memo list",
+        "Switch to Table type to use a spreadsheet-style memo",
+        "Share a memo publicly via the Share button"
+      ]
+    },
+    "todos": {
+      "title": "ToDo",
+      "description": "Manage tasks with status tracking and due dates. Quick-add from the input bar at the top.",
+      "tips": [
+        "Type a task and press Enter to add it instantly",
+        "Use !today, !tomorrow, or !nextweek to set a due date inline",
+        "Add tags with #tag directly in the input",
+        "Add notes to any task for extra context",
+        "Click the checkbox to mark as done — completed tasks are hidden by default"
+      ]
+    },
+    "calendar": {
+      "title": "Calendar",
+      "description": "View and manage your schedule in month, week, or list view. Supports all-day and timed events.",
+      "tips": [
+        "Click a day to quickly add an event",
+        "Set recurrence rules for repeating events (daily, weekly, monthly, yearly)",
+        "Create multiple calendars and assign colors to each",
+        "Share a calendar with others via invitation link",
+        "Import events from .ics files in Settings > Data"
+      ]
+    },
+    "tools": {
+      "title": "Tools",
+      "description": "Save and organize your frequently used links and web tools. Think of it as a bookmark launcher.",
+      "tips": [
+        "Add a name, URL, and optional category to create a tool",
+        "Tools are grouped by category for quick access",
+        "Favicons are fetched automatically",
+        "Use Health Check to verify which links are still reachable"
+      ]
+    },
+    "search": {
+      "title": "Search",
+      "description": "Find anything across memos, todos, events, and tools from one place.",
+      "tips": [
+        "Press Ctrl+K (or Cmd+K) anywhere to open quick search",
+        "The Search page provides filters by type, tag, and date range",
+        "Results are ranked by relevance using fuzzy matching"
+      ]
+    },
+    "chat": {
+      "title": "AI Chat",
+      "description": "Talk to an AI assistant that knows your workspace. Ask it to find, summarize, or add things for you.",
+      "tips": [
+        "Ask questions like \"What's on my schedule tomorrow?\" or \"Find my notes about...\"",
+        "The assistant can create memos, todos, and events on your behalf",
+        "Requires a Sponsor plan or your own LLM API key (set in Settings > AI)"
+      ]
+    },
+    "general": {
+      "title": "Tips & Common Operations",
+      "description": "Useful features that work across the app.",
+      "tips": [
+        "Tags are shared across memos, todos, and calendar events",
+        "Export all your data as JSON or Markdown ZIP from Settings > Data",
+        "Import calendar events from .ics files",
+        "Share individual memos publicly with a unique URL",
+        "Switch between themes in Settings > Appearance, including Colorful mode"
+      ]
+    }
   },
   "feedback": {
     "link": "Feedback or contact",

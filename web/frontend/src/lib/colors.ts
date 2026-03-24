@@ -1,4 +1,4 @@
-import { Home, FileText, CheckSquare, Calendar, Monitor, Search, MessageCircle, Settings } from 'lucide-react'
+import { Home, FileText, CheckSquare, Calendar, Monitor, Search, MessageCircle, HelpCircle, Settings } from 'lucide-react'
 
 export const sectionColors: Record<string, string> = {
   home: 'text-orange-500',
@@ -15,6 +15,7 @@ export const sectionColors: Record<string, string> = {
   tool: 'text-violet-500',
   search: 'text-amber-500',
   chat: 'text-cyan-500',
+  help: 'text-teal-500',
   settings: 'text-zinc-400',
 }
 
@@ -33,6 +34,7 @@ export const sectionBgColors: Record<string, string> = {
   tool: 'bg-violet-500/10',
   search: 'bg-amber-500/10',
   chat: 'bg-cyan-500/10',
+  help: 'bg-teal-500/10',
   settings: 'bg-zinc-500/10',
 }
 
@@ -51,6 +53,7 @@ export const sectionBorderColors: Record<string, string> = {
   tool: 'border-violet-400',
   search: 'border-amber-400',
   chat: 'border-cyan-400',
+  help: 'border-teal-400',
   settings: 'border-zinc-400',
 }
 
@@ -69,6 +72,7 @@ export const sectionBgSolid: Record<string, string> = {
   tool: 'bg-violet-500',
   search: 'bg-amber-500',
   chat: 'bg-cyan-500',
+  help: 'bg-teal-500',
   settings: 'bg-zinc-500',
 }
 
@@ -85,5 +89,6 @@ export const sectionIcons: Record<string, typeof Home> = {
   tool: Monitor,
   search: Search,
   chat: MessageCircle,
+  help: HelpCircle,
   settings: Settings,
 }

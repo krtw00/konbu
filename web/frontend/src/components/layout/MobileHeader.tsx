@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { sectionColors } from '@/lib/colors'
-import { Menu, X, Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut } from 'lucide-react'
+import { Menu, X, Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, HelpCircle, Settings, LogOut } from 'lucide-react'
 
 const navItems = [
   { page: 'home' as const, icon: Home, labelKey: 'nav.home' },
@@ -14,6 +14,7 @@ const navItems = [
   { page: 'search' as const, icon: Search, labelKey: 'nav.search' },
   { page: 'chat' as const, icon: MessageCircle, labelKey: 'nav.chat' },
   { page: 'settings' as const, icon: Settings, labelKey: 'nav.settings' },
+  { page: 'help' as const, icon: HelpCircle, labelKey: 'nav.help' },
 ]
 
 export function MobileHeader() {

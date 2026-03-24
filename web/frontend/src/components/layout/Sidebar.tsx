@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { sectionColors, sectionBgColors, sectionBorderColors } from '@/lib/colors'
-import { Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, Settings, LogOut, Megaphone } from 'lucide-react'
+import { Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, HelpCircle, Settings, LogOut, Megaphone } from 'lucide-react'
 
 const navItems = [
   { page: 'home' as const, icon: Home, labelKey: 'nav.home' },
@@ -84,6 +84,20 @@ export function Sidebar() {
               </kbd>
             </>
           )}
+        </button>
+        <button
+          onClick={() => setPage('help')}
+          title={collapsed ? t('nav.help') : undefined}
+          className={`flex items-center rounded-md text-sm transition-colors w-full ${
+            collapsed ? 'justify-center p-2' : 'gap-2.5 px-3 py-2'
+          } ${
+            currentPage === 'help'
+              ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
+              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50'
+          }`}
+        >
+          <HelpCircle size={18} className="text-muted-foreground" />
+          {!collapsed && <span>{t('nav.help')}</span>}
         </button>
         <button
           onClick={() => setPage('settings')}
