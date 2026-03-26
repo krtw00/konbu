@@ -82,6 +82,33 @@ func (q *Queries) GetPublishedResourceBySlug(ctx context.Context, resourceType, 
 	return scanPublishedResource(row)
 }
 
+type PublishedSlugRow struct {
+	ResourceType string
+	Slug         string
+	UpdatedAt    time.Time
+}
+
+func (q *Queries) ListPublicSlugs(ctx context.Context) ([]PublishedSlugRow, error) {
+	rows, err := q.db.QueryContext(ctx,
+		`SELECT resource_type, slug, updated_at
+		 FROM published_resources
+		 WHERE visibility = 'public'
+		 ORDER BY updated_at DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var result []PublishedSlugRow
+	for rows.Next() {
+		var r PublishedSlugRow
+		if err := rows.Scan(&r.ResourceType, &r.Slug, &r.UpdatedAt); err != nil {
+			return nil, err
+		}
+		result = append(result, r)
+	}
+	return result, rows.Err()
+}
+
 func (q *Queries) DeletePublishedResource(ctx context.Context, resourceType string, resourceID uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx,
 		`DELETE FROM published_resources WHERE resource_type = $1 AND resource_id = $2`,

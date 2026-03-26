@@ -107,7 +107,9 @@ func injectPageMetadata(indexHTML string, meta pageMeta) string {
 		`<link rel="canonical" href="` + url + `" />`,
 	}, "\n    ")
 
-	return strings.Replace(html, "</head>", "    "+headTags+"\n  </head>", 1)
+	jsonLD := `<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"` + title + `","description":"` + description + `","url":"` + url + `","image":"` + imageURL + `","publisher":{"@type":"Organization","name":"konbu"}}</script>`
+
+	return strings.Replace(html, "</head>", "    "+headTags+"\n    "+jsonLD+"\n  </head>", 1)
 }
 
 func absoluteURL(r *http.Request, path string) string {
