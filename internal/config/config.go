@@ -24,7 +24,6 @@ type Config struct {
 	R2Endpoint           string
 	R2Bucket             string
 	R2PublicURL          string
-	KofiToken            string
 	OpenAIEndpoint       string
 	OpenAIModel          string
 	AnthropicEndpoint    string
@@ -84,7 +83,6 @@ func Load() (*Config, error) {
 		R2Endpoint:           r2Endpoint,
 		R2Bucket:             r2Bucket,
 		R2PublicURL:          os.Getenv("R2_PUBLIC_URL"),
-		KofiToken:            os.Getenv("KOFI_TOKEN"),
 		OpenAIEndpoint:       getEnvDefault("OPENAI_ENDPOINT", "https://api.openai.com/v1/chat/completions"),
 		OpenAIModel:          getEnvDefault("OPENAI_MODEL", "gpt-4o"),
 		AnthropicEndpoint:    getEnvDefault("ANTHROPIC_ENDPOINT", "https://api.anthropic.com/v1/messages"),
