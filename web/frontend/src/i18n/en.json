@@ -91,6 +91,7 @@
     "end": "End",
     "description": "Description",
     "descriptionPlaceholder": "Description (optional)",
+    "startRequired": "Start date/time is required",
     "more": "+{{count}} more",
     "confirmDelete": "Delete?",
     "month": "Month",

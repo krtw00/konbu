@@ -79,6 +79,8 @@ export function CalendarPage() {
   const [newRecurrence, setNewRecurrence] = useState('')
   const [firstDayOfWeek] = useState(calData?.firstDay ?? 0)
   const [listNewEventDate, setListNewEventDate] = useState<string | null>(null)
+  const [eventError, setEventError] = useState<string | null>(null)
+  const [eventSaving, setEventSaving] = useState(false)
 
   const selectedCalendar = useMemo(() =>
     calendarList.find(c => c.id === selectedCalendarId) ?? null,
@@ -351,22 +353,36 @@ export function CalendarPage() {
     const startAt = (document.getElementById(`new-ev-start${suffix}`) as HTMLInputElement)?.value
     const endAt = (document.getElementById(`new-ev-end${suffix}`) as HTMLInputElement)?.value
     const desc = (document.getElementById(`new-ev-desc${suffix}`) as HTMLTextAreaElement)?.value
-    await api.createEvent({
-      title,
-      description: desc || '',
-      start_at: newEventAllDay ? localDateToISO(_dk) : localToISO(startAt),
-      end_at: newEventAllDay ? null : (endAt ? localToISO(endAt) : null),
-      all_day: newEventAllDay,
-      recurrence_rule: newRecurrence || null,
-      recurrence_end: null,
-      tags: [],
-      calendar_id: selectedCalendarId || undefined,
-    })
-    setNewRecurrence('')
-    setNewEventAllDay(false)
-    setSelectedDay(null)
-    setEditingEvent(null)
-    invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
+
+    if (!newEventAllDay && !startAt) {
+      setEventError(t('calendar.startRequired'))
+      return
+    }
+
+    setEventError(null)
+    setEventSaving(true)
+    try {
+      await api.createEvent({
+        title,
+        description: desc || '',
+        start_at: newEventAllDay ? localDateToISO(_dk) : localToISO(startAt),
+        end_at: newEventAllDay ? null : (endAt ? localToISO(endAt) : null),
+        all_day: newEventAllDay,
+        recurrence_rule: newRecurrence || null,
+        recurrence_end: null,
+        tags: [],
+        calendar_id: selectedCalendarId || undefined,
+      })
+      setNewRecurrence('')
+      setNewEventAllDay(false)
+      setSelectedDay(null)
+      setEditingEvent(null)
+      invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
+    } catch (err) {
+      setEventError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setEventSaving(false)
+    }
   }
 
   async function handleNewEventList(_targetDk: string) {
@@ -375,36 +391,58 @@ export function CalendarPage() {
     const startAt = (document.getElementById('new-ev-start-list') as HTMLInputElement)?.value
     const endAt = (document.getElementById('new-ev-end-list') as HTMLInputElement)?.value
     const desc = (document.getElementById('new-ev-desc-list') as HTMLTextAreaElement)?.value
-    await api.createEvent({
-      title,
-      description: desc || '',
-      start_at: newListEventAllDay ? localDateToISO(_targetDk) : localToISO(startAt),
-      end_at: newListEventAllDay ? null : (endAt ? localToISO(endAt) : null),
-      all_day: newListEventAllDay,
-      recurrence_rule: null,
-      recurrence_end: null,
-      tags: [],
-      calendar_id: selectedCalendarId || undefined,
-    })
-    setListNewEventDate(null)
-    setNewListEventAllDay(false)
-    invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
+
+    if (!newListEventAllDay && !startAt) {
+      setEventError(t('calendar.startRequired'))
+      return
+    }
+
+    setEventError(null)
+    setEventSaving(true)
+    try {
+      await api.createEvent({
+        title,
+        description: desc || '',
+        start_at: newListEventAllDay ? localDateToISO(_targetDk) : localToISO(startAt),
+        end_at: newListEventAllDay ? null : (endAt ? localToISO(endAt) : null),
+        all_day: newListEventAllDay,
+        recurrence_rule: null,
+        recurrence_end: null,
+        tags: [],
+        calendar_id: selectedCalendarId || undefined,
+      })
+      setListNewEventDate(null)
+      setNewListEventAllDay(false)
+      invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
+    } catch (err) {
+      setEventError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setEventSaving(false)
+    }
   }
 
   async function saveEvent() {
     if (!editingEvent) return
-    await api.updateEvent(editingEvent.id, {
-      title: editingEvent.title,
-      description: editingEvent.description,
-      start_at: editingEvent.start_at,
-      end_at: editingEvent.end_at,
-      all_day: editingEvent.all_day,
-      recurrence_rule: editingEvent.recurrence_rule || null,
-      recurrence_end: editingEvent.recurrence_end || null,
-      tags: editingEvent.tags?.map((tag) => tag.name) || [],
-    })
-    setEditingEvent(null)
-    invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
+    setEventError(null)
+    setEventSaving(true)
+    try {
+      await api.updateEvent(editingEvent.id, {
+        title: editingEvent.title,
+        description: editingEvent.description,
+        start_at: editingEvent.start_at,
+        end_at: editingEvent.end_at,
+        all_day: editingEvent.all_day,
+        recurrence_rule: editingEvent.recurrence_rule || null,
+        recurrence_end: editingEvent.recurrence_end || null,
+        tags: editingEvent.tags?.map((tag) => tag.name) || [],
+      })
+      setEditingEvent(null)
+      invalidateCache('calendar', 'home', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
+    } catch (err) {
+      setEventError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setEventSaving(false)
+    }
   }
 
   async function deleteEvent(id: string) {
@@ -417,7 +455,10 @@ export function CalendarPage() {
   const dk = selectedDay ? dateKey(selectedDay[0], selectedDay[1], selectedDay[2]) : null
 
   useEffect(() => {
-    if (!selectedDay) setNewEventAllDay(false)
+    if (!selectedDay) {
+      setNewEventAllDay(false)
+      setEventError(null)
+    }
   }, [selectedDay])
 
   useEffect(() => {
@@ -523,12 +564,13 @@ export function CalendarPage() {
             ))}
           </select>
         </div>
+        {eventError && <p className="text-xs text-destructive">{eventError}</p>}
         <div className="flex gap-2">
           <Button variant="destructive" size="sm" onClick={() => deleteEvent(editingEvent.id)}>{t('common.delete')}</Button>
           <PublicShareDialog resourceType="event" resourceId={editingEvent.id} />
           <div className="flex-1" />
           <Button variant="ghost" size="sm" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button size="sm" onClick={saveEvent}>{t('common.save')}</Button>
+          <Button size="sm" disabled={eventSaving} onClick={saveEvent}>{eventSaving ? '...' : t('common.save')}</Button>
         </div>
       </div>
     )
@@ -810,7 +852,8 @@ export function CalendarPage() {
               )}
             </div>
             <Textarea id="new-ev-desc-list" placeholder={t('calendar.descriptionPlaceholder')} />
-            <Button size="sm" className="w-full" onClick={() => handleNewEventList(listNewEventDate)}>{t('common.add')}</Button>
+            {eventError && <p className="text-xs text-destructive">{eventError}</p>}
+            <Button size="sm" className="w-full" disabled={eventSaving} onClick={() => handleNewEventList(listNewEventDate)}>{eventSaving ? '...' : t('common.add')}</Button>
           </div>
         )}
       </div>
@@ -1091,7 +1134,8 @@ export function CalendarPage() {
                             ))}
                           </select>
                         </div>
-                        <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk)}>{t('common.add')}</Button>
+                        {eventError && <p className="text-xs text-destructive">{eventError}</p>}
+                        <Button size="sm" className="w-full" disabled={eventSaving} onClick={() => dk && handleNewEvent(dk)}>{eventSaving ? '...' : t('common.add')}</Button>
                       </div>
                     </>
                   )}
@@ -1159,7 +1203,8 @@ export function CalendarPage() {
                         )}
                       </div>
                       <Textarea id="new-ev-desc-m" placeholder={t('calendar.descriptionPlaceholder')} />
-                      <Button size="sm" className="w-full" onClick={() => dk && handleNewEvent(dk, '-m')}>{t('common.add')}</Button>
+                      {eventError && <p className="text-xs text-destructive">{eventError}</p>}
+                      <Button size="sm" className="w-full" disabled={eventSaving} onClick={() => dk && handleNewEvent(dk, '-m')}>{eventSaving ? '...' : t('common.add')}</Button>
                     </div>
                   </>
                 )}

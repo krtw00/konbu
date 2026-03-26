@@ -91,6 +91,7 @@
     "end": "終了",
     "description": "詳細",
     "descriptionPlaceholder": "詳細（任意）",
+    "startRequired": "開始日時を入力してください",
     "more": "他 {{count}}件",
     "confirmDelete": "削除しますか？",
     "month": "月",
