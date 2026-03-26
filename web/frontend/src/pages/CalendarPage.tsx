@@ -347,6 +347,16 @@ export function CalendarPage() {
     return ''
   }
 
+  function autoSetEndTime(startInputId: string, endInputId: string) {
+    const startEl = document.getElementById(startInputId) as HTMLInputElement | null
+    const endEl = document.getElementById(endInputId) as HTMLInputElement | null
+    if (!startEl?.value || !endEl) return
+    const d = new Date(startEl.value)
+    d.setHours(d.getHours() + 1)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    endEl.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+
   async function handleNewEvent(_dk: string, suffix = '') {
     const title = (document.getElementById(`new-ev-title${suffix}`) as HTMLInputElement)?.value.trim()
     if (!title) return
@@ -841,6 +851,7 @@ export function CalendarPage() {
                 id="new-ev-start-list"
                 type={newListEventAllDay ? 'date' : 'datetime-local'}
                 defaultValue={newListEventAllDay ? listNewEventDate : listNewEventDate + 'T09:00'}
+                onChange={() => !newListEventAllDay && autoSetEndTime('new-ev-start-list', 'new-ev-end-list')}
               />
               {!newListEventAllDay && (
                 <Input
@@ -1111,6 +1122,7 @@ export function CalendarPage() {
                             id="new-ev-start"
                             type={newEventAllDay ? 'date' : 'datetime-local'}
                             defaultValue={newEventAllDay ? (dk ?? '') : `${dk ?? ''}T09:00`}
+                            onChange={() => !newEventAllDay && autoSetEndTime('new-ev-start', 'new-ev-end')}
                           />
                           {!newEventAllDay && (
                             <Input
@@ -1192,6 +1204,7 @@ export function CalendarPage() {
                           id="new-ev-start-m"
                           type={newEventAllDay ? 'date' : 'datetime-local'}
                           defaultValue={newEventAllDay ? (dk ?? '') : `${dk ?? ''}T09:00`}
+                          onChange={() => !newEventAllDay && autoSetEndTime('new-ev-start-m', 'new-ev-end-m')}
                         />
                         {!newEventAllDay && (
                           <Input
