@@ -68,7 +68,6 @@ func TestLoadEnvOverrides(t *testing.T) {
 	t.Setenv("GOOGLE_CLIENT_ID", "gid")
 	t.Setenv("GOOGLE_CLIENT_SECRET", "gsecret")
 	t.Setenv("WEBHOOK_SECRET", "whsec")
-	t.Setenv("KOFI_TOKEN", "kofi")
 	t.Setenv("AI_ENCRYPTION_KEY", "enc")
 	t.Setenv("R2_ACCESS_KEY_ID", "r2id")
 	t.Setenv("R2_SECRET_ACCESS_KEY", "r2secret")

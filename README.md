@@ -90,7 +90,6 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `GOOGLE_CLIENT_ID` | No | -- | Enable Google OAuth login |
 | `GOOGLE_CLIENT_SECRET` | No | -- | Enable Google OAuth login |
 | `WEBHOOK_SECRET` | No | -- | GitHub Sponsors webhook secret |
-| `KOFI_TOKEN` | No | -- | Ko-fi webhook verification token |
 | `GITHUB_FEEDBACK_TOKEN` | No | -- | GitHub token used to create anonymized feedback issues |
 | `GITHUB_FEEDBACK_REPO` | No | -- | Repository to receive feedback issues, e.g. `krtw00/konbu` |
 | `GITHUB_FEEDBACK_LABELS` | No | -- | Comma-separated labels added to forwarded feedback issues |

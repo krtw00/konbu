@@ -71,13 +71,9 @@ function ProfileTab() {
               <li>• {t('settings.upgradeFeatureApi')}</li>
             </ul>
             <p className="text-xs text-muted-foreground mb-3">{t('settings.upgradeEmailNote')}</p>
-            <iframe
-              id="kofiframe"
-              src="https://ko-fi.com/codenica000/?hidefeed=true&widget=true&embed=true"
-              className="w-full border-0 rounded-lg"
-              style={{ height: 'min(712px, 60vh)' }}
-              title="Ko-fi"
-            />
+            <a href="https://github.com/sponsors/krtw00" target="_blank" rel="noopener noreferrer">
+              <Button size="sm">{t('settings.sponsorCTA')}</Button>
+            </a>
           </div>
         )}
       </div>
@@ -283,7 +279,7 @@ function SecurityTab() {
             <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
               <p>{t('settings.apiKeysSponsorOnly')}</p>
               <a
-                href="https://ko-fi.com/codenica000"
+                href="https://github.com/sponsors/krtw00"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 mt-2 text-primary hover:underline"

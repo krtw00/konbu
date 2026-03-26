@@ -263,7 +263,7 @@
     "upgradeFeatureChat": "AI アシスタント — 「明日の予定を教えて」と話しかけるだけ",
     "upgradeFeatureImage": "画像の貼り付け — 写真やスクリーンショットをメモに保存",
     "upgradeFeatureApi": "他のアプリとの連携 — お気に入りのツールと繋げる",
-    "upgradeEmailNote": "konbu と同じメールアドレスでお支払いいただくと、すぐに使えるようになります。",
+    "upgradeEmailNote": "GitHubアカウントと同じメールアドレスで登録すると、スポンサー特典が自動で有効になります。",
     "apiKeysSponsorOnly": "API キーはスポンサー向け機能です。プロジェクトをスポンサーすると CLI や AI 連携が使えるようになります。",
     "deleteAccount": "アカウント削除",
     "deleteAccountDescription": "アカウントと全データを完全に削除します。この操作は取り消せません。",

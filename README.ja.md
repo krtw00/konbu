@@ -95,7 +95,6 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `GOOGLE_CLIENT_ID` | No | -- | Google OAuth ログイン有効化 |
 | `GOOGLE_CLIENT_SECRET` | No | -- | Google OAuth ログイン有効化 |
 | `WEBHOOK_SECRET` | No | -- | GitHub Sponsors Webhook シークレット |
-| `KOFI_TOKEN` | No | -- | Ko-fi Webhook 検証トークン |
 | `GITHUB_FEEDBACK_TOKEN` | No | -- | 匿名化したフィードバックを GitHub issue 化するためのトークン |
 | `GITHUB_FEEDBACK_REPO` | No | -- | フィードバックを送るリポジトリ。例: `krtw00/konbu` |
 | `GITHUB_FEEDBACK_LABELS` | No | -- | issue に付けるカンマ区切りラベル |

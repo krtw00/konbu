@@ -263,7 +263,7 @@
     "upgradeFeatureChat": "AI Assistant — just ask \"What's on my schedule tomorrow?\"",
     "upgradeFeatureImage": "Image attachments — save photos and screenshots to your memos",
     "upgradeFeatureApi": "App integrations — connect with your favorite tools",
-    "upgradeEmailNote": "Use the same email as your konbu account to activate instantly.",
+    "upgradeEmailNote": "Use the same email address as your GitHub account to activate sponsor features automatically.",
     "apiKeysSponsorOnly": "API keys are available for Sponsors. Sponsor the project to unlock CLI and AI integrations.",
     "deleteAccount": "Delete Account",
     "deleteAccountDescription": "Permanently delete your account and all data. This cannot be undone.",
