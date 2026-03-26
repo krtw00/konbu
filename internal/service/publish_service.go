@@ -147,6 +147,10 @@ func (s *PublishService) GetPublicMemoView(ctx context.Context, slug string) (*m
 	}, nil
 }
 
+func (s *PublishService) ListPublicSlugs(ctx context.Context) ([]repository.PublishedSlugRow, error) {
+	return s.queries.ListPublicSlugs(ctx)
+}
+
 func (s *PublishService) ensurePublishable(ctx context.Context, userID uuid.UUID, resourceType string, resourceID uuid.UUID) (string, error) {
 	switch normalizePublishedResourceType(resourceType) {
 	case PublishedResourceMemo:

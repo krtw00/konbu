@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Allow: /memo/
+Disallow: /api/
+Disallow: /auth/
+
+Sitemap: https://konbu-cloud.codenica.dev/sitemap.xml

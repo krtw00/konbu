@@ -153,6 +153,10 @@ func main() {
 		w.Header().Set("Content-Type", "application/manifest+json")
 		http.ServeFile(w, r, "web/static/manifest.json")
 	})
+	r.Get("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "web/static/robots.txt")
+	})
+	r.Get("/sitemap.xml", newSitemapHandler(publishSvc))
 	r.Get("/memo/{slug}", newPublishedMemoPageHandler(publishSvc))
 
 	// OAuth
