@@ -13,6 +13,7 @@ REGION="${GOOGLE_CLOUD_REGION:-${GCP_REGION:-asia-northeast1}}"
 ARTIFACT_REPO="${ARTIFACT_REGISTRY_REPOSITORY:-apps}"
 SERVICE_NAME="${CLOUD_RUN_SERVICE:-konbu}"
 ENV_FILE="${RUNTIME_ENV_FILE:-$ROOT_DIR/deploy/google/konbu.runtime.env}"
+DATABASE_URL_SECRET_NAME="${DATABASE_URL_SECRET_NAME:-konbu-database-url}"
 
 if [[ -z "$PROJECT_ID" ]]; then
   echo "GOOGLE_CLOUD_PROJECT or GCP_PROJECT_ID is required." >&2
@@ -26,19 +27,33 @@ if [[ ! -f "$ENV_FILE" ]]; then
 fi
 
 IMAGE_URI="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${SERVICE_NAME}:latest"
+DEPLOY_ENV_FILE="$ENV_FILE"
 
 cd "$ROOT_DIR"
+
+if [[ -n "$DATABASE_URL_SECRET_NAME" ]]; then
+  DEPLOY_ENV_FILE="$(mktemp)"
+  grep -v '^DATABASE_URL=' "$ENV_FILE" > "$DEPLOY_ENV_FILE" || true
+fi
 
 gcloud builds submit \
   --project "$PROJECT_ID" \
   --config deploy/google/cloudbuild.konbu.yaml \
   --substitutions=_IMAGE="$IMAGE_URI"
 
-gcloud run deploy "$SERVICE_NAME" \
-  --project "$PROJECT_ID" \
-  --region "$REGION" \
-  --image "$IMAGE_URI" \
-  --platform managed \
-  --allow-unauthenticated \
-  --port 8080 \
-  --env-vars-file "$ENV_FILE"
+DEPLOY_CMD=(
+  gcloud run deploy "$SERVICE_NAME"
+  --project "$PROJECT_ID"
+  --region "$REGION"
+  --image "$IMAGE_URI"
+  --platform managed
+  --allow-unauthenticated
+  --port 8080
+  --env-vars-file "$DEPLOY_ENV_FILE"
+)
+
+if [[ -n "$DATABASE_URL_SECRET_NAME" ]]; then
+  DEPLOY_CMD+=(--set-secrets "DATABASE_URL=${DATABASE_URL_SECRET_NAME}:latest")
+fi
+
+"${DEPLOY_CMD[@]}"
