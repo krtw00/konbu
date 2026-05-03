@@ -63,3 +63,11 @@ func Internal(err error) *Error {
 		Err:        err,
 	}
 }
+
+func ServiceUnavailable(message string) *Error {
+	return &Error{
+		Code:       "service_unavailable",
+		Message:    message,
+		HTTPStatus: http.StatusServiceUnavailable,
+	}
+}

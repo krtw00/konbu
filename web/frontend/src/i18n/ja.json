@@ -255,16 +255,20 @@
     "importSuccess": "インポートが完了しました",
     "plan": "プラン",
     "planFree": "Free",
-    "planSponsor": "Sponsor",
-    "sponsorCTA": "サポーターになる",
-    "sponsorDescription": "サポーターになると API キー・CLI・AI チャットが使えるようになります。",
-    "sponsorActiveTitle": "サポーター特典が有効です",
+    "planSponsor": "Pro",
+    "sponsorCTA": "Pro プランを見る",
+    "sponsorDescription": "有料の Pro プランで API キー・CLI・AI チャットが使えるようになります。",
+    "sponsorActiveTitle": "Pro 機能が有効です",
     "upgradeTitle": "もっと便利に使いませんか？",
     "upgradeFeatureChat": "AI アシスタント — 「明日の予定を教えて」と話しかけるだけ",
     "upgradeFeatureImage": "画像の貼り付け — 写真やスクリーンショットをメモに保存",
     "upgradeFeatureApi": "他のアプリとの連携 — お気に入りのツールと繋げる",
-    "upgradeEmailNote": "GitHubアカウントと同じメールアドレスで登録すると、スポンサー特典が自動で有効になります。",
-    "apiKeysSponsorOnly": "API キーはスポンサー向け機能です。プロジェクトをスポンサーすると CLI や AI 連携が使えるようになります。",
+    "upgradeEmailNote": "購入前に、konbu のサイトで料金・解約条件・返金ポリシーを確認できます。",
+    "monthlyCTA": "月額 ¥980 で始める",
+    "yearlyCTA": "年額 ¥9,800 で始める",
+    "billingPolicyCTA": "料金・返金ポリシー",
+    "checkoutUnavailable": "課金設定がまだ完了していません。価格ページをご確認ください。",
+    "apiKeysSponsorOnly": "API キーは Pro プラン向け機能です。アップグレードすると CLI や AI 連携が使えるようになります。",
     "deleteAccount": "アカウント削除",
     "deleteAccountDescription": "アカウントと全データを完全に削除します。この操作は取り消せません。",
     "deleteAccountConfirm": "確認のためパスワードを入力してください",
@@ -292,7 +296,7 @@
     "uploading": "アップロード中…",
     "tooLarge": "ファイルサイズが大きすぎます（上限5MB）",
     "error": "アップロードに失敗しました",
-    "sponsorRequired": "画像添付はスポンサープランが必要です"
+    "sponsorRequired": "画像添付は Pro プランが必要です"
   },
   "chat": {
     "title": "AI チャット",
@@ -301,13 +305,13 @@
     "noSessions": "会話履歴はありません",
     "placeholder": "AIに話しかけてみましょう",
     "inputPlaceholder": "メッセージを入力…",
-    "sponsorRequired": "AI チャットは Sponsor プランが必要です",
+    "sponsorRequired": "AI チャットは Pro プランが必要です",
     "noApiKey": "設定画面で LLM の API キーを設定してください"
   },
   "upgrade": {
-    "chat": "AI アシスタントはサポーター向けの機能です。設定画面からサポーターになれます。",
-    "attachment": "画像の貼り付けはサポーター向けの機能です。設定画面からサポーターになれます。",
-    "apiKey": "アプリ連携はサポーター向けの機能です。設定画面からサポーターになれます。",
+    "chat": "AI アシスタントは Pro プラン向けの機能です。設定画面からアップグレードできます。",
+    "attachment": "画像の貼り付けは Pro プラン向けの機能です。設定画面からアップグレードできます。",
+    "apiKey": "アプリ連携は Pro プラン向けの機能です。設定画面からアップグレードできます。",
     "cta": "くわしく見る"
   },
   "help": {
@@ -374,7 +378,7 @@
       "tips": [
         "「明日の予定は？」「〇〇についてのメモを探して」のように話しかけられる",
         "アシスタントがメモ・ToDo・予定の作成を代行できる",
-        "Sponsorプランまたは自前のLLM APIキー（設定 > AI で設定）が必要"
+        "Pro プランまたは自前のLLM APIキー（設定 > AI で設定）が必要"
       ]
     },
     "general": {

@@ -18,6 +18,10 @@ type Config struct {
 	GoogleClientID       string
 	GoogleSecret         string
 	BaseURL              string
+	StripeSecretKey      string
+	StripeWebhookSecret  string
+	StripePriceMonthly   string
+	StripePriceYearly    string
 	AIEncryptionKey      string
 	R2AccessKeyID        string
 	R2SecretAccessKey    string
@@ -77,6 +81,10 @@ func Load() (*Config, error) {
 		GoogleClientID:       os.Getenv("GOOGLE_CLIENT_ID"),
 		GoogleSecret:         os.Getenv("GOOGLE_CLIENT_SECRET"),
 		BaseURL:              os.Getenv("BASE_URL"),
+		StripeSecretKey:      os.Getenv("STRIPE_SECRET_KEY"),
+		StripeWebhookSecret:  os.Getenv("STRIPE_WEBHOOK_SECRET"),
+		StripePriceMonthly:   os.Getenv("STRIPE_PRICE_MONTHLY"),
+		StripePriceYearly:    os.Getenv("STRIPE_PRICE_YEARLY"),
 		AIEncryptionKey:      os.Getenv("AI_ENCRYPTION_KEY"),
 		R2AccessKeyID:        os.Getenv("R2_ACCESS_KEY_ID"),
 		R2SecretAccessKey:    os.Getenv("R2_SECRET_ACCESS_KEY"),

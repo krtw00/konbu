@@ -90,6 +90,10 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `GOOGLE_CLIENT_ID` | No | -- | Enable Google OAuth login |
 | `GOOGLE_CLIENT_SECRET` | No | -- | Enable Google OAuth login |
 | `WEBHOOK_SECRET` | No | -- | GitHub Sponsors webhook secret |
+| `STRIPE_SECRET_KEY` | No | -- | Enable Stripe checkout and subscription billing |
+| `STRIPE_WEBHOOK_SECRET` | No | -- | Verify incoming Stripe webhook events |
+| `STRIPE_PRICE_MONTHLY` | No | -- | Stripe Price ID used for monthly Pro checkout |
+| `STRIPE_PRICE_YEARLY` | No | -- | Stripe Price ID used for yearly Pro checkout |
 | `GITHUB_FEEDBACK_TOKEN` | No | -- | GitHub token used to create anonymized feedback issues |
 | `GITHUB_FEEDBACK_REPO` | No | -- | Repository to receive feedback issues, e.g. `krtw00/konbu` |
 | `GITHUB_FEEDBACK_LABELS` | No | -- | Comma-separated labels added to forwarded feedback issues |
