@@ -28,6 +28,11 @@ services:
       PORT: "8080"
       SESSION_SECRET: konbu-dev-secret-change-me
       DEV_USER: dev@local
+      BASE_URL: ${BASE_URL:-http://localhost:8080}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_MONTHLY: ${STRIPE_PRICE_MONTHLY:-}
+      STRIPE_PRICE_YEARLY: ${STRIPE_PRICE_YEARLY:-}
     ports:
       - "8080:8080"
     depends_on:

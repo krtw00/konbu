@@ -140,6 +140,10 @@ export const api = {
   updateSettings: (body: import('@/types/api').UserSettings) =>
     request<{ data: import('@/types/api').UserSettings }>('PUT', '/auth/settings', body),
 
+  // Billing
+  createBillingCheckout: (body: { interval: 'month' | 'year' }) =>
+    request<{ data: { url: string } }>('POST', '/billing/checkout', body),
+
   // API Keys
   listApiKeys: () => request<{ data: import('@/types/api').ApiKey[] }>('GET', '/api-keys'),
   createApiKey: (body: { name: string }) =>

@@ -194,6 +194,10 @@ func (s *AuthService) UpdatePlanByEmail(ctx context.Context, email, plan string)
 	return s.queries.UpdateUserPlanByEmail(ctx, email, plan)
 }
 
+func (s *AuthService) UpdatePlan(ctx context.Context, id uuid.UUID, plan string) error {
+	return s.queries.UpdateUserPlan(ctx, id, plan)
+}
+
 func (s *AuthService) GetUserByID(ctx context.Context, id uuid.UUID) (*model.User, error) {
 	u, err := s.queries.GetUserByID(ctx, id)
 	if err != nil {

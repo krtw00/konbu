@@ -255,16 +255,20 @@
     "importSuccess": "Import complete",
     "plan": "Plan",
     "planFree": "Free",
-    "planSponsor": "Sponsor",
-    "sponsorCTA": "Become a Supporter",
-    "sponsorDescription": "Unlock API keys, CLI access, and AI chat by becoming a supporter.",
-    "sponsorActiveTitle": "Your supporter features are active",
+    "planSponsor": "Pro",
+    "sponsorCTA": "View Pro plan",
+    "sponsorDescription": "Unlock API keys, CLI access, and AI chat with the paid Pro plan.",
+    "sponsorActiveTitle": "Your Pro features are active",
     "upgradeTitle": "Unlock more features",
     "upgradeFeatureChat": "AI Assistant — just ask \"What's on my schedule tomorrow?\"",
     "upgradeFeatureImage": "Image attachments — save photos and screenshots to your memos",
     "upgradeFeatureApi": "App integrations — connect with your favorite tools",
-    "upgradeEmailNote": "Use the same email address as your GitHub account to activate sponsor features automatically.",
-    "apiKeysSponsorOnly": "API keys are available for Sponsors. Sponsor the project to unlock CLI and AI integrations.",
+    "upgradeEmailNote": "Billing details, cancellation terms, and refund policy are available on the konbu website before purchase.",
+    "monthlyCTA": "Start monthly at ¥980",
+    "yearlyCTA": "Start yearly at ¥9,800",
+    "billingPolicyCTA": "Billing and refund policy",
+    "checkoutUnavailable": "Billing is not configured yet. Please use the pricing page.",
+    "apiKeysSponsorOnly": "API keys are available on the Pro plan. Upgrade to Pro to unlock CLI and AI integrations.",
     "deleteAccount": "Delete Account",
     "deleteAccountDescription": "Permanently delete your account and all data. This cannot be undone.",
     "deleteAccountConfirm": "Enter your password to confirm",
@@ -292,7 +296,7 @@
     "uploading": "Uploading…",
     "tooLarge": "File too large (max 5MB)",
     "error": "Upload failed",
-    "sponsorRequired": "Image attachments require a Sponsor plan"
+    "sponsorRequired": "Image attachments require a Pro plan"
   },
   "chat": {
     "title": "AI Chat",
@@ -301,13 +305,13 @@
     "noSessions": "No conversations yet",
     "placeholder": "Ask AI anything about your workspace",
     "inputPlaceholder": "Type a message…",
-    "sponsorRequired": "AI Chat requires a Sponsor plan",
+    "sponsorRequired": "AI Chat requires a Pro plan",
     "noApiKey": "Set up your LLM API key in Settings"
   },
   "upgrade": {
-    "chat": "AI Assistant is available for supporters. You can become one in Settings.",
-    "attachment": "Image attachments are available for supporters. You can become one in Settings.",
-    "apiKey": "App integrations are available for supporters. You can become one in Settings.",
+    "chat": "AI Assistant is available on the Pro plan. You can upgrade in Settings.",
+    "attachment": "Image attachments are available on the Pro plan. You can upgrade in Settings.",
+    "apiKey": "App integrations are available on the Pro plan. You can upgrade in Settings.",
     "cta": "Learn more"
   },
   "help": {
@@ -374,7 +378,7 @@
       "tips": [
         "Ask questions like \"What's on my schedule tomorrow?\" or \"Find my notes about...\"",
         "The assistant can create memos, todos, and events on your behalf",
-        "Requires a Sponsor plan or your own LLM API key (set in Settings > AI)"
+        "Requires a Pro plan or your own LLM API key (set in Settings > AI)"
       ]
     },
     "general": {

@@ -181,6 +181,15 @@ export function LoginPage() {
                 {t('feedback.link')}
               </a>
             </p>
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              <a href="https://konbu.codenica.dev/terms" className="underline-offset-4 hover:underline">Terms</a>
+              {' · '}
+              <a href="https://konbu.codenica.dev/privacy" className="underline-offset-4 hover:underline">Privacy</a>
+              {' · '}
+              <a href="https://konbu.codenica.dev/billing" className="underline-offset-4 hover:underline">Billing</a>
+              {' · '}
+              <a href="https://konbu.codenica.dev/contact" className="underline-offset-4 hover:underline">Contact</a>
+            </p>
           </CardContent>
         </Card>
       </div>

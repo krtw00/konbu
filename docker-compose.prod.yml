@@ -26,6 +26,11 @@ services:
       DATABASE_URL: postgres://konbu:${POSTGRES_PASSWORD}@postgres:5432/konbu?sslmode=disable
       PORT: "8080"
       SESSION_SECRET: ${SESSION_SECRET}
+      BASE_URL: ${BASE_URL}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_MONTHLY: ${STRIPE_PRICE_MONTHLY:-}
+      STRIPE_PRICE_YEARLY: ${STRIPE_PRICE_YEARLY:-}
     depends_on:
       postgres:
         condition: service_healthy

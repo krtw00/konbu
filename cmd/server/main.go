@@ -67,6 +67,7 @@ func main() {
 	publicShareSvc := service.NewPublicShareService(db)
 	publishSvc := service.NewPublishService(db)
 	feedbackReporter := service.NewGitHubFeedbackReporter(cfg)
+	billingSvc := service.NewBillingService(cfg)
 
 	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc, toolSvc)
 	chatSvc := service.NewChatService(db, cfg, memoSvc, todoSvc, eventSvc, searchSvc)
@@ -94,6 +95,7 @@ func main() {
 	chatH := handler.NewChatHandler(chatSvc)
 	attachH := handler.NewAttachmentHandler(r2Svc)
 	feedbackH := handler.NewFeedbackHandler(feedbackSvc)
+	billingH := handler.NewBillingHandler(billingSvc, authSvc)
 
 	icalH := handler.NewICalHandler(authSvc, eventSvc)
 
@@ -113,6 +115,7 @@ func main() {
 	// Webhooks (unauthenticated, signature-verified)
 	webhookH := handler.NewWebhookHandler(authSvc, cfg.WebhookSecret)
 	r.Post("/webhooks/github-sponsors", webhookH.HandleGitHubSponsors)
+	r.Post("/webhooks/stripe", billingH.HandleStripeWebhook)
 
 	// Health check (unauthenticated)
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -214,6 +217,7 @@ func main() {
 			r.Mount("/import", importH.Routes())
 			r.Mount("/chat", chatH.Routes())
 			r.Mount("/attachments", attachH.UploadRoutes())
+			r.Mount("/billing", billingH.Routes())
 		})
 	})
 

@@ -14,6 +14,8 @@ function ProfileTab() {
   const { t } = useTranslation()
   const { user, setUser } = useAppStore()
   const [name, setName] = useState(user?.name ?? '')
+  const [checkoutLoading, setCheckoutLoading] = useState<'month' | 'year' | null>(null)
+  const [checkoutError, setCheckoutError] = useState('')
 
   const handleBlur = async () => {
     if (name === user?.name || !name.trim()) return
@@ -22,6 +24,19 @@ function ProfileTab() {
       setUser(res.data)
     } catch {
       setName(user?.name ?? '')
+    }
+  }
+
+  const startCheckout = async (interval: 'month' | 'year') => {
+    setCheckoutError('')
+    setCheckoutLoading(interval)
+    try {
+      const res = await api.createBillingCheckout({ interval })
+      window.location.href = res.data.url
+    } catch (err) {
+      setCheckoutError(err instanceof Error ? err.message : t('settings.checkoutUnavailable'))
+    } finally {
+      setCheckoutLoading(null)
     }
   }
 
@@ -71,9 +86,18 @@ function ProfileTab() {
               <li>• {t('settings.upgradeFeatureApi')}</li>
             </ul>
             <p className="text-xs text-muted-foreground mb-3">{t('settings.upgradeEmailNote')}</p>
-            <a href="https://github.com/sponsors/krtw00" target="_blank" rel="noopener noreferrer">
-              <Button size="sm">{t('settings.sponsorCTA')}</Button>
-            </a>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" onClick={() => startCheckout('month')} disabled={checkoutLoading !== null}>
+                {checkoutLoading === 'month' ? '...' : t('settings.monthlyCTA')}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => startCheckout('year')} disabled={checkoutLoading !== null}>
+                {checkoutLoading === 'year' ? '...' : t('settings.yearlyCTA')}
+              </Button>
+              <a href="https://konbu.codenica.dev/billing" target="_blank" rel="noopener noreferrer">
+                <Button size="sm" variant="ghost">{t('settings.billingPolicyCTA')}</Button>
+              </a>
+            </div>
+            {checkoutError && <p className="mt-3 text-xs text-destructive">{checkoutError}</p>}
           </div>
         )}
       </div>
@@ -279,7 +303,7 @@ function SecurityTab() {
             <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">
               <p>{t('settings.apiKeysSponsorOnly')}</p>
               <a
-                href="https://github.com/sponsors/krtw00"
+                href="https://konbu.codenica.dev/#plans"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 mt-2 text-primary hover:underline"
