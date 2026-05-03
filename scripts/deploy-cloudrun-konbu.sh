@@ -27,14 +27,32 @@ if [[ ! -f "$ENV_FILE" ]]; then
 fi
 
 IMAGE_URI="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPO}/${SERVICE_NAME}:latest"
-DEPLOY_ENV_FILE="$ENV_FILE"
+DEPLOY_ENV_FILE="$(mktemp)"
 
 cd "$ROOT_DIR"
 
-if [[ -n "$DATABASE_URL_SECRET_NAME" ]]; then
-  DEPLOY_ENV_FILE="$(mktemp)"
-  grep -v '^DATABASE_URL=' "$ENV_FILE" > "$DEPLOY_ENV_FILE" || true
-fi
+python3 - "$ENV_FILE" "$DEPLOY_ENV_FILE" "$DATABASE_URL_SECRET_NAME" <<'PY'
+import json
+import sys
+
+src, dst, database_secret_name = sys.argv[1:]
+env = {}
+
+with open(src, encoding="utf-8") as f:
+    for raw_line in f:
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if "=" not in line:
+            raise SystemExit(f"Runtime env file must use KEY=VALUE format: {line}")
+        key, value = line.split("=", 1)
+        if key == "DATABASE_URL" and database_secret_name:
+            continue
+        env[key] = value
+
+with open(dst, "w", encoding="utf-8") as f:
+    json.dump(env, f)
+PY
 
 gcloud builds submit \
   --project "$PROJECT_ID" \
