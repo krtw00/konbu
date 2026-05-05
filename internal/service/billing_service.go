@@ -9,7 +9,9 @@ import (
 	"github.com/krtw00/konbu/internal/config"
 	"github.com/krtw00/konbu/internal/model"
 	stripe "github.com/stripe/stripe-go/v85"
+	portalsession "github.com/stripe/stripe-go/v85/billingportal/session"
 	checkoutsession "github.com/stripe/stripe-go/v85/checkout/session"
+	"github.com/stripe/stripe-go/v85/customer"
 	"github.com/stripe/stripe-go/v85/webhook"
 )
 
@@ -74,6 +76,59 @@ func (s *BillingService) CreateCheckoutSession(ctx context.Context, user *model.
 		return "", apperror.Internal(errors.New("checkout session URL was empty"))
 	}
 	return session.URL, nil
+}
+
+func (s *BillingService) CreatePortalSession(ctx context.Context, user *model.User) (string, error) {
+	if s.cfg.StripeSecretKey == "" || s.cfg.BaseURL == "" {
+		return "", apperror.ServiceUnavailable("billing is not configured")
+	}
+
+	customerID, err := s.findCustomerIDByEmail(ctx, user.Email)
+	if err != nil {
+		return "", err
+	}
+	if customerID == "" {
+		return "", apperror.NotFound("no Stripe customer found for this account")
+	}
+
+	baseURL := strings.TrimRight(s.cfg.BaseURL, "/")
+	params := &stripe.BillingPortalSessionParams{
+		Customer:  stripe.String(customerID),
+		ReturnURL: stripe.String(baseURL + "/settings"),
+	}
+	params.Params.Context = ctx
+
+	session, err := portalsession.New(params)
+	if err != nil {
+		return "", apperror.Internal(err)
+	}
+	if session.URL == "" {
+		return "", apperror.Internal(errors.New("billing portal session URL was empty"))
+	}
+	return session.URL, nil
+}
+
+func (s *BillingService) findCustomerIDByEmail(ctx context.Context, email string) (string, error) {
+	if email == "" {
+		return "", apperror.BadRequest("user email is required")
+	}
+	params := &stripe.CustomerListParams{
+		Email: stripe.String(email),
+	}
+	params.Limit = stripe.Int64(1)
+	params.Context = ctx
+
+	iter := customer.List(params)
+	for iter.Next() {
+		c := iter.Customer()
+		if c != nil && c.ID != "" {
+			return c.ID, nil
+		}
+	}
+	if err := iter.Err(); err != nil {
+		return "", apperror.Internal(err)
+	}
+	return "", nil
 }
 
 func (s *BillingService) ConstructWebhookEvent(payload []byte, signature string) (*stripe.Event, error) {
