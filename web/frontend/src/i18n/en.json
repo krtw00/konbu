@@ -267,6 +267,8 @@
     "monthlyCTA": "Start monthly at ¥980",
     "yearlyCTA": "Start yearly at ¥9,800",
     "billingPolicyCTA": "Billing and refund policy",
+    "manageSubscription": "Manage or cancel subscription",
+    "portalUnavailable": "Could not open the billing portal. Please contact support.",
     "checkoutUnavailable": "Billing is not configured yet. Please use the pricing page.",
     "apiKeysSponsorOnly": "API keys are available on the Pro plan. Upgrade to Pro to unlock CLI and AI integrations.",
     "deleteAccount": "Delete Account",

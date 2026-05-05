@@ -267,6 +267,8 @@
     "monthlyCTA": "月額 ¥980 で始める",
     "yearlyCTA": "年額 ¥9,800 で始める",
     "billingPolicyCTA": "料金・返金ポリシー",
+    "manageSubscription": "サブスクリプションを管理・解約",
+    "portalUnavailable": "請求ポータルを開けませんでした。サポートまでご連絡ください。",
     "checkoutUnavailable": "課金設定がまだ完了していません。価格ページをご確認ください。",
     "apiKeysSponsorOnly": "API キーは Pro プラン向け機能です。アップグレードすると CLI や AI 連携が使えるようになります。",
     "deleteAccount": "アカウント削除",

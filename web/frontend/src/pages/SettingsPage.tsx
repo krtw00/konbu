@@ -16,6 +16,8 @@ function ProfileTab() {
   const [name, setName] = useState(user?.name ?? '')
   const [checkoutLoading, setCheckoutLoading] = useState<'month' | 'year' | null>(null)
   const [checkoutError, setCheckoutError] = useState('')
+  const [portalLoading, setPortalLoading] = useState(false)
+  const [portalError, setPortalError] = useState('')
 
   const handleBlur = async () => {
     if (name === user?.name || !name.trim()) return
@@ -37,6 +39,19 @@ function ProfileTab() {
       setCheckoutError(err instanceof Error ? err.message : t('settings.checkoutUnavailable'))
     } finally {
       setCheckoutLoading(null)
+    }
+  }
+
+  const openBillingPortal = async () => {
+    setPortalError('')
+    setPortalLoading(true)
+    try {
+      const res = await api.createBillingPortal()
+      window.location.href = res.data.url
+    } catch (err) {
+      setPortalError(err instanceof Error ? err.message : t('settings.portalUnavailable'))
+    } finally {
+      setPortalLoading(false)
     }
   }
 
@@ -76,6 +91,17 @@ function ProfileTab() {
                 <span className="text-primary">✓</span> {t('settings.upgradeFeatureApi')}
               </li>
             </ul>
+            {user?.plan === 'sponsor' && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button size="sm" variant="outline" onClick={openBillingPortal} disabled={portalLoading}>
+                  {portalLoading ? '...' : t('settings.manageSubscription')}
+                </Button>
+                <a href="https://konbu.codenica.dev/billing" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="ghost">{t('settings.billingPolicyCTA')}</Button>
+                </a>
+              </div>
+            )}
+            {portalError && <p className="mt-3 text-xs text-destructive">{portalError}</p>}
           </div>
         ) : (
           <div className="mt-2 p-4 rounded-lg border border-border bg-card">

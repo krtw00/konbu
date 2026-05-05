@@ -144,6 +144,9 @@ export const api = {
   createBillingCheckout: (body: { interval: 'month' | 'year' }) =>
     request<{ data: { url: string } }>('POST', '/billing/checkout', body),
 
+  createBillingPortal: () =>
+    request<{ data: { url: string } }>('POST', '/billing/portal', {}),
+
   // API Keys
   listApiKeys: () => request<{ data: import('@/types/api').ApiKey[] }>('GET', '/api-keys'),
   createApiKey: (body: { name: string }) =>

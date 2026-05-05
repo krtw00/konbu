@@ -29,6 +29,7 @@ func NewBillingHandler(billingSvc *service.BillingService, authSvc *service.Auth
 func (h *BillingHandler) Routes() chi.Router {
 	r := chi.NewRouter()
 	r.Post("/checkout", h.createCheckoutSession)
+	r.Post("/portal", h.createPortalSession)
 	return r
 }
 
@@ -50,6 +51,23 @@ func (h *BillingHandler) createCheckoutSession(w http.ResponseWriter, r *http.Re
 	}
 
 	url, err := h.billingSvc.CreateCheckoutSession(r.Context(), user, req.Interval)
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeData(w, map[string]string{"url": url})
+}
+
+func (h *BillingHandler) createPortalSession(w http.ResponseWriter, r *http.Request) {
+	user := middleware.UserFromContext(r.Context())
+	if user == nil {
+		writeJSON(w, http.StatusUnauthorized, map[string]interface{}{
+			"error": map[string]string{"code": "unauthorized", "message": "not logged in"},
+		})
+		return
+	}
+
+	url, err := h.billingSvc.CreatePortalSession(r.Context(), user)
 	if err != nil {
 		writeError(w, err)
 		return
