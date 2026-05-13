@@ -61,6 +61,11 @@ func Run(cli *client.Client) error {
 			continue
 		}
 
+		// Notifications have no id; per JSON-RPC 2.0, no response should be sent.
+		if len(req.ID) == 0 {
+			continue
+		}
+
 		resp := handle(cli, req)
 		writeResponse(os.Stdout, resp)
 	}
