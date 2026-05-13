@@ -195,6 +195,49 @@ konbu import ical calendar.ics         # iCalインポート
 
 IDは先頭8文字の短縮形で指定できます。
 
+## MCPサーバー
+
+konbuはMCP（Model Context Protocol）サーバーを内蔵しており、Claude DesktopやCursorなどのAIエージェントから自然言語でデータの読み書きができます。
+
+### セットアップ
+
+1. `konbu` CLIバイナリをインストール（上の[CLI](#cli)セクション参照）
+2. Web UI の **設定 > セキュリティ** で API キーを発行
+3. お使いの MCP クライアント設定に konbu を追加
+
+**Claude Desktop** の場合、`~/Library/Application Support/Claude/claude_desktop_config.json`（macOS）または `%APPDATA%\Claude\claude_desktop_config.json`（Windows）を編集:
+
+```json
+{
+  "mcpServers": {
+    "konbu": {
+      "command": "konbu",
+      "args": ["mcp"],
+      "env": {
+        "KONBU_API": "http://localhost:8080",
+        "KONBU_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+**Cursor** の場合も同じ設定を MCP 設定（`~/.cursor/mcp.json` または Cursor の設定 UI）に追加します。
+
+### 使用例
+
+MCP クライアントを再起動すると、自然言語で konbu を操作できます:
+
+- 「明日の予定を教えて」
+- 「金曜13時に歯医者の予定を入れて」
+- 「『買い物』タグで牛乳を買うのToDoを追加」
+- 「先週の『会議』タグのメモを見せて」
+- 「『PRレビュー』のToDoを完了にして」
+
+### 利用できるツール
+
+MCPサーバーは、メモ・ToDo・予定・ブックマーク・タグに対するCRUD操作と横断全文検索を提供します。
+
 ## API
 
 ベースパス: `/api/v1`

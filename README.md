@@ -199,6 +199,49 @@ konbu import ical calendar.ics         # Import iCal file
 
 Short IDs (first 8 chars) can be used in place of full UUIDs.
 
+## MCP Server
+
+konbu includes a built-in MCP (Model Context Protocol) server that lets AI agents like Claude Desktop and Cursor read and write your data through natural language.
+
+### Setup
+
+1. Install the `konbu` CLI binary (see [CLI](#cli) section above)
+2. Generate an API key in **Settings > Security** on the web UI
+3. Add konbu to your MCP client config
+
+For **Claude Desktop**, edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "konbu": {
+      "command": "konbu",
+      "args": ["mcp"],
+      "env": {
+        "KONBU_API": "http://localhost:8080",
+        "KONBU_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+For **Cursor**, add the same config to your MCP settings (`~/.cursor/mcp.json` or via Cursor's settings UI).
+
+### Usage examples
+
+After restarting your MCP client, interact with konbu in natural language:
+
+- "What's on my schedule tomorrow?"
+- "Add a dentist appointment next Friday at 1pm"
+- "Create a todo to buy groceries with tag 'shopping'"
+- "Show me notes tagged 'meeting' from last week"
+- "Mark the 'review PR' todo as done"
+
+### Available tools
+
+The MCP server exposes operations for memos, todos, calendar events, bookmarks, and tags. All CRUD operations and full-text search are available through MCP tools.
+
 ## API
 
 Base path: `/api/v1`
