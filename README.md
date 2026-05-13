@@ -4,7 +4,15 @@
 
 <h1 align="center">konbu</h1>
 
-<p align="center">An AI-powered digital planner.<br>Keep your schedule at the center, with notes and todos in the same place.</p>
+<p align="center">
+  <strong>The all-in-one planner, built like dev tools.</strong><br>
+  CLI · MCP · Self-hostable · AI-native
+</p>
+
+<p align="center">
+  One Go binary that replaces Notion + Todoist + Calendar.<br>
+  Connect Claude, Cursor, or any MCP client to your data.
+</p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
@@ -24,25 +32,29 @@
 - **Cloud** -- Use instantly at [konbu-cloud.codenica.dev](https://konbu-cloud.codenica.dev) (free, no setup)
 - **Self-hosted** -- Run on your own server with Docker (see below)
 
-## Why konbu?
+## What is konbu?
 
-Planners are good at showing your schedule, but the notes and tasks around it usually end up in separate apps.
+konbu is a self-hostable digital planner that combines Notion + Todoist + Google Calendar into a single Go binary.
 
-Once that context is scattered, you spend more time remembering where you put things than actually using them.
+What's different:
 
-konbu is an AI-powered digital planner that keeps your schedule, notes, todos, and links in the same place. The calendar stays at the center, while the rest of the information remains close enough to act on and easy enough to find later.
+- **Native MCP server** -- Connect Claude Desktop, Cursor, or any MCP client and operate your calendar, notes, and todos directly via AI agents. Say "schedule a dentist appointment next week" in natural language.
+- **CLI client included** -- Manage everything from your terminal with `konbu memo add`, `konbu todo list`, and more.
+- **BYOK** -- Bring your own OpenAI/Anthropic API key, or use the included free tier. Either way works.
+- **Cross-resource full-text search** -- Search across memos, todos, events, and bookmarks in one query.
+- **Self-hostable** -- One Go binary, Docker compose, or use the hosted version.
 
-It is text-first, but not text-only. Each type of information still has the UI it needs, and AI sits on top as an agent that can check your schedule, search, organize, rewrite, and add things for you.
+End the state of having your day scattered across four different apps.
 
 ## Features
 
-- **Cross-search** -- Full-text search across memos, todos, events, and bookmarks. No more "where was that?"
-- **AI Agent Chat** -- "Add groceries to my todo" "What's on my schedule tomorrow?" — AI searches, organizes, rewrites, and acts on your workspace (free tier included)
+- **CLI & MCP Server** -- Built-in CLI client and MCP server. AI agents like Claude and Cursor can read and write your data directly
+- **AI Agent Chat** -- "Add groceries to my todo" "What's on my schedule tomorrow?" in natural language. BYOK supported, free tier included
+- **Cross-resource Full-text Search** -- Search across memos, todos, events, and bookmarks
 - **Memos** -- Markdown notes with tagging, live preview
 - **ToDo** -- Inline task creation with due dates, tags, and notes
 - **Calendar** -- Monthly view with event CRUD and iCal import
-- **Tools** -- Site launcher with categories and drag-and-drop reordering
-- **CLI & MCP** -- Full-featured CLI client and MCP server for AI agent integration
+- **Bookmark Manager** -- Categorized links with drag-and-drop reordering
 - **Export/Import** -- JSON export, Markdown ZIP export, iCal import
 - **i18n** -- English and Japanese
 
