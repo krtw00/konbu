@@ -11,6 +11,7 @@ import (
 
 	"github.com/krtw00/konbu/internal/client"
 	"github.com/krtw00/konbu/internal/mcp"
+	"github.com/krtw00/konbu/internal/standalone"
 	"github.com/spf13/cobra"
 )
 
@@ -1548,11 +1549,24 @@ func importCmd() *cobra.Command {
 // --- mcp ---
 
 func mcpCmd() *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "mcp",
 		Short: "Start MCP (Model Context Protocol) server on stdio",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return mcp.Run(mcp.NewHTTPBackend(cli()))
+			standaloneMode, _ := cmd.Flags().GetBool("standalone")
+			if !standaloneMode {
+				return mcp.Run(mcp.NewHTTPBackend(cli()))
+			}
+			dbPath, _ := cmd.Flags().GetString("db")
+			store, err := standalone.Open(dbPath)
+			if err != nil {
+				return err
+			}
+			defer store.Close()
+			return mcp.Run(mcp.NewLocalBackend(store))
 		},
 	}
+	cmd.Flags().Bool("standalone", false, "Run with a local SQLite store (no konbu API server required)")
+	cmd.Flags().String("db", "", "SQLite database path (defaults to ~/.konbu/konbu.db)")
+	return cmd
 }
