@@ -35,3 +35,6 @@ coverage.html
 # Database
 *.sqlite
 *.sqlite3
+
+# Session handoff (local only, see CLAUDE.md)
+docs/sessions/
