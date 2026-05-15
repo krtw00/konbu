@@ -201,15 +201,64 @@ Short IDs (first 8 chars) can be used in place of full UUIDs.
 
 ## MCP Server
 
-konbu includes a built-in MCP (Model Context Protocol) server that lets AI agents like Claude Desktop and Cursor read and write your data through natural language.
+konbu can run as a built-in MCP (Model Context Protocol) server in two modes — pick whichever fits.
 
-### Setup
+### Standalone mode (SQLite, no server required)
+
+If you just want konbu as a local MCP backend for Claude Desktop, Cursor, or any MCP client, install the CLI and run it with `--standalone`. No PostgreSQL, no web server, no API key — everything is stored in a local SQLite file.
+
+```bash
+go install github.com/krtw00/konbu/cmd/konbu@latest
+konbu mcp --standalone
+```
+
+Data is persisted at `~/.konbu/konbu.db` by default. Override with `--db /path/to/db.sqlite` if needed.
+
+**Claude Desktop** (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
+
+```json
+{
+  "mcpServers": {
+    "konbu": {
+      "command": "konbu",
+      "args": ["mcp", "--standalone"]
+    }
+  }
+}
+```
+
+**Cursor** accepts the same config at `~/.cursor/mcp.json` (or via the settings UI).
+
+#### Docker
+
+A self-contained Docker image is also available. Build it once from the repo:
+
+```bash
+docker build -f docker/Dockerfile.mcp -t konbu-mcp .
+```
+
+Then point your MCP client at it. Data persists in a named volume:
+
+```json
+{
+  "mcpServers": {
+    "konbu": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "-v", "konbu-data:/data", "konbu-mcp"]
+    }
+  }
+}
+```
+
+Standalone mode exposes memo / todo / calendar event CRUD plus cross-resource search. Tags, bookmarks, attachments, share links, and AI chat are server-only (use the connected mode below for those).
+
+### Connected mode (talk to a konbu server)
+
+If you're running a konbu server (self-hosted or [konbu Cloud](https://konbu-cloud.codenica.dev)), point the MCP server at it over HTTP. You get the full feature set: tags, bookmarks, attachments, share links, AI chat, multi-user calendars.
 
 1. Install the `konbu` CLI binary (see [CLI](#cli) section above)
 2. Generate an API key in **Settings > Security** on the web UI
-3. Add konbu to your MCP client config
-
-For **Claude Desktop**, edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+3. Add konbu to your MCP client config:
 
 ```json
 {
@@ -226,8 +275,6 @@ For **Claude Desktop**, edit `~/Library/Application Support/Claude/claude_deskto
 }
 ```
 
-For **Cursor**, add the same config to your MCP settings (`~/.cursor/mcp.json` or via Cursor's settings UI).
-
 ### Usage examples
 
 After restarting your MCP client, interact with konbu in natural language:
@@ -237,10 +284,6 @@ After restarting your MCP client, interact with konbu in natural language:
 - "Create a todo to buy groceries with tag 'shopping'"
 - "Show me notes tagged 'meeting' from last week"
 - "Mark the 'review PR' todo as done"
-
-### Available tools
-
-The MCP server exposes operations for memos, todos, calendar events, bookmarks, and tags. All CRUD operations and full-text search are available through MCP tools.
 
 ## API
 
