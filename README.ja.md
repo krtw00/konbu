@@ -197,15 +197,64 @@ IDは先頭8文字の短縮形で指定できます。
 
 ## MCPサーバー
 
-konbuはMCP（Model Context Protocol）サーバーを内蔵しており、Claude DesktopやCursorなどのAIエージェントから自然言語でデータの読み書きができます。
+konbu は MCP（Model Context Protocol）サーバーを内蔵しており、2つのモードで動かせます。用途に応じて選んでください。
 
-### セットアップ
+### スタンドアロンモード（SQLite、サーバー不要）
 
-1. `konbu` CLIバイナリをインストール（上の[CLI](#cli)セクション参照）
+ローカルの MCP バックエンドとして使いたいだけなら、CLI をインストールして `--standalone` で起動するだけ。PostgreSQL も Web サーバーも API キーも不要 — すべてローカル SQLite ファイルに保存されます。
+
+```bash
+go install github.com/krtw00/konbu/cmd/konbu@latest
+konbu mcp --standalone
+```
+
+データは既定で `~/.konbu/konbu.db` に保存されます。`--db /path/to/db.sqlite` で上書き可能。
+
+**Claude Desktop**（macOS は `~/Library/Application Support/Claude/claude_desktop_config.json`、Windows は `%APPDATA%\Claude\claude_desktop_config.json`）:
+
+```json
+{
+  "mcpServers": {
+    "konbu": {
+      "command": "konbu",
+      "args": ["mcp", "--standalone"]
+    }
+  }
+}
+```
+
+**Cursor** も同じ設定を `~/.cursor/mcp.json`（または設定 UI）に追加すれば動きます。
+
+#### Docker
+
+スタンドアロン MCP は Docker イメージでも配布できます。リポジトリから一度ビルドしてください:
+
+```bash
+docker build -f docker/Dockerfile.mcp -t konbu-mcp .
+```
+
+MCP クライアントからは名前付きボリュームを使って起動します:
+
+```json
+{
+  "mcpServers": {
+    "konbu": {
+      "command": "docker",
+      "args": ["run", "--rm", "-i", "-v", "konbu-data:/data", "konbu-mcp"]
+    }
+  }
+}
+```
+
+スタンドアロンモードはメモ / ToDo / 予定 の CRUD と横断検索を提供します。タグ・ブックマーク・添付ファイル・共有リンク・AI チャットはサーバー専用機能なので、それらが必要な場合は下記の接続モードを使ってください。
+
+### 接続モード（konbu サーバーに接続）
+
+セルフホスト中の konbu サーバーまたは [konbu Cloud](https://konbu-cloud.codenica.dev) を MCP の裏側にしたい場合は HTTP 経由で接続します。タグ・ブックマーク・添付・共有リンク・AI チャット・マルチユーザーカレンダーを含む全機能が使えます。
+
+1. `konbu` CLI バイナリをインストール（上の [CLI](#cli) セクション参照）
 2. Web UI の **設定 > セキュリティ** で API キーを発行
-3. お使いの MCP クライアント設定に konbu を追加
-
-**Claude Desktop** の場合、`~/Library/Application Support/Claude/claude_desktop_config.json`（macOS）または `%APPDATA%\Claude\claude_desktop_config.json`（Windows）を編集:
+3. お使いの MCP クライアント設定に konbu を追加:
 
 ```json
 {
@@ -222,8 +271,6 @@ konbuはMCP（Model Context Protocol）サーバーを内蔵しており、Claud
 }
 ```
 
-**Cursor** の場合も同じ設定を MCP 設定（`~/.cursor/mcp.json` または Cursor の設定 UI）に追加します。
-
 ### 使用例
 
 MCP クライアントを再起動すると、自然言語で konbu を操作できます:
@@ -233,10 +280,6 @@ MCP クライアントを再起動すると、自然言語で konbu を操作で
 - 「『買い物』タグで牛乳を買うのToDoを追加」
 - 「先週の『会議』タグのメモを見せて」
 - 「『PRレビュー』のToDoを完了にして」
-
-### 利用できるツール
-
-MCPサーバーは、メモ・ToDo・予定・ブックマーク・タグに対するCRUD操作と横断全文検索を提供します。
 
 ## API
 
