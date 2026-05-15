@@ -237,6 +237,8 @@ A multi-arch image (`linux/amd64`, `linux/arm64`) is published to GitHub Contain
 docker pull ghcr.io/krtw00/konbu-mcp:latest
 ```
 
+For reproducible setups, pin to a release tag instead — e.g. `docker pull ghcr.io/krtw00/konbu-mcp:v0.2.0`.
+
 Then point your MCP client at it. Data persists in a named volume:
 
 ```json
