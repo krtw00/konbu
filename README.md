@@ -231,10 +231,10 @@ Data is persisted at `~/.konbu/konbu.db` by default. Override with `--db /path/t
 
 #### Docker
 
-A self-contained Docker image is also available. Build it once from the repo:
+A multi-arch image (`linux/amd64`, `linux/arm64`) is published to GitHub Container Registry. Pull it directly — no build step needed:
 
 ```bash
-docker build -f docker/Dockerfile.mcp -t konbu-mcp .
+docker pull ghcr.io/krtw00/konbu-mcp:latest
 ```
 
 Then point your MCP client at it. Data persists in a named volume:
@@ -244,11 +244,13 @@ Then point your MCP client at it. Data persists in a named volume:
   "mcpServers": {
     "konbu": {
       "command": "docker",
-      "args": ["run", "--rm", "-i", "-v", "konbu-data:/data", "konbu-mcp"]
+      "args": ["run", "--rm", "-i", "-v", "konbu-data:/data", "ghcr.io/krtw00/konbu-mcp:latest"]
     }
   }
 }
 ```
+
+Prefer building from source? `docker build -f docker/Dockerfile.mcp -t konbu-mcp .` from the repo root produces the same image (CGO-free, distroless static, ~22 MB).
 
 Standalone mode exposes memo / todo / calendar event CRUD plus cross-resource search. Tags, bookmarks, attachments, share links, and AI chat are server-only (use the connected mode below for those).
 
