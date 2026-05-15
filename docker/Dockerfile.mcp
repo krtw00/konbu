@@ -1,0 +1,41 @@
+# syntax=docker/dockerfile:1.7
+#
+# Multi-stage image for `konbu mcp --standalone`.
+#
+# Produces a minimal image that boots straight into the stdio MCP server backed
+# by a local SQLite store. Targeted at Glama / Docker MCP discovery and
+# introspection — no API server, no frontend, no migrations are bundled.
+#
+# Build:
+#   docker build -f docker/Dockerfile.mcp -t konbu-mcp .
+# Run (stdio):
+#   docker run --rm -i -v konbu-data:/data konbu-mcp
+
+FROM golang:1.25-alpine AS builder
+
+RUN apk add --no-cache git
+
+WORKDIR /src
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+# modernc.org/sqlite is pure Go, so CGO is unnecessary.
+RUN CGO_ENABLED=0 GOOS=linux go build \
+        -trimpath \
+        -ldflags="-s -w" \
+        -o /out/konbu \
+        ./cmd/konbu
+
+FROM gcr.io/distroless/static-debian12:latest
+
+COPY --from=builder /out/konbu /usr/local/bin/konbu
+
+# SQLite store lives under /data; mount a volume here to persist across runs.
+ENV HOME=/data
+WORKDIR /data
+VOLUME ["/data"]
+
+ENTRYPOINT ["/usr/local/bin/konbu", "mcp", "--standalone", "--db", "/data/konbu.db"]
