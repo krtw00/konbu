@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-
-	"github.com/krtw00/konbu/internal/client"
 )
 
 type Request struct {
@@ -45,7 +43,7 @@ type ContentBlock struct {
 	Text string `json:"text"`
 }
 
-func Run(cli *client.Client) error {
+func Run(b Backend) error {
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Buffer(make([]byte, 1024*1024), 1024*1024)
 
@@ -66,7 +64,7 @@ func Run(cli *client.Client) error {
 			continue
 		}
 
-		resp := handle(cli, req)
+		resp := handle(b, req)
 		writeResponse(os.Stdout, resp)
 	}
 
@@ -78,7 +76,7 @@ func writeResponse(w io.Writer, resp Response) {
 	fmt.Fprintf(w, "%s\n", data)
 }
 
-func handle(cli *client.Client, req Request) Response {
+func handle(b Backend, req Request) Response {
 	switch req.Method {
 	case "initialize":
 		return Response{
@@ -103,14 +101,14 @@ func handle(cli *client.Client, req Request) Response {
 		return Response{JSONRPC: "2.0", ID: req.ID, Result: map[string]interface{}{"tools": toolDefinitions()}}
 
 	case "tools/call":
-		return handleToolCall(cli, req)
+		return handleToolCall(b, req)
 
 	default:
 		return Response{JSONRPC: "2.0", ID: req.ID, Error: &RPCError{Code: -32601, Message: "method not found: " + req.Method}}
 	}
 }
 
-func handleToolCall(cli *client.Client, req Request) Response {
+func handleToolCall(b Backend, req Request) Response {
 	var params struct {
 		Name      string          `json:"name"`
 		Arguments json.RawMessage `json:"arguments"`
@@ -119,7 +117,7 @@ func handleToolCall(cli *client.Client, req Request) Response {
 		return Response{JSONRPC: "2.0", ID: req.ID, Error: &RPCError{Code: -32602, Message: "invalid params"}}
 	}
 
-	result, isErr := executeTool(cli, params.Name, params.Arguments)
+	result, isErr := executeTool(b, params.Name, params.Arguments)
 	return Response{
 		JSONRPC: "2.0",
 		ID:      req.ID,
@@ -135,7 +133,7 @@ func toJSON(v interface{}) string {
 	return string(b)
 }
 
-func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (string, bool) {
+func executeTool(b Backend, name string, argsRaw json.RawMessage) (string, bool) {
 	var args map[string]interface{}
 	json.Unmarshal(argsRaw, &args)
 
@@ -146,21 +144,21 @@ func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (stri
 
 	switch name {
 	case "search":
-		results, err := cli.Search(str("query"))
+		results, err := b.Search(str("query"))
 		if err != nil {
 			return err.Error(), true
 		}
 		return toJSON(results), false
 
 	case "list_memos":
-		memos, err := cli.ListMemos()
+		memos, err := b.ListMemos()
 		if err != nil {
 			return err.Error(), true
 		}
 		return toJSON(memos), false
 
 	case "get_memo":
-		memo, err := cli.GetMemo(str("id"))
+		memo, err := b.GetMemo(str("id"))
 		if err != nil {
 			return err.Error(), true
 		}
@@ -177,7 +175,7 @@ func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (stri
 				}
 			}
 		}
-		memo, err := cli.CreateMemo(str("title"), str("content"), tags)
+		memo, err := b.CreateMemo(str("title"), str("content"), tags)
 		if err != nil {
 			return err.Error(), true
 		}
@@ -195,27 +193,27 @@ func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (stri
 		if v, ok := args["tags"]; ok {
 			fields["tags"] = v
 		}
-		memo, err := cli.UpdateMemo(id, fields)
+		memo, err := b.UpdateMemo(id, fields)
 		if err != nil {
 			return err.Error(), true
 		}
 		return toJSON(memo), false
 
 	case "delete_memo":
-		if err := cli.DeleteMemo(str("id")); err != nil {
+		if err := b.DeleteMemo(str("id")); err != nil {
 			return err.Error(), true
 		}
 		return "deleted", false
 
 	case "list_todos":
-		todos, err := cli.ListTodos()
+		todos, err := b.ListTodos()
 		if err != nil {
 			return err.Error(), true
 		}
 		return toJSON(todos), false
 
 	case "get_todo":
-		todo, err := cli.GetTodo(str("id"))
+		todo, err := b.GetTodo(str("id"))
 		if err != nil {
 			return err.Error(), true
 		}
@@ -232,7 +230,7 @@ func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (stri
 		if v, ok := args["tags"]; ok {
 			fields["tags"] = v
 		}
-		todo, err := cli.CreateTodo(fields)
+		todo, err := b.CreateTodo(fields)
 		if err != nil {
 			return err.Error(), true
 		}
@@ -249,39 +247,39 @@ func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (stri
 		if v, ok := args["tags"]; ok {
 			fields["tags"] = v
 		}
-		todo, err := cli.UpdateTodo(id, fields)
+		todo, err := b.UpdateTodo(id, fields)
 		if err != nil {
 			return err.Error(), true
 		}
 		return toJSON(todo), false
 
 	case "mark_todo_done":
-		if err := cli.DoneTodo(str("id")); err != nil {
+		if err := b.DoneTodo(str("id")); err != nil {
 			return err.Error(), true
 		}
 		return "marked as done", false
 
 	case "reopen_todo":
-		if err := cli.ReopenTodo(str("id")); err != nil {
+		if err := b.ReopenTodo(str("id")); err != nil {
 			return err.Error(), true
 		}
 		return "reopened", false
 
 	case "delete_todo":
-		if err := cli.DeleteTodo(str("id")); err != nil {
+		if err := b.DeleteTodo(str("id")); err != nil {
 			return err.Error(), true
 		}
 		return "deleted", false
 
 	case "list_events":
-		events, err := cli.ListEvents("")
+		events, err := b.ListEvents("")
 		if err != nil {
 			return err.Error(), true
 		}
 		return toJSON(events), false
 
 	case "get_event":
-		event, err := cli.GetEvent(str("id"))
+		event, err := b.GetEvent(str("id"))
 		if err != nil {
 			return err.Error(), true
 		}
@@ -304,7 +302,7 @@ func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (stri
 		if v, ok := args["tags"]; ok {
 			fields["tags"] = v
 		}
-		event, err := cli.CreateEvent(fields)
+		event, err := b.CreateEvent(fields)
 		if err != nil {
 			return err.Error(), true
 		}
@@ -324,14 +322,14 @@ func executeTool(cli *client.Client, name string, argsRaw json.RawMessage) (stri
 		if v, ok := args["tags"]; ok {
 			fields["tags"] = v
 		}
-		event, err := cli.UpdateEvent(id, fields)
+		event, err := b.UpdateEvent(id, fields)
 		if err != nil {
 			return err.Error(), true
 		}
 		return toJSON(event), false
 
 	case "delete_event":
-		if err := cli.DeleteEvent(str("id")); err != nil {
+		if err := b.DeleteEvent(str("id")); err != nil {
 			return err.Error(), true
 		}
 		return "deleted", false
