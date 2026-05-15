@@ -233,6 +233,8 @@ konbu mcp --standalone
 docker pull ghcr.io/krtw00/konbu-mcp:latest
 ```
 
+固定バージョンを使いたい場合はリリースタグを指定してください（例: `docker pull ghcr.io/krtw00/konbu-mcp:v0.2.0`）。
+
 MCP クライアントからは名前付きボリュームを使って起動します:
 
 ```json
