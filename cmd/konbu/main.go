@@ -1552,7 +1552,7 @@ func mcpCmd() *cobra.Command {
 		Use:   "mcp",
 		Short: "Start MCP (Model Context Protocol) server on stdio",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return mcp.Run(cli())
+			return mcp.Run(mcp.NewHTTPBackend(cli()))
 		},
 	}
 }
