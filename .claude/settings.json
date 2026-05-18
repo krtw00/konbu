@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash $HOME/.claude/hooks/autopilot-idle.sh"
+          }
+        ]
+      }
+    ]
+  }
+}
