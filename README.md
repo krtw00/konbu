@@ -5,12 +5,12 @@
 <h1 align="center">konbu</h1>
 
 <p align="center">
-  <strong>The all-in-one planner, built like dev tools.</strong><br>
+  <strong>Personal AI Lifelog.</strong><br>
   CLI · MCP · Self-hostable · AI-native
 </p>
 
 <p align="center">
-  One Go binary that replaces Notion + Todoist + Calendar.<br>
+  One Go binary to capture chores, records, and thinking with AI — searchable from a single place.<br>
   Connect Claude, Cursor, or any MCP client to your data.
 </p>
 
@@ -34,26 +34,27 @@
 
 ## What is konbu?
 
-konbu is a self-hostable digital planner that combines Notion + Todoist + Google Calendar into a single Go binary.
+konbu is a **personal AI lifelog** — a self-hostable Go binary that captures the scattered "chores, records, and thinking" of your day, lets AI agents organize them, and surfaces everything from a single search interface. Not a replacement for Notion + Todoist + Calendar — a replacement for **the act of searching four apps to find one thing**.
 
 What's different:
 
-- **Native MCP server** -- Connect Claude Desktop, Cursor, or any MCP client and operate your calendar, notes, and todos directly via AI agents. Say "schedule a dentist appointment next week" in natural language.
-- **CLI client included** -- Manage everything from your terminal with `konbu memo add`, `konbu todo list`, and more.
-- **BYOK** -- Bring your own OpenAI/Anthropic API key, or use the included free tier. Either way works.
-- **Cross-resource full-text search** -- Search across memos, todos, events, and bookmarks in one query.
+- **Native MCP server + CLI client** -- Two parallel routes to operate konbu from AI agents (Claude / Cursor / any MCP client) or shell / scripts.
+- **Cross-resource full-text search** -- One query across memos, todos, events, bookmarks, and structured tables. This is the core UX, not a side feature.
+- **Structured tables** (= table-memo, planned) -- Track blood pressure, household budgets, or inventory. Markdown can't express these; tables can.
+- **BYOK AI chat** -- Bring your own OpenAI/Anthropic API key, or use the included free tier.
 - **Self-hostable** -- One Go binary, Docker compose, or use the hosted version.
 
 End the state of having your day scattered across four different apps.
 
 ## Features
 
+- **Cross-resource Full-text Search** -- Search across memos, todos, events, bookmarks, and structured tables in one query (core UX)
 - **CLI & MCP Server** -- Built-in CLI client and MCP server. AI agents like Claude and Cursor can read and write your data directly
 - **AI Agent Chat** -- "Add groceries to my todo" "What's on my schedule tomorrow?" in natural language. BYOK supported, free tier included
-- **Cross-resource Full-text Search** -- Search across memos, todos, events, and bookmarks
 - **Memos** -- Markdown notes with tagging, live preview
 - **ToDo** -- Inline task creation with due dates, tags, and notes
 - **Calendar** -- Monthly view with event CRUD and iCal import
+- **Structured Tables** (= table-memo, planned) -- Track structured data (blood pressure, household budget, inventory) as rows × columns
 - **Bookmark Manager** -- Categorized links with drag-and-drop reordering
 - **Export/Import** -- JSON export, Markdown ZIP export, iCal import
 - **i18n** -- English and Japanese
