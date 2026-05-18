@@ -38,3 +38,6 @@ coverage.html
 
 # Session handoff (local only, see CLAUDE.md)
 docs/sessions/
+
+# Claude Code (local only)
+.claude/settings.local.json
