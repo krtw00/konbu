@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 )
 
 type Config struct {
@@ -36,6 +37,12 @@ type Config struct {
 	DefaultAIAPIKey      string
 	DefaultAIEndpoint    string
 	DefaultAIModel       string
+	SMTPHost             string
+	SMTPPort             string
+	SMTPUsername         string
+	SMTPPassword         string
+	SMTPFrom             string
+	NotificationTick     time.Duration
 }
 
 func getEnvDefault(key, fallback string) string {
@@ -66,6 +73,13 @@ func Load() (*Config, error) {
 	r2Bucket := os.Getenv("R2_BUCKET")
 	if r2Bucket == "" {
 		r2Bucket = "konbu-attachments"
+	}
+
+	tick := time.Minute
+	if raw := os.Getenv("NOTIFICATION_TICK_INTERVAL"); raw != "" {
+		if d, err := time.ParseDuration(raw); err == nil && d > 0 {
+			tick = d
+		}
 	}
 
 	return &Config{
@@ -99,5 +113,11 @@ func Load() (*Config, error) {
 		DefaultAIAPIKey:      os.Getenv("DEFAULT_AI_API_KEY"),
 		DefaultAIEndpoint:    os.Getenv("DEFAULT_AI_ENDPOINT"),
 		DefaultAIModel:       os.Getenv("DEFAULT_AI_MODEL"),
+		SMTPHost:             os.Getenv("SMTP_HOST"),
+		SMTPPort:             os.Getenv("SMTP_PORT"),
+		SMTPUsername:         os.Getenv("SMTP_USERNAME"),
+		SMTPPassword:         os.Getenv("SMTP_PASSWORD"),
+		SMTPFrom:             os.Getenv("SMTP_FROM"),
+		NotificationTick:     tick,
 	}, nil
 }
