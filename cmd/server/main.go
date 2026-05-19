@@ -76,6 +76,17 @@ func main() {
 	// Background tasks
 	toolSvc.StartIconRefreshLoop(6 * time.Hour)
 
+	// Notification sweep (email reminders). Disabled when SMTP env is not
+	// fully configured — self-host users without SMTP credentials continue
+	// to work unchanged.
+	if mailer := service.NewSMTPMailer(cfg); mailer != nil {
+		notificationSvc := service.NewNotificationService(db, mailer)
+		notificationSvc.StartLoop(cfg.NotificationTick)
+		log.Printf("notification sweep started (tick=%s)", cfg.NotificationTick)
+	} else {
+		log.Printf("notification sweep disabled (SMTP env not configured)")
+	}
+
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc, cfg)
 	apiKeyH := handler.NewAPIKeyHandler(authSvc)
