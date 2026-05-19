@@ -29,14 +29,13 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Write runtime env
+        env:
+          BASE_ENV: ${{ github.ref == 'refs/heads/staging' && secrets.KONBU_STAGING_RUNTIME_ENV || secrets.KONBU_RUNTIME_ENV }}
+          SMTP_ENV: ${{ secrets.KONBU_SMTP_RUNTIME_ENV }}
         run: |
-          cat <<'EOF' > "$RUNTIME_ENV_FILE"
-          ${{ github.ref == 'refs/heads/staging' && secrets.KONBU_STAGING_RUNTIME_ENV || secrets.KONBU_RUNTIME_ENV }}
-          EOF
-          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
-            cat <<'EOF' >> "$RUNTIME_ENV_FILE"
-          ${{ secrets.KONBU_SMTP_RUNTIME_ENV }}
-          EOF
+          printf '%s\n' "$BASE_ENV" > "$RUNTIME_ENV_FILE"
+          if [ "$GITHUB_REF" = "refs/heads/main" ] && [ -n "$SMTP_ENV" ]; then
+            printf '%s\n' "$SMTP_ENV" >> "$RUNTIME_ENV_FILE"
           fi
 
       - id: auth
