@@ -14,6 +14,7 @@ ARTIFACT_REPO="${ARTIFACT_REGISTRY_REPOSITORY:-apps}"
 SERVICE_NAME="${CLOUD_RUN_SERVICE:-konbu}"
 ENV_FILE="${RUNTIME_ENV_FILE:-$ROOT_DIR/deploy/google/konbu.runtime.env}"
 DATABASE_URL_SECRET_NAME="${DATABASE_URL_SECRET_NAME:-konbu-database-url}"
+SMTP_PASSWORD_SECRET_NAME="${SMTP_PASSWORD_SECRET_NAME:-}"
 
 if [[ -z "$PROJECT_ID" ]]; then
   echo "GOOGLE_CLOUD_PROJECT or GCP_PROJECT_ID is required." >&2
@@ -31,11 +32,11 @@ DEPLOY_ENV_FILE="$(mktemp)"
 
 cd "$ROOT_DIR"
 
-python3 - "$ENV_FILE" "$DEPLOY_ENV_FILE" "$DATABASE_URL_SECRET_NAME" <<'PY'
+python3 - "$ENV_FILE" "$DEPLOY_ENV_FILE" "$DATABASE_URL_SECRET_NAME" "$SMTP_PASSWORD_SECRET_NAME" <<'PY'
 import json
 import sys
 
-src, dst, database_secret_name = sys.argv[1:]
+src, dst, database_secret_name, smtp_password_secret_name = sys.argv[1:]
 env = {}
 
 with open(src, encoding="utf-8") as f:
@@ -47,6 +48,8 @@ with open(src, encoding="utf-8") as f:
             raise SystemExit(f"Runtime env file must use KEY=VALUE format: {line}")
         key, value = line.split("=", 1)
         if key == "DATABASE_URL" and database_secret_name:
+            continue
+        if key == "SMTP_PASSWORD" and smtp_password_secret_name:
             continue
         env[key] = value
 
@@ -70,8 +73,16 @@ DEPLOY_CMD=(
   --env-vars-file "$DEPLOY_ENV_FILE"
 )
 
+SECRETS_ARGS=""
 if [[ -n "$DATABASE_URL_SECRET_NAME" ]]; then
-  DEPLOY_CMD+=(--set-secrets "DATABASE_URL=${DATABASE_URL_SECRET_NAME}:latest")
+  SECRETS_ARGS+="DATABASE_URL=${DATABASE_URL_SECRET_NAME}:latest,"
+fi
+if [[ -n "$SMTP_PASSWORD_SECRET_NAME" ]]; then
+  SECRETS_ARGS+="SMTP_PASSWORD=${SMTP_PASSWORD_SECRET_NAME}:latest,"
+fi
+SECRETS_ARGS="${SECRETS_ARGS%,}"
+if [[ -n "$SECRETS_ARGS" ]]; then
+  DEPLOY_CMD+=(--set-secrets "$SECRETS_ARGS")
 fi
 
 "${DEPLOY_CMD[@]}"

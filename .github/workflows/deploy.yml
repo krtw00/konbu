@@ -33,6 +33,11 @@ jobs:
           cat <<'EOF' > "$RUNTIME_ENV_FILE"
           ${{ github.ref == 'refs/heads/staging' && secrets.KONBU_STAGING_RUNTIME_ENV || secrets.KONBU_RUNTIME_ENV }}
           EOF
+          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+            cat <<'EOF' >> "$RUNTIME_ENV_FILE"
+          ${{ secrets.KONBU_SMTP_RUNTIME_ENV }}
+          EOF
+          fi
 
       - id: auth
         uses: google-github-actions/auth@v2
@@ -46,6 +51,8 @@ jobs:
           project_id: ${{ env.GOOGLE_CLOUD_PROJECT }}
 
       - name: Deploy to Cloud Run
+        env:
+          SMTP_PASSWORD_SECRET_NAME: ${{ github.ref == 'refs/heads/main' && 'konbu-smtp-password' || '' }}
         run: bash scripts/deploy-cloudrun-konbu.sh
 
       - name: Deploy Firebase Hosting proxy
