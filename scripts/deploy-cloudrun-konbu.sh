@@ -40,12 +40,16 @@ src, dst, database_secret_name, smtp_password_secret_name = sys.argv[1:]
 env = {}
 
 with open(src, encoding="utf-8") as f:
-    for raw_line in f:
+    for row_num, raw_line in enumerate(f, start=1):
         line = raw_line.strip()
         if not line or line.startswith("#"):
             continue
         if "=" not in line:
-            raise SystemExit(f"Runtime env file must use KEY=VALUE format: {line}")
+            print(
+                f"warning: skipping invalid runtime env line {row_num} (length={len(line)})",
+                file=sys.stderr,
+            )
+            continue
         key, value = line.split("=", 1)
         if key == "DATABASE_URL" and database_secret_name:
             continue
@@ -53,6 +57,7 @@ with open(src, encoding="utf-8") as f:
             continue
         env[key] = value
 
+print(f"runtime env keys: {sorted(env.keys())}", file=sys.stderr)
 with open(dst, "w", encoding="utf-8") as f:
     json.dump(env, f)
 PY
