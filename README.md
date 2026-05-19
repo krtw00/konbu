@@ -120,6 +120,18 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `R2_ENDPOINT` | No | Cloudflare R2 default | Attachment storage endpoint |
 | `R2_BUCKET` | No | `konbu-attachments` | Attachment storage bucket |
 | `R2_PUBLIC_URL` | No | -- | Optional public base URL for attachments |
+| `SMTP_HOST` | No | -- | SMTP relay host for reminder emails (e.g. `smtp-relay.brevo.com`). Notifications are disabled unless all five `SMTP_*` variables are set. |
+| `SMTP_PORT` | No | -- | SMTP relay port (typically `587` for STARTTLS) |
+| `SMTP_USERNAME` | No | -- | SMTP relay login |
+| `SMTP_PASSWORD` | No | -- | SMTP relay password / API key |
+| `SMTP_FROM` | No | -- | From address for outgoing reminder emails |
+| `NOTIFICATION_TICK_INTERVAL` | No | `1m` | Notification sweep interval (Go duration, e.g. `30s`, `2m`) |
+
+### Reminders / notifications
+
+When the `SMTP_*` variables above are all set, the server starts a single in-process sweep loop that sends email reminders for upcoming events and due ToDos. Each user opts in via **Settings** (`user_settings.notifications.enabled = true`) and can override the recipient email, lead time, due-time, and timezone.
+
+Notifications are a **server-only feature** — they run inside the API server process and require PostgreSQL. The MCP `--standalone` mode (SQLite) does **not** send reminders.
 
 ### Docker Compose (prod) variables
 
@@ -354,7 +366,7 @@ docker/         # Dockerfile
 
 ## Roadmap
 
-- Reminder notifications (email, browser)
+- Browser push reminders (email reminders are already supported when `SMTP_*` env is configured)
 - Mobile UI improvements
 - CI test coverage
 - AI chat enhancements (context improvements, new model support)

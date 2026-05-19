@@ -116,6 +116,18 @@ DATABASE_URL="postgres://..." SESSION_SECRET="..." ./bin/server
 | `R2_ENDPOINT` | No | Cloudflare R2 既定値 | 添付ファイル保存先 endpoint |
 | `R2_BUCKET` | No | `konbu-attachments` | 添付ファイル保存先バケット |
 | `R2_PUBLIC_URL` | No | -- | 添付ファイル公開ベースURL（任意） |
+| `SMTP_HOST` | No | -- | リマインダーメール用 SMTP リレーホスト (例 `smtp-relay.brevo.com`)。 `SMTP_*` 5 項目全てが揃っている時のみ通知機能が起動する |
+| `SMTP_PORT` | No | -- | SMTP リレーポート (STARTTLS なら通常 `587`) |
+| `SMTP_USERNAME` | No | -- | SMTP リレーログイン名 |
+| `SMTP_PASSWORD` | No | -- | SMTP リレーパスワード / API key |
+| `SMTP_FROM` | No | -- | リマインダー送信元アドレス |
+| `NOTIFICATION_TICK_INTERVAL` | No | `1m` | 通知 sweep の周期 (Go duration、 例 `30s` / `2m`) |
+
+### リマインダー通知
+
+`SMTP_*` env が全て揃っている時、 サーバーは予定 (event) 開始前 と ToDo 期日到来時に email リマインダーを送る in-process loop を起動する。 ユーザーごとに **Settings** (= `user_settings.notifications.enabled = true`) で opt-in、 送信先 email / lead 時間 / 通知時刻 / timezone を個別に上書きできる。
+
+通知は **server 専用機能** (= API サーバープロセス内で動作、 PostgreSQL 必須)。 MCP `--standalone` モード (SQLite) ではリマインダーは送られない。
 
 ### Docker Compose（本番用）変数
 
@@ -348,7 +360,7 @@ docker/         # Dockerfile
 
 ## Roadmap
 
-- リマインダー通知（メール・ブラウザ）
+- ブラウザ push 通知 (= メール通知は `SMTP_*` env が揃えば既に利用可能)
 - スマホUI改善
 - CI テスト追加
 - AIチャット強化（コンテキスト改善、新モデル対応）
