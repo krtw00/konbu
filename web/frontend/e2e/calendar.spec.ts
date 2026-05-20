@@ -34,7 +34,7 @@ test.describe('calendar critical flows', () => {
     await expect(page.getByText('All day').first()).toBeVisible()
   })
 
-  test('renames and publishes a calendar, then switches public views', async ({ page, context }) => {
+  test('renames a calendar from the manage dialog', async ({ page }) => {
     const calendarName = `E2E Calendar ${Date.now()}`
 
     await openCalendar(page)
@@ -47,25 +47,6 @@ test.describe('calendar critical flows', () => {
     await expect(page.getByText('Saved')).toBeVisible()
 
     await expect(page.getByText(calendarName).first()).toBeVisible()
-
-    await page.getByRole('button', { name: 'Share' }).click()
-    await page.getByRole('dialog').getByRole('button', { name: 'Create share link' }).click()
-
-    const publicUrlText = page.getByRole('dialog').locator('text=/http:\\/\\/127\\.0\\.0\\.1:8091\\/public\\//').first()
-    await expect(publicUrlText).toBeVisible()
-    const publicUrl = await publicUrlText.textContent()
-    if (!publicUrl) throw new Error('public URL was not created')
-
-    const publicPage = await context.newPage()
-    await publicPage.goto(publicUrl)
-
-    await expect(publicPage.getByRole('heading', { name: calendarName })).toBeVisible()
-    await publicPage.getByRole('tab', { name: 'Week' }).click()
-    await expect(publicPage.getByRole('tab', { name: 'Week', selected: true })).toBeVisible()
-    await publicPage.getByRole('tab', { name: 'List' }).click()
-    await expect(publicPage.getByRole('tab', { name: 'List', selected: true })).toBeVisible()
-    await publicPage.getByRole('tab', { name: 'Month' }).click()
-    await expect(publicPage.getByRole('tab', { name: 'Month', selected: true })).toBeVisible()
   })
 
   test('deleting a calendar also removes its events from the visible schedule', async ({ page }) => {

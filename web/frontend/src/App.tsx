@@ -6,7 +6,6 @@ import { MobileHeader } from '@/components/layout/MobileHeader'
 import { CommandPalette } from '@/components/CommandPalette'
 import { AppErrorBoundary } from '@/components/AppErrorBoundary'
 import { lazyWithRetry } from '@/lib/lazy'
-import { parseExternalRoute } from '@/lib/publicRoute'
 
 const MemoEditPage = lazyWithRetry(() => import('@/pages/MemoEditPage').then(m => ({ default: m.MemoEditPage })), 'memo-edit')
 const ChatPage = lazyWithRetry(() => import('@/pages/ChatPage').then(m => ({ default: m.ChatPage })), 'chat')
@@ -20,8 +19,6 @@ const SearchPage = lazyWithRetry(() => import('@/pages/SearchPage').then(m => ({
 const HelpPage = lazyWithRetry(() => import('@/pages/HelpPage').then(m => ({ default: m.HelpPage })), 'help')
 const LoginPage = lazyWithRetry(() => import('@/pages/LoginPage').then(m => ({ default: m.LoginPage })), 'login')
 const SetupPage = lazyWithRetry(() => import('@/pages/SetupPage').then(m => ({ default: m.SetupPage })), 'setup')
-const PublicPage = lazyWithRetry(() => import('@/pages/PublicPage').then(m => ({ default: m.PublicPage })), 'public')
-const PublishedMemoPage = lazyWithRetry(() => import('@/pages/PublishedMemoPage').then(m => ({ default: m.PublishedMemoPage })), 'published-memo')
 const FeedbackPage = lazyWithRetry(() => import('@/pages/FeedbackPage').then(m => ({ default: m.FeedbackPage })), 'feedback')
 
 function LoadingScreen() {
@@ -46,9 +43,6 @@ function App() {
   const { t } = useTranslation()
   const { currentPage, setPage, isAuthenticated, isLoading, needsSetup, checkAuth } = useAppStore()
   const [editingMemoId, setEditingMemoId] = useState<string | null>(null)
-  const externalRoute = typeof window !== 'undefined'
-    ? parseExternalRoute(window.location.pathname)
-    : null
   const isFeedbackPage = typeof window !== 'undefined' && window.location.pathname === '/feedback'
 
   useEffect(() => {
@@ -79,22 +73,6 @@ function App() {
     const prev = useAppStore.getState().currentPage
     setPage(prev === 'table-edit' ? 'tables' : 'memos')
   }, [setPage])
-
-  if (externalRoute?.kind === 'public-share') {
-    return (
-      <Suspense fallback={<LoadingScreen />}>
-        <PublicPage token={externalRoute.token} />
-      </Suspense>
-    )
-  }
-
-  if (externalRoute?.kind === 'published-memo') {
-    return (
-      <Suspense fallback={<LoadingScreen />}>
-        <PublishedMemoPage slug={externalRoute.slug} />
-      </Suspense>
-    )
-  }
 
   if (isFeedbackPage) {
     return (

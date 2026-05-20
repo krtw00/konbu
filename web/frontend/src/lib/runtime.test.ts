@@ -14,8 +14,8 @@ describe('runtime helpers', () => {
 
     expect(runtime.apiBaseURL).toBe('https://api.example.com/api/v1')
     expect(runtime.publicAppURL).toBe('https://konbu.example.com')
-    expect(runtime.apiPath('/public/token')).toBe('https://api.example.com/api/v1/public/token')
-    expect(runtime.appURL('/public/token')).toBe('https://konbu.example.com/public/token')
+    expect(runtime.apiPath('/memos/abc')).toBe('https://api.example.com/api/v1/memos/abc')
+    expect(runtime.appURL('/memos/abc')).toBe('https://konbu.example.com/memos/abc')
   })
 
   it('falls back to local defaults when no runtime env is configured', async () => {
@@ -24,6 +24,6 @@ describe('runtime helpers', () => {
     expect(runtime.apiBaseURL).toBe('/api/v1')
     expect(runtime.publicAppURL).toBe(window.location.origin)
     expect(runtime.apiPath('/health')).toBe('/api/v1/health')
-    expect(runtime.appURL('/public/token')).toBe(`${window.location.origin}/public/token`)
+    expect(runtime.appURL('/memos/abc')).toBe(`${window.location.origin}/memos/abc`)
   })
 })

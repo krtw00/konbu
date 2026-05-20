@@ -129,30 +129,6 @@ func formatRowData(rowData map[string]string) string {
 	return string(b)
 }
 
-func resolveResourceID(resourceType, prefix string) string {
-	switch resourceType {
-	case "memo":
-		return resolveMemoID(prefix)
-	case "todo":
-		return resolveTodoID(prefix)
-	case "calendar":
-		return resolveCalendarID(prefix)
-	case "event":
-		return resolveEventID(prefix)
-	default:
-		return prefix
-	}
-}
-
-func normalizeResourceType(resourceType string) string {
-	switch strings.ToLower(resourceType) {
-	case "memo", "todo", "calendar", "event":
-		return strings.ToLower(resourceType)
-	default:
-		return ""
-	}
-}
-
 func main() {
 	root := &cobra.Command{
 		Use:   "konbu",
@@ -163,7 +139,7 @@ func main() {
 	root.PersistentFlags().StringVar(&apiKey, "api-key", "", "API key (or KONBU_API_KEY env)")
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "Output as JSON")
 
-	root.AddCommand(memoCmd(), todoCmd(), calendarCmd(), eventCmd(), shareCmd(), legacyPublicCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
+	root.AddCommand(memoCmd(), todoCmd(), calendarCmd(), eventCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
@@ -1104,84 +1080,6 @@ func calendarCmd() *cobra.Command {
 	calendar.AddCommand(member)
 
 	return calendar
-}
-
-// --- share ---
-
-func shareCmd() *cobra.Command {
-	share := &cobra.Command{Use: "share", Short: "Manage share links"}
-
-	share.AddCommand(&cobra.Command{
-		Use: "get [resource_type] [id]", Short: "Get share link for a resource",
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			resourceType := normalizeResourceType(args[0])
-			if resourceType == "" {
-				return fmt.Errorf("unsupported resource type: %s", args[0])
-			}
-			share, err := cli().GetPublicShare(resourceType, resolveResourceID(resourceType, args[1]))
-			if err != nil {
-				return err
-			}
-			if jsonOut {
-				printJSON(share)
-				return nil
-			}
-			if share == nil {
-				fmt.Println("No share link.")
-				return nil
-			}
-			fmt.Println(cli().PublicURL(share.Token))
-			return nil
-		},
-	})
-
-	share.AddCommand(&cobra.Command{
-		Use: "create [resource_type] [id]", Short: "Create a share link for a resource",
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			resourceType := normalizeResourceType(args[0])
-			if resourceType == "" {
-				return fmt.Errorf("unsupported resource type: %s", args[0])
-			}
-			share, err := cli().CreatePublicShare(resourceType, resolveResourceID(resourceType, args[1]))
-			if err != nil {
-				return err
-			}
-			if jsonOut {
-				printJSON(map[string]any{"share": share, "url": cli().PublicURL(share.Token)})
-				return nil
-			}
-			fmt.Println(cli().PublicURL(share.Token))
-			return nil
-		},
-	})
-
-	share.AddCommand(&cobra.Command{
-		Use: "rm [resource_type] [id]", Short: "Delete a share link for a resource",
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			resourceType := normalizeResourceType(args[0])
-			if resourceType == "" {
-				return fmt.Errorf("unsupported resource type: %s", args[0])
-			}
-			if err := cli().DeletePublicShare(resourceType, resolveResourceID(resourceType, args[1])); err != nil {
-				return err
-			}
-			fmt.Println("Deleted.")
-			return nil
-		},
-	})
-
-	return share
-}
-
-func legacyPublicCmd() *cobra.Command {
-	public := shareCmd()
-	public.Use = "public"
-	public.Hidden = true
-	public.Deprecated = "use 'konbu share' instead"
-	return public
 }
 
 // --- tag ---

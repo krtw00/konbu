@@ -155,22 +155,6 @@ export const api = {
   getChatConfig: () => request<{ data: import('@/types/api').AIChatConfig }>('GET', '/chat/config'),
   updateChatConfig: (body: import('@/types/api').AIChatConfig) => request<{ data: import('@/types/api').AIChatConfig }>('PUT', '/chat/config', body),
 
-  // Public shares
-  getPublicShare: (resourceType: import('@/types/api').PublicResourceType, id: string) =>
-    request<{ data: import('@/types/api').PublicShare | null }>('GET', `/public-shares/${resourceType}/${id}`),
-  createPublicShare: (resourceType: import('@/types/api').PublicResourceType, id: string) =>
-    request<{ data: import('@/types/api').PublicShare }>('POST', `/public-shares/${resourceType}/${id}`),
-  deletePublicShare: (resourceType: import('@/types/api').PublicResourceType, id: string) =>
-    request<null>('DELETE', `/public-shares/${resourceType}/${id}`),
-  getPublicShareView: async (token: string): Promise<{ data: import('@/types/api').PublicShareView }> => {
-    const res = await fetch(apiPath(`/public/${token}`))
-    const data = await res.json()
-    if (!res.ok) throw new Error(data.error?.message || 'Request failed')
-    return data
-  },
-  getPublishedMemoView: (slug: string) =>
-    request<{ data: import('@/types/api').PublishedMemoView }>('GET', `/published/memo/${encodeURIComponent(slug)}/view`),
-
   // Attachments
   uploadAttachment: async (file: File): Promise<{ data: { url: string } }> => {
     const form = new FormData()

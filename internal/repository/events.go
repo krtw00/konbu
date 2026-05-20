@@ -49,14 +49,6 @@ func (q *Queries) GetEventByID(ctx context.Context, id, userID uuid.UUID) (Event
 	return scanEvent(row)
 }
 
-func (q *Queries) GetEventByIDPublic(ctx context.Context, id uuid.UUID) (EventRow, error) {
-	row := q.db.QueryRowContext(ctx,
-		`SELECT `+eventCols+` FROM calendar_events
-		 WHERE id = $1 AND deleted_at IS NULL`,
-		id)
-	return scanEvent(row)
-}
-
 func (q *Queries) ListEventsByUserID(ctx context.Context, userID uuid.UUID, calendarID *uuid.UUID, limit, offset int) ([]EventRow, error) {
 	var query string
 	var args []any
@@ -101,28 +93,6 @@ func (q *Queries) ListAllEventsByUserID(ctx context.Context, userID uuid.UUID) (
 		        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $1))
 		 ORDER BY start_at ASC`,
 		userID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var events []EventRow
-	for rows.Next() {
-		e, err := scanEvent(rows)
-		if err != nil {
-			return nil, err
-		}
-		events = append(events, e)
-	}
-	return events, rows.Err()
-}
-
-func (q *Queries) ListEventsByCalendarPublic(ctx context.Context, calendarID uuid.UUID) ([]EventRow, error) {
-	rows, err := q.db.QueryContext(ctx,
-		`SELECT `+eventCols+` FROM calendar_events
-		 WHERE calendar_id = $1 AND deleted_at IS NULL
-		 ORDER BY start_at ASC`,
-		calendarID)
 	if err != nil {
 		return nil, err
 	}

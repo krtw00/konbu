@@ -126,20 +126,6 @@
     "memberAdded": "メンバーを追加しました",
     "calendarDeleted": "カレンダーを削除しました"
   },
-  "publicShare": {
-    "button": "共有",
-    "title": "共有リンク",
-    "description": "閲覧専用の共有URLを発行します。受け取った人はログインなしで内容を見られます。",
-    "url": "共有URL",
-    "publish": "共有リンクを作成",
-    "notPublished": "共有リンクはまだありません。",
-    "copied": "共有URLをコピーしました",
-    "loadError": "共有状態の取得に失敗しました",
-    "publishError": "共有リンクの作成に失敗しました",
-    "deleteError": "共有リンクの削除に失敗しました",
-    "unavailable": "共有ページを表示できません",
-    "unavailableDescription": "リンクが無効になっているか、共有が解除されています。"
-  },
   "command": {
     "searchPlaceholder": "すべてを検索…",
     "noResults": "見つかりませんでした",

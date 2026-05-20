@@ -450,46 +450,6 @@ func (c *Client) RemoveCalendarMember(id, userID string) error {
 	return err
 }
 
-// --- Public Share ---
-
-type PublicShare struct {
-	ResourceType string `json:"resource_type"`
-	ResourceID   string `json:"resource_id"`
-	Token        string `json:"token"`
-	CreatedAt    string `json:"created_at"`
-	UpdatedAt    string `json:"updated_at"`
-}
-
-func (c *Client) GetPublicShare(resourceType, id string) (*PublicShare, error) {
-	data, err := c.do("GET", "/api/v1/public-shares/"+resourceType+"/"+id, nil)
-	if err != nil {
-		return nil, err
-	}
-	if string(data) == "null" {
-		return nil, nil
-	}
-	var share PublicShare
-	return &share, json.Unmarshal(data, &share)
-}
-
-func (c *Client) CreatePublicShare(resourceType, id string) (*PublicShare, error) {
-	data, err := c.do("POST", "/api/v1/public-shares/"+resourceType+"/"+id, nil)
-	if err != nil {
-		return nil, err
-	}
-	var share PublicShare
-	return &share, json.Unmarshal(data, &share)
-}
-
-func (c *Client) DeletePublicShare(resourceType, id string) error {
-	_, err := c.do("DELETE", "/api/v1/public-shares/"+resourceType+"/"+id, nil)
-	return err
-}
-
-func (c *Client) PublicURL(token string) string {
-	return c.BaseURL + "/public/" + token
-}
-
 // --- Tag ---
 
 func (c *Client) ListTags() ([]Tag, error) {

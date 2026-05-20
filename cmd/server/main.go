@@ -63,8 +63,6 @@ func main() {
 	todoSvc := service.NewTodoService(db, tagSvc)
 	eventSvc := service.NewEventService(db, tagSvc, calSvc)
 	searchSvc := service.NewSearchService(db)
-	publicShareSvc := service.NewPublicShareService(db)
-	publishSvc := service.NewPublishService(db)
 	feedbackReporter := service.NewGitHubFeedbackReporter(cfg)
 	billingSvc := service.NewBillingService(cfg)
 
@@ -94,8 +92,6 @@ func main() {
 	todoH := handler.NewTodoHandler(todoSvc)
 	eventH := handler.NewEventHandler(eventSvc)
 	searchH := handler.NewSearchHandler(searchSvc)
-	publicShareH := handler.NewPublicShareHandler(publicShareSvc)
-	publishH := handler.NewPublishHandler(publishSvc)
 	exportH := handler.NewExportHandler(exportSvc)
 	importH := handler.NewImportHandler(eventSvc)
 	chatH := handler.NewChatHandler(chatSvc)
@@ -135,10 +131,6 @@ func main() {
 	// Attachment serving (unauthenticated, for Markdown image display)
 	r.Get("/api/v1/attachments/*", attachH.Serve)
 
-	// Public shares (unauthenticated read-only views)
-	r.Mount("/api/v1/public", publicShareH.PublicRoutes())
-	r.Mount("/api/v1/published", publishH.PublicRoutes())
-
 	// Feedback/contact intake (unauthenticated, rate limited)
 	r.Group(func(r chi.Router) {
 		r.Use(feedbackLimiter.Middleware)
@@ -165,8 +157,6 @@ func main() {
 	r.Get("/robots.txt", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "web/static/robots.txt")
 	})
-	r.Get("/sitemap.xml", newSitemapHandler(publishSvc))
-	r.Get("/memo/{slug}", newPublishedMemoPageHandler(publishSvc))
 
 	// OAuth
 	oauthH := handler.NewOAuthHandler(authSvc, cfg)
@@ -216,8 +206,6 @@ func main() {
 			r.Mount("/events", eventH.Routes())
 			r.Mount("/calendars", calendarH.Routes())
 			r.Get("/search", searchH.HandleSearch)
-			r.Mount("/public-shares", publicShareH.AuthRoutes())
-			r.Mount("/publishes", publishH.AuthRoutes())
 			r.Mount("/export", exportH.Routes())
 			r.Mount("/import", importH.Routes())
 			r.Mount("/chat", chatH.Routes())

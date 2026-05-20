@@ -188,57 +188,6 @@ export interface AIChatConfig {
   anthropic_key?: string
 }
 
-export type PublicResourceType = 'memo' | 'todo' | 'calendar' | 'event'
-
-export interface PublicShare {
-  resource_type: PublicResourceType
-  resource_id: string
-  token: string
-  created_at: string
-  updated_at: string
-}
-
-export interface PublicMemoView extends Memo {
-  rows?: MemoRow[]
-}
-
-export interface PublicCalendarView {
-  id: string
-  name: string
-  color: string
-  events: CalendarEvent[]
-  created_at: string
-  updated_at: string
-}
-
-export interface PublicShareView {
-  token: string
-  resource_type: PublicResourceType
-  memo?: PublicMemoView
-  todo?: Todo
-  event?: CalendarEvent
-  calendar?: PublicCalendarView
-}
-
-export type PublishedResourceType = 'memo' | 'event' | 'calendar'
-
-export interface PublishedResource {
-  resource_type: PublishedResourceType
-  resource_id: string
-  slug: string
-  title: string
-  description?: string
-  visibility: 'private' | 'unlisted' | 'public'
-  published_at?: string
-  created_at: string
-  updated_at: string
-}
-
-export interface PublishedMemoView {
-  publish: PublishedResource
-  memo: PublicMemoView
-}
-
 export interface ListResponse<T> {
   data: T[]
   total: number

@@ -8,7 +8,6 @@ import { appURL } from '@/lib/runtime'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { PublicShareDialog } from '@/components/PublicShareDialog'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { ChevronLeft, ChevronRight, Repeat, Plus, ChevronDown, Settings2, Link2, Copy, Trash2, UserPlus, X } from 'lucide-react'
 import type { CalendarEvent, Calendar, CalendarDetail } from '@/types/api'
@@ -577,7 +576,6 @@ export function CalendarPage() {
         {eventError && <p className="text-xs text-destructive">{eventError}</p>}
         <div className="flex gap-2">
           <Button variant="destructive" size="sm" onClick={() => deleteEvent(editingEvent.id)}>{t('common.delete')}</Button>
-          <PublicShareDialog resourceType="event" resourceId={editingEvent.id} />
           <div className="flex-1" />
           <Button variant="ghost" size="sm" onClick={onClose}>{t('common.cancel')}</Button>
           <Button size="sm" disabled={eventSaving} onClick={saveEvent}>{eventSaving ? '...' : t('common.save')}</Button>
@@ -1352,13 +1350,6 @@ export function CalendarPage() {
                   </div>
                 )}
                 {shareMsg && <p className="text-xs text-muted-foreground mt-1">{shareMsg}</p>}
-              </div>
-
-              <div>
-                <label className="text-sm font-medium">{t('publicShare.title')}</label>
-                <div className="mt-1">
-                  <PublicShareDialog resourceType="calendar" resourceId={manageDetail.id} />
-                </div>
               </div>
 
               {/* Members */}
