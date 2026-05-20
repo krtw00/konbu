@@ -2,14 +2,14 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api'
 import { useCache, invalidateCache } from '@/hooks/useCache'
-import { dateKey, formatTime, localToISO, isoToLocal, isoToDateInput, localDateToISO } from '@/lib/date'
+import { dateKey, formatTime, localToISO, isoToLocal, isoToDateInput, localDateToISO, relativeTime } from '@/lib/date'
 import { getHolidays } from '@/lib/holidays'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { ChevronLeft, ChevronRight, Repeat, Plus, ChevronDown, Settings2, Trash2 } from 'lucide-react'
-import type { CalendarEvent, Calendar, CalendarDetail } from '@/types/api'
+import { ChevronLeft, ChevronRight, Repeat, Plus, ChevronDown, Settings2, Trash2, Globe, RefreshCw } from 'lucide-react'
+import type { CalendarEvent, Calendar, CalendarDetail, CalendarSubscription } from '@/types/api'
 
 type ViewMode = 'month' | 'week' | 'list'
 
@@ -62,6 +62,10 @@ export function CalendarPage() {
   const fetchCalendars = useCallback(() => api.listCalendars().then(r => r.data || []), [])
   const { data: calendars } = useCache<Calendar[]>('calendars', fetchCalendars)
   const calendarList = useMemo(() => calendars ?? [], [calendars])
+  const externalCalendarIds = useMemo(
+    () => new Set(calendarList.filter(c => c.is_external).map(c => c.id)),
+    [calendarList],
+  )
 
   const fetchCalendar = useCallback(() => Promise.all([
     selectedCalendarId ? api.listEvents(100, selectedCalendarId) : api.listEvents(100),
@@ -96,6 +100,65 @@ export function CalendarPage() {
   const [showNewCal, setShowNewCal] = useState(false)
   const [newEventAllDay, setNewEventAllDay] = useState(false)
   const [newListEventAllDay, setNewListEventAllDay] = useState(false)
+
+  // External calendar subscription state
+  const fetchSubscriptions = useCallback(() => api.listSubscriptions().then(r => r.data || []), [])
+  const { data: subscriptions } = useCache<CalendarSubscription[]>('subscriptions', fetchSubscriptions)
+  const subscriptionList = useMemo(() => subscriptions ?? [], [subscriptions])
+  const [subsOpen, setSubsOpen] = useState(false)
+  const [newSubName, setNewSubName] = useState('')
+  const [newSubUrl, setNewSubUrl] = useState('')
+  const [newSubColor, setNewSubColor] = useState(CAL_COLORS[0])
+  const [subSaving, setSubSaving] = useState(false)
+  const [subError, setSubError] = useState('')
+  const [syncingId, setSyncingId] = useState<string | null>(null)
+
+  function isExternalEvent(ev: CalendarEvent): boolean {
+    return !!ev.calendar_id && externalCalendarIds.has(ev.calendar_id)
+  }
+
+  function openEvent(ev: CalendarEvent) {
+    if (isExternalEvent(ev)) return
+    setEditingEvent(ev)
+  }
+
+  function refreshExternalData() {
+    invalidateCache('subscriptions', 'calendars', 'calendar', ...(selectedCalendarId ? [`calendar-${selectedCalendarId}`] : []))
+  }
+
+  async function handleCreateSubscription() {
+    if (!newSubName.trim()) { setSubError(t('calendar.subscriptionNameRequired')); return }
+    if (!newSubUrl.trim()) { setSubError(t('calendar.subscriptionUrlRequired')); return }
+    setSubError('')
+    setSubSaving(true)
+    try {
+      await api.createSubscription({ name: newSubName.trim(), ical_url: newSubUrl.trim(), color: newSubColor })
+      setNewSubName('')
+      setNewSubUrl('')
+      setNewSubColor(CAL_COLORS[0])
+      refreshExternalData()
+    } catch (err) {
+      setSubError(err instanceof Error ? err.message : String(err))
+    } finally {
+      setSubSaving(false)
+    }
+  }
+
+  async function handleSyncSubscription(id: string) {
+    setSyncingId(id)
+    try {
+      await api.syncSubscription(id)
+      refreshExternalData()
+    } catch { /* surfaced via last_error on next list */ } finally {
+      setSyncingId(null)
+    }
+  }
+
+  async function handleDeleteSubscription(id: string) {
+    if (!confirm(t('calendar.confirmDeleteSubscription'))) return
+    await api.deleteSubscription(id)
+    refreshExternalData()
+  }
 
   async function openManageCalendar(calId: string) {
     setCalSelectorOpen(false)
@@ -637,9 +700,11 @@ export function CalendarPage() {
                     {allDay.map((ev, idx) => (
                       <div
                         key={`${ev.id}-${idx}`}
-                        onClick={() => setEditingEvent(ev)}
-                        className={`text-xs px-1 py-0.5 rounded truncate cursor-pointer mb-0.5 flex items-center gap-0.5 ${EVENT_COLORS[idx % 4]}`}
+                        onClick={() => openEvent(ev)}
+                        title={isExternalEvent(ev) ? t('calendar.external') : undefined}
+                        className={`text-xs px-1 py-0.5 rounded truncate mb-0.5 flex items-center gap-0.5 ${isExternalEvent(ev) ? 'cursor-default' : 'cursor-pointer'} ${EVENT_COLORS[idx % 4]}`}
                       >
+                        {isExternalEvent(ev) && <Globe size={8} className="shrink-0" />}
                         {ev.recurrence_rule && <Repeat size={8} className="shrink-0" />}
                         {ev.title}
                       </div>
@@ -674,9 +739,11 @@ export function CalendarPage() {
                       {hourEvents.map((ev, idx) => (
                         <div
                           key={`${ev.id}-${idx}`}
-                          onClick={() => setEditingEvent(ev)}
-                          className={`text-xs px-1 py-0.5 rounded truncate cursor-pointer mb-0.5 flex items-center gap-0.5 ${EVENT_COLORS[idx % 4]}`}
+                          onClick={() => openEvent(ev)}
+                          title={isExternalEvent(ev) ? t('calendar.external') : undefined}
+                          className={`text-xs px-1 py-0.5 rounded truncate mb-0.5 flex items-center gap-0.5 ${isExternalEvent(ev) ? 'cursor-default' : 'cursor-pointer'} ${EVENT_COLORS[idx % 4]}`}
                         >
+                          {isExternalEvent(ev) && <Globe size={8} className="shrink-0" />}
                           {ev.recurrence_rule && <Repeat size={8} className="shrink-0" />}
                           {formatTime(ev.start_at)} {ev.title}
                         </div>
@@ -723,8 +790,8 @@ export function CalendarPage() {
                 {group.events.map((ev, idx) => (
                   <div
                     key={`${ev.id}-${idx}`}
-                    onClick={() => setEditingEvent(ev)}
-                    className="px-3 py-2.5 hover:bg-accent/30 cursor-pointer transition-colors"
+                    onClick={() => openEvent(ev)}
+                    className={`px-3 py-2.5 transition-colors ${isExternalEvent(ev) ? 'cursor-default' : 'hover:bg-accent/30 cursor-pointer'}`}
                   >
                     <div className="flex items-center gap-2">
                       <div
@@ -735,6 +802,11 @@ export function CalendarPage() {
                         <div className="flex items-center gap-1.5">
                           {ev.recurrence_rule && <Repeat size={12} className="text-muted-foreground shrink-0" />}
                           <span className="font-medium text-sm truncate">{ev.title}</span>
+                          {isExternalEvent(ev) && (
+                            <span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground shrink-0">
+                              <Globe size={10} />{t('calendar.external')}
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">
                           {ev.all_day
@@ -871,13 +943,20 @@ export function CalendarPage() {
                         >
                           <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cal.color || '#3b82f6' }} />
                           <span className="truncate">{cal.name}</span>
+                          {cal.is_external && (
+                            <span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 py-0.5 text-[10px] text-muted-foreground shrink-0">
+                              <Globe size={10} />{t('calendar.external')}
+                            </span>
+                          )}
                         </button>
-                        <button
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
-                          onClick={() => openManageCalendar(cal.id)}
-                        >
-                          <Settings2 size={14} />
-                        </button>
+                        {!cal.is_external && (
+                          <button
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                            onClick={() => openManageCalendar(cal.id)}
+                          >
+                            <Settings2 size={14} />
+                          </button>
+                        )}
                       </div>
                     ))}
                     <div className="mt-1 border-t border-border pt-1">
@@ -887,6 +966,13 @@ export function CalendarPage() {
                       >
                         <Plus size={14} />
                         {t('calendar.newCalendar')}
+                      </button>
+                      <button
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent/50"
+                        onClick={() => { setSubsOpen(true); setCalSelectorOpen(false) }}
+                      >
+                        <Globe size={14} />
+                        {t('calendar.externalCalendars')}
                       </button>
                     </div>
                   </div>
@@ -960,9 +1046,11 @@ export function CalendarPage() {
                       {dayEvents.slice(0, MAX_EVENTS).map((ev, idx) => (
                         <div
                           key={`${ev.id}-${idx}`}
-                          onClick={(e) => { e.stopPropagation(); setEditingEvent(ev); setSelectedDay([year, month, d]) }}
+                          onClick={(e) => { e.stopPropagation(); openEvent(ev); setSelectedDay([year, month, d]) }}
+                          title={isExternalEvent(ev) ? t('calendar.external') : undefined}
                           className={`text-xs px-1 py-0.5 rounded truncate cursor-pointer flex items-center gap-0.5 ${EVENT_COLORS[idx % 4]}`}
                         >
+                          {isExternalEvent(ev) && <Globe size={8} className="shrink-0" />}
                           {ev.recurrence_rule && <Repeat size={8} className="shrink-0" />}
                           {ev.all_day ? ev.title : `${formatTime(ev.start_at)} ${ev.title}`}
                         </div>
@@ -1014,12 +1102,17 @@ export function CalendarPage() {
                         {dk && eventsForDay(dk).map((ev, idx) => (
                           <div
                             key={`${ev.id}-${idx}`}
-                            onClick={() => setEditingEvent(ev)}
-                            className="text-sm p-2 rounded hover:bg-accent/50 cursor-pointer"
+                            onClick={() => openEvent(ev)}
+                            className={`text-sm p-2 rounded ${isExternalEvent(ev) ? 'cursor-default' : 'hover:bg-accent/50 cursor-pointer'}`}
                           >
                             <div className="flex items-center gap-1 text-xs text-muted-foreground">
                               {ev.recurrence_rule && <Repeat size={10} />}
                               {ev.all_day ? t('common.allDay') : `${formatTime(ev.start_at)}${ev.end_at ? ' – ' + formatTime(ev.end_at) : ''}`}
+                              {isExternalEvent(ev) && (
+                                <span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 text-[10px]">
+                                  <Globe size={9} />{t('calendar.external')}
+                                </span>
+                              )}
                             </div>
                             <div>{ev.title}</div>
                           </div>
@@ -1096,12 +1189,17 @@ export function CalendarPage() {
                       {dk && eventsForDay(dk).map((ev, idx) => (
                         <div
                           key={`m-${ev.id}-${idx}`}
-                          onClick={() => setEditingEvent(ev)}
-                          className="text-sm p-2 rounded hover:bg-accent/50 cursor-pointer"
+                          onClick={() => openEvent(ev)}
+                          className={`text-sm p-2 rounded ${isExternalEvent(ev) ? 'cursor-default' : 'hover:bg-accent/50 cursor-pointer'}`}
                         >
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             {ev.recurrence_rule && <Repeat size={10} />}
                             {ev.all_day ? t('common.allDay') : `${formatTime(ev.start_at)}${ev.end_at ? ' – ' + formatTime(ev.end_at) : ''}`}
+                            {isExternalEvent(ev) && (
+                              <span className="inline-flex items-center gap-0.5 rounded bg-muted px-1 text-[10px]">
+                                <Globe size={9} />{t('calendar.external')}
+                              </span>
+                            )}
                           </div>
                           <div>{ev.title}</div>
                         </div>
@@ -1255,6 +1353,121 @@ export function CalendarPage() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* External calendar subscriptions dialog */}
+      <Dialog open={subsOpen} onOpenChange={(open) => {
+        setSubsOpen(open)
+        if (!open) {
+          setSubError('')
+          setNewSubName('')
+          setNewSubUrl('')
+          setNewSubColor(CAL_COLORS[0])
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Globe size={16} />{t('calendar.externalCalendars')}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-xs text-muted-foreground">{t('calendar.externalReadOnly')}</p>
+
+            {/* Add form */}
+            <div className="space-y-3 rounded-xl border border-border p-3">
+              <div>
+                <label className="text-sm font-medium">{t('calendar.subscriptionName')}</label>
+                <Input
+                  aria-label={t('calendar.subscriptionName')}
+                  className="mt-1"
+                  placeholder={t('calendar.subscriptionName')}
+                  value={newSubName}
+                  onChange={e => setNewSubName(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">{t('calendar.icalUrl')}</label>
+                <Input
+                  aria-label={t('calendar.icalUrl')}
+                  className="mt-1"
+                  type="url"
+                  placeholder={t('calendar.icalUrlPlaceholder')}
+                  value={newSubUrl}
+                  onChange={e => setNewSubUrl(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">{t('calendar.calendarColor')}</label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {CAL_COLORS.map(c => (
+                    <button
+                      key={c}
+                      type="button"
+                      className={`h-7 w-7 rounded-full border-2 transition ${newSubColor === c ? 'border-foreground scale-105' : 'border-transparent'}`}
+                      style={{ backgroundColor: c }}
+                      onClick={() => setNewSubColor(c)}
+                    />
+                  ))}
+                </div>
+              </div>
+              {subError && <p className="text-xs text-destructive">{subError}</p>}
+              <div className="flex justify-end">
+                <Button size="sm" disabled={subSaving || !newSubName.trim() || !newSubUrl.trim()} onClick={handleCreateSubscription}>
+                  <Plus size={14} className="mr-1" />{subSaving ? '...' : t('calendar.addSubscription')}
+                </Button>
+              </div>
+            </div>
+
+            {/* Subscription list */}
+            <div className="space-y-2">
+              {subscriptionList.length === 0 && (
+                <p className="text-sm text-muted-foreground">{t('calendar.noSubscriptions')}</p>
+              )}
+              {subscriptionList.map(sub => {
+                const cal = calendarList.find(c => c.id === sub.calendar_id)
+                return (
+                  <div key={sub.id} className="rounded-xl border border-border p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cal?.color || '#3b82f6' }} />
+                      <span className="font-medium text-sm truncate flex-1">{cal?.name ?? sub.ical_url}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        title={t('calendar.sync')}
+                        disabled={syncingId === sub.id}
+                        onClick={() => handleSyncSubscription(sub.id)}
+                      >
+                        <RefreshCw size={14} className={syncingId === sub.id ? 'animate-spin' : ''} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
+                        title={t('common.delete')}
+                        onClick={() => handleDeleteSubscription(sub.id)}
+                      >
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                    <div className="text-xs text-muted-foreground truncate">{t('calendar.icalUrl')}: {t('calendar.icalUrlRegistered')}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {syncingId === sub.id
+                        ? t('calendar.syncing')
+                        : sub.last_fetched_at
+                          ? `${t('calendar.lastFetched')}: ${relativeTime(sub.last_fetched_at)}`
+                          : t('calendar.neverFetched')}
+                    </div>
+                    {sub.last_error && (
+                      <p className="text-xs text-destructive break-words">{sub.last_error}</p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

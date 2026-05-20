@@ -52,6 +52,7 @@ export interface CalendarEvent {
   recurrence_rule: string | null
   recurrence_end: string | null
   created_by?: string
+  external_uid?: string | null
   tags: Tag[]
   created_at: string
   updated_at: string
@@ -62,11 +63,23 @@ export interface Calendar {
   owner_id: string
   name: string
   is_default: boolean
+  is_external: boolean
   color: string
   created_at: string
 }
 
 export type CalendarDetail = Calendar
+
+export interface CalendarSubscription {
+  id: string
+  owner_id: string
+  calendar_id: string
+  ical_url: string
+  last_fetched_at: string | null
+  last_error: string | null
+  created_at: string
+  updated_at: string
+}
 
 export interface SearchResult {
   type: 'memo' | 'todo' | 'event'

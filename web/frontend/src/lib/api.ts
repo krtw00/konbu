@@ -85,6 +85,15 @@ export const api = {
     request<{ data: import('@/types/api').Calendar }>('PUT', `/calendars/${id}`, body),
   deleteCalendar: (id: string) => request<null>('DELETE', `/calendars/${id}`),
 
+  // Calendar subscriptions (iCal)
+  listSubscriptions: () =>
+    request<{ data: import('@/types/api').CalendarSubscription[] }>('GET', '/calendars/subscriptions'),
+  createSubscription: (body: { name: string; ical_url: string; color?: string }) =>
+    request<{ data: import('@/types/api').CalendarSubscription }>('POST', '/calendars/subscriptions', body),
+  deleteSubscription: (id: string) => request<null>('DELETE', `/calendars/subscriptions/${id}`),
+  syncSubscription: (id: string) =>
+    request<{ data: import('@/types/api').CalendarSubscription }>('POST', `/calendars/subscriptions/${id}/sync`),
+
   // Tags
   listTags: () => request<{ data: import('@/types/api').Tag[] }>('GET', '/tags'),
 
