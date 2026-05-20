@@ -13,6 +13,7 @@ const HomePage = lazyWithRetry(() => import('@/pages/HomePage').then(m => ({ def
 const MemosPage = lazyWithRetry(() => import('@/pages/MemosPage').then(m => ({ default: m.MemosPage })), 'memos')
 const TodosPage = lazyWithRetry(() => import('@/pages/TodosPage').then(m => ({ default: m.TodosPage })), 'todos')
 const CalendarPage = lazyWithRetry(() => import('@/pages/CalendarPage').then(m => ({ default: m.CalendarPage })), 'calendar')
+const DailyPage = lazyWithRetry(() => import('@/pages/DailyPage').then(m => ({ default: m.DailyPage })), 'daily')
 const TablesPage = lazyWithRetry(() => import('@/pages/TablesPage').then(m => ({ default: m.TablesPage })), 'tables')
 const SettingsPage = lazyWithRetry(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })), 'settings')
 const SearchPage = lazyWithRetry(() => import('@/pages/SearchPage').then(m => ({ default: m.SearchPage })), 'search')
@@ -135,6 +136,7 @@ function App() {
               <main className="flex-1 overflow-auto">
                 <div className="max-w-5xl mx-auto p-4 md:p-6">
                   {currentPage === 'home' && <HomePage onEditMemo={handleEditMemo} />}
+                  {currentPage === 'daily' && <DailyPage onEditMemo={handleEditMemo} />}
                   {currentPage === 'memos' && <MemosPage onEditMemo={handleEditMemo} />}
                   {currentPage === 'tables' && <TablesPage onEditTable={handleEditTable} />}
                   {currentPage === 'todos' && <TodosPage />}

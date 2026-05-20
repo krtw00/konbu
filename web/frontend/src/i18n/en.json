@@ -24,6 +24,7 @@
     "todo": "ToDo",
     "calendar": "Calendar",
     "cal": "Cal",
+    "daily": "Daily",
     "chat": "AI Chat",
     "search": "Search",
     "help": "Help",
@@ -35,6 +36,18 @@
     "recentMemos": "Recent Memos",
     "noMemos": "No memos yet",
     "allDone": "All done!"
+  },
+  "daily": {
+    "title": "Daily",
+    "today": "Today",
+    "prevDay": "Previous day",
+    "nextDay": "Next day",
+    "events": "Schedule",
+    "noEvents": "No events",
+    "todos": "Due Today",
+    "noTodos": "No due tasks",
+    "memos": "Memos",
+    "noMemos": "No memos"
   },
   "memos": {
     "title": "Memos",

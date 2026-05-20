@@ -94,6 +94,13 @@ export const api = {
   syncSubscription: (id: string) =>
     request<{ data: import('@/types/api').CalendarSubscription }>('POST', `/calendars/subscriptions/${id}/sync`),
 
+  // Daily (date-aggregated view)
+  daily: (from: string, to: string) =>
+    request<{ data: { events: import('@/types/api').CalendarEvent[]; todos: import('@/types/api').Todo[]; memos: import('@/types/api').Memo[] } }>(
+      'GET',
+      `/daily?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`,
+    ),
+
   // Tags
   listTags: () => request<{ data: import('@/types/api').Tag[] }>('GET', '/tags'),
 

@@ -24,6 +24,7 @@
     "todo": "ToDo",
     "calendar": "カレンダー",
     "cal": "カレンダー",
+    "daily": "デイリー",
     "search": "検索",
     "chat": "AIチャット",
     "help": "ヘルプ",
@@ -35,6 +36,18 @@
     "recentMemos": "最近のメモ",
     "noMemos": "メモはまだありません",
     "allDone": "すべて完了！"
+  },
+  "daily": {
+    "title": "デイリー",
+    "today": "今日",
+    "prevDay": "前日",
+    "nextDay": "翌日",
+    "events": "予定",
+    "noEvents": "予定なし",
+    "todos": "締切",
+    "noTodos": "締切なし",
+    "memos": "メモ",
+    "noMemos": "メモなし"
   },
   "memos": {
     "title": "メモ",

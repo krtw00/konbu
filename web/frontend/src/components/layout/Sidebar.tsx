@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { sectionColors, sectionBgColors, sectionBorderColors } from '@/lib/colors'
-import { Home, FileText, Table2, CheckSquare, Calendar, MessageCircle, Search, HelpCircle, Settings, LogOut, Megaphone } from 'lucide-react'
+import { Home, FileText, Table2, CheckSquare, Calendar, CalendarDays, MessageCircle, Search, HelpCircle, Settings, LogOut, Megaphone } from 'lucide-react'
 
 const navItems = [
   { page: 'home' as const, icon: Home, labelKey: 'nav.home' },
@@ -9,6 +9,7 @@ const navItems = [
   { page: 'tables' as const, icon: Table2, labelKey: 'nav.tables' },
   { page: 'todos' as const, icon: CheckSquare, labelKey: 'nav.todo' },
   { page: 'calendar' as const, icon: Calendar, labelKey: 'nav.calendar' },
+  { page: 'daily' as const, icon: CalendarDays, labelKey: 'nav.daily' },
   { page: 'search' as const, icon: Search, labelKey: 'nav.search' },
   { page: 'chat' as const, icon: MessageCircle, labelKey: 'nav.chat' },
 ]
