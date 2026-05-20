@@ -7,7 +7,7 @@ ai_summary: "konbuの主要コンポーネント構成 -- handler/service/reposi
 
 # 主要コンポーネント構成
 
-> **Status**: Active | 最終更新: 2026-03-14
+> **Status**: Active | 最終更新: 2026-05-21
 
 本ドキュメントは、konbuの主要コンポーネントとその関係を定義する。
 
@@ -117,7 +117,6 @@ flowchart TB
 | memo | memo_handler | memo_service | メモCRUD |
 | todo | todo_handler | todo_service | ToDo CRUD、完了/未完了 |
 | event | event_handler | event_service | カレンダー予定CRUD |
-| tool | tool_handler | tool_service | ツールCRUD、favicon、ヘルスチェック |
 | tag | tag_handler | tag_service | タグCRUD、暗黙的upsert |
 | search | search_handler | search_service | 横断全文検索 |
 | export | export_handler | export_service | JSON/Markdown ZIPエクスポート |

@@ -8,7 +8,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 # API設計
 
-> **Status**: Active | 最終更新: 2026-03-18
+> **Status**: Active | 最終更新: 2026-05-21
 
 本ドキュメントは、konbuのREST API設計を定義する。
 
@@ -37,13 +37,6 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | GET | `/auth/providers` | 有効なログイン手段一覧 |
 | GET | `/auth/google/login` | Google OAuth 開始 |
 | GET | `/auth/google/callback` | Google OAuth コールバック |
-
-### Public（公開）
-
-| メソッド | パス | 説明 |
-|----------|------|------|
-| GET | `/public/:token` | 共有リンクの閲覧用データ取得（read-only） |
-| GET | `/published/:resourceType/:slug` | publish metadata の取得（slug lookup） |
 
 ### Auth（認証済み）
 
@@ -114,55 +107,9 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 |----------|------|------|
 | GET | `/calendars` | カレンダー一覧 |
 | POST | `/calendars` | カレンダー作成 |
-| GET | `/calendars/:id` | カレンダー詳細（メンバー含む） |
+| GET | `/calendars/:id` | カレンダー詳細 |
 | PUT | `/calendars/:id` | カレンダー更新 |
 | DELETE | `/calendars/:id` | カレンダー削除 |
-| POST | `/calendars/join/:token` | 共有リンクで参加 |
-| POST | `/calendars/:id/share-link` | 共有リンク生成 |
-| DELETE | `/calendars/:id/share-link` | 共有リンク無効化 |
-| POST | `/calendars/:id/members` | メンバー追加 |
-| PUT | `/calendars/:id/members/:uid` | メンバー権限/色更新 |
-| DELETE | `/calendars/:id/members/:uid` | メンバー削除 |
-| GET | `/calendar.ics` | iCalフィード取得（token認証） |
-
-### Public Shares
-
-| メソッド | パス | 説明 |
-|----------|------|------|
-| GET | `/public-shares/:resourceType/:id` | リソースの共有リンク取得 |
-| POST | `/public-shares/:resourceType/:id` | 閲覧専用の共有リンク作成 |
-| DELETE | `/public-shares/:resourceType/:id` | 共有リンク削除 |
-
-対応する `resourceType`: `memo`, `todo`, `calendar`, `event`
-
-補足: `tool` の public share は旧実装として backend に残る可能性があるが、現行仕様では対象外とする。
-
-### Publishes
-
-| メソッド | パス | 説明 |
-|----------|------|------|
-| GET | `/publishes/:resourceType/:id` | リソースの publish metadata 取得 |
-| PUT | `/publishes/:resourceType/:id` | slug / title / description / visibility を upsert |
-| DELETE | `/publishes/:resourceType/:id` | publish metadata 削除 |
-
-対応する `resourceType`: `memo`, `event`, `calendar`
-
-補足:
-
-- 現段階の publish API は metadata 管理と slug lookup まで
-- 実際の公開ページ本文や表示 UI は後続 issue (`memo publish`, `event / calendar publish`) で扱う
-
-### Tools
-
-| メソッド | パス | 説明 |
-|----------|------|------|
-| GET | `/tools` | ツール一覧（sort_order順） |
-| POST | `/tools` | ツール追加（favicon自動取得） |
-| PUT | `/tools/:id` | ツール更新 |
-| DELETE | `/tools/:id` | ツール削除（論理削除） |
-| PUT | `/tools/reorder` | 並び替え |
-| POST | `/tools/refresh-icons` | 全ツールのfavicon再取得（手動） |
-| POST | `/tools/health-check` | 全ツールのURL疎通確認 |
 
 ### Tags
 
@@ -177,7 +124,7 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 
 | メソッド | パス | 説明 |
 |----------|------|------|
-| GET | `/search?q=...` | メモ・ToDo・予定・ツールの横断検索 |
+| GET | `/search?q=...` | メモ・ToDo・予定の横断検索 |
 
 追加パラメータ: `type`, `tag`, `from`, `to`, `limit`, `offset`
 
@@ -225,9 +172,6 @@ ai_summary: "konbuのREST APIエンドポイント一覧・認証・レスポン
 | APIキー | `Authorization: Bearer <api-key>` | CLI / 外部連携 |
 | セッションCookie | `__session` (HMAC-SHA256署名) | Web UI |
 | 開発モード | `DEV_USER` 環境変数 | ローカル開発 |
-| iCal feed | `GET /api/v1/calendar.ics?token=...` | 外部カレンダー購読 |
-| 共有リンク | `GET /api/v1/public/:token` | ログイン不要の閲覧専用ページ |
-| publish metadata | `GET /api/v1/published/:resourceType/:slug` | ログイン不要の slug lookup |
 
 ### エラーレスポンス
 

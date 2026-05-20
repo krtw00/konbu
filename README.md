@@ -5,12 +5,12 @@
 <h1 align="center">konbu</h1>
 
 <p align="center">
-  <strong>Personal AI Lifelog.</strong><br>
+  <strong>Your personal digital planner, kept by an AI butler.</strong><br>
   CLI · MCP · Self-hostable · AI-native
 </p>
 
 <p align="center">
-  One Go binary to capture chores, records, and thinking with AI — searchable from a single place.<br>
+  One Go binary that binds your memos, todos, schedule, and tables into a single planner — searchable from one place, kept by AI.<br>
   Connect Claude, Cursor, or any MCP client to your data.
 </p>
 
@@ -34,28 +34,28 @@
 
 ## What is konbu?
 
-konbu is a **personal AI lifelog** — a self-hostable Go binary that captures the scattered "chores, records, and thinking" of your day, lets AI agents organize them, and surfaces everything from a single search interface. Not a replacement for Notion + Todoist + Calendar — a replacement for **the act of searching four apps to find one thing**.
+konbu is a **personal digital planner** — a Filofax-style system planner, digitized. A self-hostable Go binary that binds your memos, todos, schedule, and structured tables into one notebook, kept by an AI butler, and surfaces everything from a single search interface. It's yours alone — nothing is ever shared out. Not a replacement for Notion + Todoist + Calendar — a replacement for **the act of searching four apps to find one thing**.
 
 What's different:
 
-- **Native MCP server + CLI client** -- Two parallel routes to operate konbu from AI agents (Claude / Cursor / any MCP client) or shell / scripts.
-- **Cross-resource full-text search** -- One query across memos, todos, events, bookmarks, and structured tables. This is the core UX, not a side feature.
+- **Native MCP server + CLI client** -- Two parallel routes for the AI butler (Claude / Cursor / any MCP client) or shell / scripts to operate your planner.
+- **Cross-resource full-text search** -- One query across memos, todos, events, and structured tables. This is the core UX, not a side feature.
 - **Structured tables** (= table-memo, planned) -- Track blood pressure, household budgets, or inventory. Markdown can't express these; tables can.
 - **BYOK AI chat** -- Bring your own OpenAI/Anthropic API key, or use the included free tier.
+- **Personal by design** -- One notebook, for you only. Pulls in from outside (Google Calendar), never leaks out.
 - **Self-hostable** -- One Go binary, Docker compose, or use the hosted version.
 
 End the state of having your day scattered across four different apps.
 
 ## Features
 
-- **Cross-resource Full-text Search** -- Search across memos, todos, events, bookmarks, and structured tables in one query (core UX)
+- **Cross-resource Full-text Search** -- Search across memos, todos, events, and structured tables in one query (core UX)
 - **CLI & MCP Server** -- Built-in CLI client and MCP server. AI agents like Claude and Cursor can read and write your data directly
 - **AI Agent Chat** -- "Add groceries to my todo" "What's on my schedule tomorrow?" in natural language. BYOK supported, free tier included
 - **Memos** -- Markdown notes with tagging, live preview
 - **ToDo** -- Inline task creation with due dates, tags, and notes
-- **Calendar** -- Monthly view with event CRUD and iCal import
+- **Calendar** -- Monthly view with event CRUD and iCal import (personal, owner-only)
 - **Structured Tables** (= table-memo, planned) -- Track structured data (blood pressure, household budget, inventory) as rows × columns
-- **Bookmark Manager** -- Categorized links with drag-and-drop reordering
 - **Export/Import** -- JSON export, Markdown ZIP export, iCal import
 - **i18n** -- English and Japanese
 
@@ -187,15 +187,6 @@ konbu event add "title" -s <RFC3339>   # Create event
 konbu event edit <id> --title "new"    # Update event
 konbu event rm <id>                    # Delete
 
-konbu share get memo <id>              # Show share link
-konbu share create memo <id>           # Create share link
-konbu share rm memo <id>               # Delete share link
-
-konbu tool list                        # List tools
-konbu tool add "name" "https://..."    # Add tool
-konbu tool edit <id> --category "Dev"  # Update tool
-konbu tool rm <id>                     # Delete
-
 konbu tag list                         # List tags
 konbu tag rm <id>                      # Delete tag
 
@@ -267,11 +258,11 @@ Then point your MCP client at it. Data persists in a named volume:
 
 Prefer building from source? `docker build -f docker/Dockerfile.mcp -t konbu-mcp .` from the repo root produces the same image (CGO-free, distroless static, ~22 MB).
 
-Standalone mode exposes memo / todo / calendar event CRUD plus cross-resource search. Tags, bookmarks, attachments, share links, and AI chat are server-only (use the connected mode below for those).
+Standalone mode exposes memo / todo / calendar event CRUD plus cross-resource search. Tags, attachments, and AI chat are server-only (use the connected mode below for those).
 
 ### Connected mode (talk to a konbu server)
 
-If you're running a konbu server (self-hosted or [konbu Cloud](https://konbu-cloud.codenica.dev)), point the MCP server at it over HTTP. You get the full feature set: tags, bookmarks, attachments, share links, AI chat, multi-user calendars.
+If you're running a konbu server (self-hosted or [konbu Cloud](https://konbu-cloud.codenica.dev)), point the MCP server at it over HTTP. You get the full feature set: tags, attachments, and AI chat.
 
 1. Install the `konbu` CLI binary (see [CLI](#cli) section above)
 2. Generate an API key in **Settings > Security** on the web UI
@@ -314,10 +305,7 @@ Base path: `/api/v1`
 | Memos | `GET/POST /memos`, `GET/PUT/DELETE /memos/:id`, `GET/POST /memos/:id/rows`, `POST /memos/:id/rows/batch`, `GET /memos/:id/rows/export`, `PUT/DELETE /memos/:id/rows/:rowId` |
 | ToDos | `GET/POST /todos`, `GET/PUT/DELETE /todos/:id`, `PATCH /todos/:id/done`, `PATCH /todos/:id/reopen` |
 | Events | `GET/POST /events`, `GET/PUT/DELETE /events/:id` |
-| Calendars | `GET/POST /calendars`, `GET/PUT/DELETE /calendars/:id`, `POST /calendars/join/:token`, share-link and member management, `GET /calendar.ics` |
-| Shares | `GET/POST/DELETE /public-shares/:resourceType/:id`, `GET /public/:token` |
-| Publishes | `GET/PUT/DELETE /publishes/:resourceType/:id`, `GET /published/:resourceType/:slug` |
-| Tools | `GET/POST /tools`, `PUT/DELETE /tools/:id` |
+| Calendars | `GET/POST /calendars`, `GET/PUT/DELETE /calendars/:id` (owner-only) |
 | Tags | `GET/POST /tags`, `PUT/DELETE /tags/:id` |
 | Search | `GET /search?q=...` |
 | Chat | `GET/POST /chat/sessions`, `GET/PUT/DELETE /chat/sessions/:id`, `POST /chat/sessions/:id/messages`, `GET/PUT /chat/config` |

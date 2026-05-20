@@ -68,8 +68,6 @@ konbu の回帰は、純粋ロジックよりも `画面 + 状態 + API + routin
 - 認証セットアップ
 - 終日予定作成
 - カレンダー名変更
-- 共有リンク発行
-- 公開カレンダー表示切り替え
 - 左ナビ遷移でシェルが消えないこと
 - フィードバック送信
 
@@ -86,9 +84,8 @@ konbu の回帰は、純粋ロジックよりも `画面 + 状態 + API + routin
 | 機能 / 責務 | Unit | Integration | E2E |
 |---|---|---|---|
 | 日付変換・終日変換 | `web/frontend/src/lib/date.test.ts` | -- | 終日予定作成 |
-| runtime URL 解決 | `web/frontend/src/lib/runtime.test.ts` | -- | 公開ページ到達 |
+| runtime URL 解決 | `web/frontend/src/lib/runtime.test.ts` | -- | -- |
 | Login / Setup 多重送信防止 | -- | `LoginPage.test.tsx`, `SetupPage.test.tsx` | 認証セットアップ |
-| 共有リンク作成 UI | -- | `PublicShareDialog.test.tsx` | 公開リンク発行 |
 | カレンダー操作 | -- | 追加対象 | `calendar.spec.ts` |
 | ナビゲーション安定性 | -- | -- | `navigation.spec.ts` |
 | フィードバック送信 | -- | 追加対象 | `feedback.spec.ts` |
