@@ -24,7 +24,6 @@
     "todo": "ToDo",
     "calendar": "カレンダー",
     "cal": "カレンダー",
-    "tools": "ツール",
     "search": "検索",
     "chat": "AIチャット",
     "help": "ヘルプ",
@@ -127,18 +126,6 @@
     "memberAdded": "メンバーを追加しました",
     "calendarDeleted": "カレンダーを削除しました"
   },
-  "tools": {
-    "title": "ツール",
-    "noTools": "ツールはまだありません",
-    "newTool": "ツールを追加",
-    "name": "名前",
-    "url": "URL",
-    "confirmDelete": "「{{name}}」を削除しますか？",
-    "editTool": "ツールを編集",
-    "category": "カテゴリ",
-    "categoryPlaceholder": "例: 開発, インフラ, ドキュメント",
-    "healthCheck": "ヘルスチェック"
-  },
   "publicShare": {
     "button": "共有",
     "title": "共有リンク",
@@ -158,11 +145,10 @@
     "noResults": "見つかりませんでした",
     "memo": "メモ",
     "todo": "ToDo",
-    "event": "予定",
-    "tool": "ツール"
+    "event": "予定"
   },
   "search": {
-    "placeholder": "メモ・ToDo・予定・ツールを検索…",
+    "placeholder": "メモ・ToDo・予定を検索…",
     "noResults": "見つかりませんでした",
     "loading": "検索中…",
     "resultCount": "{{count}}件の結果",
@@ -355,19 +341,9 @@
         "設定 > データから .ics ファイルでイベントをインポートできる"
       ]
     },
-    "tools": {
-      "title": "ツール",
-      "description": "よく使うリンクやWebツールを保存・整理できます。ブックマークランチャーとして使えます。",
-      "tips": [
-        "名前、URL、カテゴリ（任意）を入力してツールを登録",
-        "ツールはカテゴリごとにグループ表示される",
-        "ファビコンは自動取得される",
-        "ヘルスチェックでリンク切れを確認できる"
-      ]
-    },
     "search": {
       "title": "検索",
-      "description": "メモ・ToDo・予定・ツールをまとめて検索できます。",
+      "description": "メモ・ToDo・予定をまとめて検索できます。",
       "tips": [
         "Ctrl+K（Macは⌘K）でどこからでもクイック検索を起動",
         "検索ページでは種類・タグ・期間で絞り込みが可能",

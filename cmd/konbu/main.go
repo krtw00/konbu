@@ -96,22 +96,6 @@ func resolveCalendarID(prefix string) string {
 	return prefix
 }
 
-func resolveToolID(prefix string) string {
-	if len(prefix) >= 36 {
-		return prefix
-	}
-	tools, err := cli().ListTools()
-	if err != nil {
-		return prefix
-	}
-	for _, t := range tools {
-		if strings.HasPrefix(t.ID, prefix) {
-			return t.ID
-		}
-	}
-	return prefix
-}
-
 func printJSON(v any) {
 	enc := json.NewEncoder(os.Stdout)
 	enc.SetIndent("", "  ")
@@ -179,7 +163,7 @@ func main() {
 	root.PersistentFlags().StringVar(&apiKey, "api-key", "", "API key (or KONBU_API_KEY env)")
 	root.PersistentFlags().BoolVar(&jsonOut, "json", false, "Output as JSON")
 
-	root.AddCommand(memoCmd(), todoCmd(), calendarCmd(), eventCmd(), toolCmd(), shareCmd(), legacyPublicCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
+	root.AddCommand(memoCmd(), todoCmd(), calendarCmd(), eventCmd(), shareCmd(), legacyPublicCmd(), tagCmd(), searchCmd(), exportCmd(), importCmd(), apiKeyCmd(), mcpCmd())
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)
@@ -1120,136 +1104,6 @@ func calendarCmd() *cobra.Command {
 	calendar.AddCommand(member)
 
 	return calendar
-}
-
-// --- tool ---
-
-func toolCmd() *cobra.Command {
-	tool := &cobra.Command{Use: "tool", Short: "Manage tools/bookmarks"}
-
-	tool.AddCommand(&cobra.Command{
-		Use: "list", Short: "List tools",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			tools, err := cli().ListTools()
-			if err != nil {
-				return err
-			}
-			if jsonOut {
-				printJSON(tools)
-				return nil
-			}
-			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "ID\tNAME\tURL\tCATEGORY")
-			for _, t := range tools {
-				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", t.ID[:8], t.Name, t.URL, t.Category)
-			}
-			w.Flush()
-			return nil
-		},
-	})
-
-	add := &cobra.Command{
-		Use: "add [name] [url]", Short: "Add a tool",
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cat, _ := cmd.Flags().GetString("category")
-			t, err := cli().CreateTool(args[0], args[1], cat)
-			if err != nil {
-				return err
-			}
-			if jsonOut {
-				printJSON(t)
-				return nil
-			}
-			fmt.Printf("Created: %s (%s)\n", t.Name, t.ID[:8])
-			return nil
-		},
-	}
-	add.Flags().String("category", "", "Category")
-	tool.AddCommand(add)
-
-	edit := &cobra.Command{
-		Use: "edit [id]", Short: "Update a tool",
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			id := resolveToolID(args[0])
-			fields := map[string]any{}
-			if v, _ := cmd.Flags().GetString("name"); v != "" {
-				fields["name"] = v
-			}
-			if v, _ := cmd.Flags().GetString("url"); v != "" {
-				fields["url"] = v
-			}
-			if v, _ := cmd.Flags().GetString("icon"); v != "" {
-				fields["icon"] = v
-			}
-			if v, _ := cmd.Flags().GetString("category"); v != "" {
-				fields["category"] = v
-			}
-			t, err := cli().UpdateTool(id, fields)
-			if err != nil {
-				return err
-			}
-			if jsonOut {
-				printJSON(t)
-				return nil
-			}
-			fmt.Printf("Updated: %s\n", t.Name)
-			return nil
-		},
-	}
-	edit.Flags().String("name", "", "New name")
-	edit.Flags().String("url", "", "New URL")
-	edit.Flags().String("icon", "", "Icon (emoji or letter)")
-	edit.Flags().String("category", "", "Category")
-	tool.AddCommand(edit)
-
-	tool.AddCommand(&cobra.Command{
-		Use: "reorder [id1] [id2] ...", Short: "Reorder tools",
-		Args: cobra.MinimumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			tools, err := cli().ListTools()
-			if err != nil {
-				return err
-			}
-			seen := map[string]bool{}
-			completeOrder := make([]string, 0, len(tools))
-			for _, arg := range args {
-				id := resolveToolID(arg)
-				if seen[id] {
-					continue
-				}
-				seen[id] = true
-				completeOrder = append(completeOrder, id)
-			}
-			for _, t := range tools {
-				if seen[t.ID] {
-					continue
-				}
-				completeOrder = append(completeOrder, t.ID)
-			}
-			if err := cli().ReorderTools(completeOrder); err != nil {
-				return err
-			}
-			fmt.Println("Reordered.")
-			return nil
-		},
-	})
-
-	tool.AddCommand(&cobra.Command{
-		Use: "rm [id]", Short: "Delete a tool",
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			id := resolveToolID(args[0])
-			if err := cli().DeleteTool(id); err != nil {
-				return err
-			}
-			fmt.Println("Deleted.")
-			return nil
-		},
-	})
-
-	return tool
 }
 
 // --- share ---

@@ -38,7 +38,7 @@ func (s *SearchService) Search(ctx context.Context, userID uuid.UUID, query stri
 	return resp.Data, nil
 }
 
-// SearchAdvanced performs extended search with filters, tag search, tool search, and fuzzy suggestions.
+// SearchAdvanced performs extended search with filters, tag search, and fuzzy suggestions.
 func (s *SearchService) SearchAdvanced(ctx context.Context, userID uuid.UUID, params model.SearchParams) (*model.SearchResponse, error) {
 	query := strings.TrimSpace(params.Query)
 	if len(query) < 2 {
@@ -96,39 +96,18 @@ func (s *SearchService) SearchAdvanced(ctx context.Context, userID uuid.UUID, pa
 		}
 	}
 
-	// 2. Tool search
-	if typeSet["tool"] && params.Tag == "" {
-		tools, err := s.queries.SearchTools(ctx, userID, pattern, params.Limit, 0)
-		if err != nil {
-			return nil, apperror.Internal(err)
-		}
-		for _, t := range tools {
-			if _, ok := seen[t.ID]; !ok {
-				seen[t.ID] = struct{}{}
-				allResults = append(allResults, model.SearchResult{
-					Type:      "tool",
-					ID:        t.ID,
-					Title:     t.Name,
-					Snippet:   t.URL,
-					Tags:      []string{},
-					UpdatedAt: t.CreatedAt,
-				})
-			}
-		}
-	}
-
-	// 3. Sort by updated_at desc
+	// 2. Sort by updated_at desc
 	sort.Slice(allResults, func(i, j int) bool {
 		return allResults[i].UpdatedAt.After(allResults[j].UpdatedAt)
 	})
 
-	// 4. Count total (approximate)
+	// 3. Count total (approximate)
 	total := len(allResults)
 
-	// 5. Paginate
+	// 4. Paginate
 	data := paginate(allResults, params.Offset, params.Limit)
 
-	// 6. Fuzzy suggestions
+	// 5. Fuzzy suggestions
 	excludeIDs := make([]uuid.UUID, 0, len(seen))
 	for id := range seen {
 		excludeIDs = append(excludeIDs, id)
@@ -409,7 +388,7 @@ func (s *SearchService) getTagNames(ctx context.Context, itemType string, itemID
 
 func makeTypeSet(types []string) map[string]bool {
 	if len(types) == 0 {
-		return map[string]bool{"memo": true, "todo": true, "event": true, "tool": true}
+		return map[string]bool{"memo": true, "todo": true, "event": true}
 	}
 	set := make(map[string]bool)
 	for _, t := range types {

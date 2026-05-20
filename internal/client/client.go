@@ -490,57 +490,6 @@ func (c *Client) PublicURL(token string) string {
 	return c.BaseURL + "/public/" + token
 }
 
-// --- Tool ---
-
-type Tool struct {
-	ID       string `json:"id"`
-	Name     string `json:"name"`
-	URL      string `json:"url"`
-	Icon     string `json:"icon"`
-	Category string `json:"category"`
-}
-
-func (c *Client) ListTools() ([]Tool, error) {
-	data, err := c.do("GET", "/api/v1/tools", nil)
-	if err != nil {
-		return nil, err
-	}
-	var tools []Tool
-	return tools, json.Unmarshal(data, &tools)
-}
-
-func (c *Client) CreateTool(name, url, category string) (*Tool, error) {
-	body := map[string]any{"name": name, "url": url}
-	if category != "" {
-		body["category"] = category
-	}
-	data, err := c.do("POST", "/api/v1/tools", body)
-	if err != nil {
-		return nil, err
-	}
-	var t Tool
-	return &t, json.Unmarshal(data, &t)
-}
-
-func (c *Client) UpdateTool(id string, fields map[string]any) (*Tool, error) {
-	data, err := c.do("PUT", "/api/v1/tools/"+id, fields)
-	if err != nil {
-		return nil, err
-	}
-	var t Tool
-	return &t, json.Unmarshal(data, &t)
-}
-
-func (c *Client) DeleteTool(id string) error {
-	_, err := c.do("DELETE", "/api/v1/tools/"+id, nil)
-	return err
-}
-
-func (c *Client) ReorderTools(order []string) error {
-	_, err := c.do("PUT", "/api/v1/tools/reorder", map[string]any{"order": order})
-	return err
-}
-
 // --- Tag ---
 
 func (c *Client) ListTags() ([]Tag, error) {

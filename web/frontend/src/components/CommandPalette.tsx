@@ -4,7 +4,7 @@ import { api } from '@/lib/api'
 import { useAppStore } from '@/stores/app'
 import { Command, CommandInput, CommandList, CommandItem, CommandGroup, CommandEmpty } from '@/components/ui/command'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { FileText, CheckSquare, Calendar, Monitor } from 'lucide-react'
+import { FileText, CheckSquare, Calendar } from 'lucide-react'
 import { sectionColors } from '@/lib/colors'
 import type { SearchResult } from '@/types/api'
 
@@ -81,9 +81,6 @@ export function CommandPalette({ onOpenMemo }: CommandPaletteProps) {
       case 'event':
         setPage('calendar')
         break
-      case 'tool':
-        if (item.snippet) window.open(item.snippet, '_blank')
-        break
     }
   }
 
@@ -91,14 +88,12 @@ export function CommandPalette({ onOpenMemo }: CommandPaletteProps) {
     memo: FileText,
     todo: CheckSquare,
     event: Calendar,
-    tool: Monitor,
   }
 
   const typeLabels: Record<string, string> = {
     memo: t('command.memo'),
     todo: t('command.todo'),
     event: t('command.event'),
-    tool: t('command.tool'),
   }
 
   const displayItems = query.length >= 2 ? results : fallbackItems

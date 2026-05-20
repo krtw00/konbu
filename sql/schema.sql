@@ -192,27 +192,6 @@ CREATE INDEX idx_calendar_events_calendar_id ON calendar_events(calendar_id) WHE
 CREATE INDEX idx_calendar_events_title_trgm ON calendar_events USING gin (title gin_trgm_ops);
 
 -- =============================================================================
--- Tools (launcher links)
--- =============================================================================
-
--- ユーザーごとのツールリンク。Web UI のランチャーカードに表示。
-CREATE TABLE tools (
-    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name       TEXT NOT NULL,
-    url        TEXT NOT NULL,
-    icon       TEXT NOT NULL DEFAULT '',
-    icon_checked_at TIMESTAMPTZ,
-    sort_order INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    deleted_at TIMESTAMPTZ
-);
-
-CREATE INDEX idx_tools_user_id ON tools(user_id, sort_order) WHERE deleted_at IS NULL;
-CREATE INDEX idx_tools_name_trgm ON tools USING gin (name gin_trgm_ops);
-CREATE INDEX idx_tools_url_trgm ON tools USING gin (url gin_trgm_ops);
-
--- =============================================================================
 -- Chat Sessions & Messages
 -- =============================================================================
 

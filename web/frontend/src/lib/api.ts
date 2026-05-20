@@ -94,16 +94,6 @@ export const api = {
   removeCalendarMember: (id: string, uid: string) =>
     request<null>('DELETE', `/calendars/${id}/members/${uid}`),
 
-  // Tools
-  listTools: () => request<{ data: import('@/types/api').Tool[] }>('GET', '/tools'),
-  createTool: (body: { name: string; url: string; category?: string }) =>
-    request<{ data: import('@/types/api').Tool }>('POST', '/tools', body),
-  updateTool: (id: string, body: { name: string; url: string; category?: string }) =>
-    request<{ data: import('@/types/api').Tool }>('PUT', `/tools/${id}`, body),
-  deleteTool: (id: string) => request<null>('DELETE', `/tools/${id}`),
-  fetchFavicon: (url: string) => request<{ data: { icon: string } }>('GET', `/tools/favicon?url=${encodeURIComponent(url)}`),
-  reorderTools: (order: string[]) => request<null>('PUT', '/tools/reorder', { order }),
-
   // Tags
   listTags: () => request<{ data: import('@/types/api').Tag[] }>('GET', '/tags'),
 

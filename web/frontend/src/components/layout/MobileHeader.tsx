@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { sectionColors } from '@/lib/colors'
-import { Menu, X, Home, FileText, Table2, CheckSquare, Calendar, Monitor, MessageCircle, Search, HelpCircle, Settings, LogOut } from 'lucide-react'
+import { Menu, X, Home, FileText, Table2, CheckSquare, Calendar, MessageCircle, Search, HelpCircle, Settings, LogOut } from 'lucide-react'
 
 const navItems = [
   { page: 'home' as const, icon: Home, labelKey: 'nav.home' },
@@ -10,7 +10,6 @@ const navItems = [
   { page: 'tables' as const, icon: Table2, labelKey: 'nav.tables' },
   { page: 'todos' as const, icon: CheckSquare, labelKey: 'nav.todo' },
   { page: 'calendar' as const, icon: Calendar, labelKey: 'nav.calendar' },
-  { page: 'tools' as const, icon: Monitor, labelKey: 'nav.tools' },
   { page: 'search' as const, icon: Search, labelKey: 'nav.search' },
   { page: 'chat' as const, icon: MessageCircle, labelKey: 'nav.chat' },
   { page: 'settings' as const, icon: Settings, labelKey: 'nav.settings' },

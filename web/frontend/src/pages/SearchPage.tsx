@@ -6,7 +6,7 @@ import { relativeTime } from '@/lib/date'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { FileText, CheckSquare, Calendar, Monitor, Search, ChevronLeft, ChevronRight, SlidersHorizontal, Lightbulb, X } from 'lucide-react'
+import { FileText, CheckSquare, Calendar, Search, ChevronLeft, ChevronRight, SlidersHorizontal, Lightbulb, X } from 'lucide-react'
 import { sectionColors } from '@/lib/colors'
 import type { SearchResult, SearchResponse, Tag } from '@/types/api'
 
@@ -18,7 +18,6 @@ const typeIcons: Record<string, typeof FileText> = {
   memo: FileText,
   todo: CheckSquare,
   event: Calendar,
-  tool: Monitor,
 }
 
 const LIMIT = 20
@@ -141,9 +140,6 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
       case 'event':
         setPage('calendar')
         break
-      case 'tool':
-        if (item.snippet) window.open(item.snippet, '_blank')
-        break
     }
   }
 
@@ -151,7 +147,6 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
     { key: 'memo', label: t('command.memo'), icon: FileText },
     { key: 'todo', label: t('command.todo'), icon: CheckSquare },
     { key: 'event', label: t('command.event'), icon: Calendar },
-    { key: 'tool', label: t('command.tool'), icon: Monitor },
   ]
 
   const totalPages = Math.ceil(total / LIMIT)
@@ -266,11 +261,8 @@ export function SearchPage({ onOpenMemo }: SearchPageProps) {
                     <span className="text-xs text-muted-foreground w-12">{t(`command.${item.type}`) || item.type}</span>
                     <span className="truncate font-medium">{item.title}</span>
                   </div>
-                  {item.snippet && item.type !== 'tool' && (
+                  {item.snippet && (
                     <p className="mt-0.5 truncate text-xs text-muted-foreground">{item.snippet}</p>
-                  )}
-                  {item.type === 'tool' && item.snippet && (
-                    <p className="mt-0.5 truncate text-xs text-blue-500">{item.snippet}</p>
                   )}
                 </div>
                 {item.tags?.length > 0 && (

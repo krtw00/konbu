@@ -15,27 +15,24 @@ import (
 )
 
 type ExportData struct {
-	Version    int                  `json:"version"`
-	ExportedAt time.Time            `json:"exported_at"`
-	Memos      []model.Memo         `json:"memos"`
-	Todos      []model.Todo         `json:"todos"`
+	Version    int                   `json:"version"`
+	ExportedAt time.Time             `json:"exported_at"`
+	Memos      []model.Memo          `json:"memos"`
+	Todos      []model.Todo          `json:"todos"`
 	Events     []model.CalendarEvent `json:"events"`
-	Tools      []model.Tool         `json:"tools"`
 }
 
 type ExportService struct {
 	memoSvc  *MemoService
 	todoSvc  *TodoService
 	eventSvc *EventService
-	toolSvc  *ToolService
 }
 
-func NewExportService(db *sql.DB, memoSvc *MemoService, todoSvc *TodoService, eventSvc *EventService, toolSvc *ToolService) *ExportService {
+func NewExportService(db *sql.DB, memoSvc *MemoService, todoSvc *TodoService, eventSvc *EventService) *ExportService {
 	return &ExportService{
 		memoSvc:  memoSvc,
 		todoSvc:  todoSvc,
 		eventSvc: eventSvc,
-		toolSvc:  toolSvc,
 	}
 }
 
@@ -73,18 +70,12 @@ func (s *ExportService) fetchAllData(ctx context.Context, userID uuid.UUID) (*Ex
 	}
 	events := eventResult.Data.([]model.CalendarEvent)
 
-	tools, err := s.toolSvc.ListTools(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-
 	return &ExportData{
 		Version:    1,
 		ExportedAt: time.Now().UTC(),
 		Memos:      memos,
 		Todos:      todos,
 		Events:     events,
-		Tools:      tools,
 	}, nil
 }
 
@@ -134,9 +125,6 @@ func (s *ExportService) ExportMarkdown(ctx context.Context, userID uuid.UUID) (*
 		return nil, err
 	}
 	if err := s.writeEventsMarkdown(zw, data.Events); err != nil {
-		return nil, err
-	}
-	if err := s.writeToolsMarkdown(zw, data.Tools); err != nil {
 		return nil, err
 	}
 
@@ -203,29 +191,6 @@ func (s *ExportService) writeEventsMarkdown(zw *zip.Writer, events []model.Calen
 			endStr,
 			allDay,
 			desc,
-		))
-	}
-
-	_, err = fw.Write([]byte(sb.String()))
-	if err != nil {
-		return apperror.Internal(err)
-	}
-	return nil
-}
-
-func (s *ExportService) writeToolsMarkdown(zw *zip.Writer, tools []model.Tool) error {
-	fw, err := zw.Create("tools.md")
-	if err != nil {
-		return apperror.Internal(err)
-	}
-
-	var sb strings.Builder
-	sb.WriteString("# Tools\n\n")
-	sb.WriteString("| Name | URL | Category | Icon |\n")
-	sb.WriteString("|------|-----|----------|------|\n")
-	for _, t := range tools {
-		sb.WriteString(fmt.Sprintf("| %s | %s | %s | %s |\n",
-			t.Name, t.URL, t.Category, t.Icon,
 		))
 	}
 

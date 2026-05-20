@@ -11,7 +11,7 @@ import (
 func TestMakeTypeSetDefaults(t *testing.T) {
 	got := makeTypeSet(nil)
 
-	for _, key := range []string{"memo", "todo", "event", "tool"} {
+	for _, key := range []string{"memo", "todo", "event"} {
 		if !got[key] {
 			t.Fatalf("expected default type %q to be enabled", key)
 		}
@@ -19,9 +19,9 @@ func TestMakeTypeSetDefaults(t *testing.T) {
 }
 
 func TestMakeTypeSetExplicit(t *testing.T) {
-	got := makeTypeSet([]string{"memo", "tool"})
+	got := makeTypeSet([]string{"memo", "todo"})
 
-	if len(got) != 2 || !got["memo"] || !got["tool"] {
+	if len(got) != 2 || !got["memo"] || !got["todo"] {
 		t.Fatalf("unexpected type set: %#v", got)
 	}
 }

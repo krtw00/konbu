@@ -15,7 +15,6 @@ const MemosPage = lazyWithRetry(() => import('@/pages/MemosPage').then(m => ({ d
 const TodosPage = lazyWithRetry(() => import('@/pages/TodosPage').then(m => ({ default: m.TodosPage })), 'todos')
 const CalendarPage = lazyWithRetry(() => import('@/pages/CalendarPage').then(m => ({ default: m.CalendarPage })), 'calendar')
 const TablesPage = lazyWithRetry(() => import('@/pages/TablesPage').then(m => ({ default: m.TablesPage })), 'tables')
-const ToolsPage = lazyWithRetry(() => import('@/pages/ToolsPage').then(m => ({ default: m.ToolsPage })), 'tools')
 const SettingsPage = lazyWithRetry(() => import('@/pages/SettingsPage').then(m => ({ default: m.SettingsPage })), 'settings')
 const SearchPage = lazyWithRetry(() => import('@/pages/SearchPage').then(m => ({ default: m.SearchPage })), 'search')
 const HelpPage = lazyWithRetry(() => import('@/pages/HelpPage').then(m => ({ default: m.HelpPage })), 'help')
@@ -161,7 +160,6 @@ function App() {
                   {currentPage === 'memos' && <MemosPage onEditMemo={handleEditMemo} />}
                   {currentPage === 'tables' && <TablesPage onEditTable={handleEditTable} />}
                   {currentPage === 'todos' && <TodosPage />}
-                  {currentPage === 'tools' && <ToolsPage />}
                   {currentPage === 'search' && <SearchPage onOpenMemo={handleEditMemo} />}
                   {currentPage === 'help' && <HelpPage />}
                   {currentPage === 'settings' && <SettingsPage />}

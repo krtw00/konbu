@@ -55,7 +55,7 @@ function prefetchHomeData() {
   })))
 }
 
-type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tools' | 'tables' | 'table-edit' | 'chat' | 'settings' | 'search' | 'help'
+type Page = 'home' | 'memos' | 'memo-edit' | 'todos' | 'calendar' | 'tables' | 'table-edit' | 'chat' | 'settings' | 'search' | 'help'
 
 function initCurrentPage(): Page {
   if (typeof window !== 'undefined' && window.location.pathname === '/help') {

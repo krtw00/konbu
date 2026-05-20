@@ -58,7 +58,6 @@ func main() {
 	r2Svc := service.NewR2Service(cfg)
 	authSvc := service.NewAuthService(db, cfg)
 	tagSvc := service.NewTagService(db)
-	toolSvc := service.NewToolService(db)
 	calSvc := service.NewCalendarService(db)
 	memoSvc := service.NewMemoService(db, tagSvc)
 	todoSvc := service.NewTodoService(db, tagSvc)
@@ -69,12 +68,9 @@ func main() {
 	feedbackReporter := service.NewGitHubFeedbackReporter(cfg)
 	billingSvc := service.NewBillingService(cfg)
 
-	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc, toolSvc)
+	exportSvc := service.NewExportService(db, memoSvc, todoSvc, eventSvc)
 	chatSvc := service.NewChatService(db, cfg, memoSvc, todoSvc, eventSvc, searchSvc)
 	feedbackSvc := service.NewFeedbackService(db, feedbackReporter)
-
-	// Background tasks
-	toolSvc.StartIconRefreshLoop(6 * time.Hour)
 
 	// Notification sweep (email reminders). Disabled when SMTP env is not
 	// fully configured — self-host users without SMTP credentials continue
@@ -91,7 +87,6 @@ func main() {
 	authH := handler.NewAuthHandler(authSvc, cfg)
 	apiKeyH := handler.NewAPIKeyHandler(authSvc)
 	tagH := handler.NewTagHandler(tagSvc)
-	toolH := handler.NewToolHandler(toolSvc)
 	calendarH := handler.NewCalendarHandler(calSvc)
 	memoRowSvc := service.NewMemoRowService(db)
 	memoH := handler.NewMemoHandler(memoSvc)
@@ -212,7 +207,6 @@ func main() {
 
 			r.Mount("/api-keys", apiKeyH.Routes())
 			r.Mount("/tags", tagH.Routes())
-			r.Mount("/tools", toolH.Routes())
 			r.Mount("/memos", func() chi.Router {
 				mr := memoH.Routes()
 				mr.Route("/{id}/rows", memoRowH.Routes)

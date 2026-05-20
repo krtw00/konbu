@@ -266,7 +266,6 @@ export function PublicPage({ token }: PublicPageProps) {
     const prevTitle = document.title
     const title = view.memo?.title
       || view.todo?.title
-      || view.tool?.name
       || view.event?.title
       || view.calendar?.name
       || 'konbu'
@@ -356,23 +355,6 @@ export function PublicPage({ token }: PublicPageProps) {
                 {view.todo.tags.map((tag) => <span key={tag.id} className="text-xs text-muted-foreground">#{tag.name}</span>)}
               </div>
             ) : null}
-          </section>
-        )}
-
-        {view.tool && (
-          <section className="space-y-5">
-            <div className="space-y-2">
-              <h1 className="text-3xl font-semibold">{view.tool.name}</h1>
-              <p className="text-sm text-muted-foreground">{view.tool.category || t('tools.title')}</p>
-            </div>
-            <a
-              href={view.tool.url}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center rounded-lg border border-border px-4 py-2 text-sm hover:bg-accent/50"
-            >
-              {view.tool.url}
-            </a>
           </section>
         )}
 

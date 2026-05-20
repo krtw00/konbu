@@ -18,7 +18,6 @@ const (
 	PublicShareTodo     = "todo"
 	PublicShareCalendar = "calendar"
 	PublicShareEvent    = "event"
-	PublicShareTool     = "tool" // legacy read-only support
 )
 
 type PublicShareService struct {
@@ -161,16 +160,6 @@ func (s *PublicShareService) GetPublicView(ctx context.Context, token string) (*
 			CreatedAt: cal.CreatedAt,
 			UpdatedAt: cal.UpdatedAt,
 		}
-	case PublicShareTool:
-		tool, err := s.queries.GetToolByIDPublic(ctx, row.ResourceID)
-		if err != nil {
-			if errors.Is(err, repository.ErrNoRows) {
-				return nil, apperror.NotFound("tool")
-			}
-			return nil, apperror.Internal(err)
-		}
-		modelTool := toModelTool(tool)
-		view.Tool = &modelTool
 	default:
 		return nil, apperror.BadRequest("unsupported public share type")
 	}

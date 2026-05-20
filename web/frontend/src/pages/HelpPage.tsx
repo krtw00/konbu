@@ -1,13 +1,12 @@
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { Card, CardContent } from '@/components/ui/card'
-import { FileText, CheckSquare, Calendar, Monitor, Search, MessageCircle, Lightbulb, ExternalLink, ArrowRight } from 'lucide-react'
+import { FileText, CheckSquare, Calendar, Search, MessageCircle, Lightbulb, ExternalLink, ArrowRight } from 'lucide-react'
 
 const sections = [
   { key: 'memos', icon: FileText, page: 'memos' as const, color: 'text-blue-500' },
   { key: 'todos', icon: CheckSquare, page: 'todos' as const, color: 'text-emerald-500' },
   { key: 'calendar', icon: Calendar, page: 'calendar' as const, color: 'text-rose-500' },
-  { key: 'tools', icon: Monitor, page: 'tools' as const, color: 'text-violet-500' },
   { key: 'search', icon: Search, page: 'search' as const, color: 'text-amber-500' },
   { key: 'chat', icon: MessageCircle, page: 'chat' as const, color: 'text-cyan-500' },
   { key: 'general', icon: Lightbulb, page: null, color: 'text-teal-500' },

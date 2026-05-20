@@ -265,35 +265,6 @@ type UpdateEventRequest struct {
 	Tags           []string   `json:"tags,omitempty"`
 }
 
-// --- Tool ---
-
-type Tool struct {
-	ID        uuid.UUID `json:"id"`
-	UserID    uuid.UUID `json:"user_id,omitempty"`
-	Name      string    `json:"name"`
-	URL       string    `json:"url"`
-	Icon      string    `json:"icon"`
-	Category  string    `json:"category"`
-	SortOrder int       `json:"sort_order"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-type CreateToolRequest struct {
-	Name     string `json:"name"`
-	URL      string `json:"url"`
-	Category string `json:"category"`
-}
-
-type UpdateToolRequest struct {
-	Name     string `json:"name"`
-	URL      string `json:"url"`
-	Category string `json:"category"`
-}
-
-type ReorderRequest struct {
-	Order []uuid.UUID `json:"order"`
-}
-
 // --- Public Shares ---
 
 type PublicShare struct {
@@ -323,7 +294,6 @@ type PublicShareView struct {
 	ResourceType string              `json:"resource_type"`
 	Memo         *PublicMemoView     `json:"memo,omitempty"`
 	Todo         *Todo               `json:"todo,omitempty"`
-	Tool         *Tool               `json:"tool,omitempty"`
 	Event        *CalendarEvent      `json:"event,omitempty"`
 	Calendar     *PublicCalendarView `json:"calendar,omitempty"`
 }

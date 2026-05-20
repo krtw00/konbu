@@ -82,19 +82,8 @@ export interface CalendarDetail extends Calendar {
   members: CalendarMember[]
 }
 
-export interface Tool {
-  id: string
-  name: string
-  url: string
-  icon: string
-  category: string
-  position: number
-  created_at: string
-  updated_at: string
-}
-
 export interface SearchResult {
-  type: 'memo' | 'todo' | 'event' | 'tool'
+  type: 'memo' | 'todo' | 'event'
   id: string
   title: string
   snippet: string
@@ -199,7 +188,7 @@ export interface AIChatConfig {
   anthropic_key?: string
 }
 
-export type PublicResourceType = 'memo' | 'todo' | 'calendar' | 'tool' | 'event'
+export type PublicResourceType = 'memo' | 'todo' | 'calendar' | 'event'
 
 export interface PublicShare {
   resource_type: PublicResourceType
@@ -227,7 +216,6 @@ export interface PublicShareView {
   resource_type: PublicResourceType
   memo?: PublicMemoView
   todo?: Todo
-  tool?: Tool
   event?: CalendarEvent
   calendar?: PublicCalendarView
 }

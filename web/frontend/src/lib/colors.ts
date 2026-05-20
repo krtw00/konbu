@@ -1,4 +1,4 @@
-import { Home, FileText, CheckSquare, Calendar, Monitor, Search, MessageCircle, HelpCircle, Settings } from 'lucide-react'
+import { Home, FileText, CheckSquare, Calendar, Search, MessageCircle, HelpCircle, Settings } from 'lucide-react'
 
 export const sectionColors: Record<string, string> = {
   home: 'text-orange-500',
@@ -11,8 +11,6 @@ export const sectionColors: Record<string, string> = {
   todo: 'text-emerald-500',
   calendar: 'text-rose-500',
   event: 'text-rose-500',
-  tools: 'text-violet-500',
-  tool: 'text-violet-500',
   search: 'text-amber-500',
   chat: 'text-cyan-500',
   help: 'text-teal-500',
@@ -30,8 +28,6 @@ export const sectionBgColors: Record<string, string> = {
   todo: 'bg-emerald-500/10',
   calendar: 'bg-rose-500/10',
   event: 'bg-rose-500/10',
-  tools: 'bg-violet-500/10',
-  tool: 'bg-violet-500/10',
   search: 'bg-amber-500/10',
   chat: 'bg-cyan-500/10',
   help: 'bg-teal-500/10',
@@ -49,8 +45,6 @@ export const sectionBorderColors: Record<string, string> = {
   todo: 'border-emerald-400',
   calendar: 'border-rose-400',
   event: 'border-rose-400',
-  tools: 'border-violet-400',
-  tool: 'border-violet-400',
   search: 'border-amber-400',
   chat: 'border-cyan-400',
   help: 'border-teal-400',
@@ -68,8 +62,6 @@ export const sectionBgSolid: Record<string, string> = {
   todo: 'bg-emerald-500',
   calendar: 'bg-rose-500',
   event: 'bg-rose-500',
-  tools: 'bg-violet-500',
-  tool: 'bg-violet-500',
   search: 'bg-amber-500',
   chat: 'bg-cyan-500',
   help: 'bg-teal-500',
@@ -85,8 +77,6 @@ export const sectionIcons: Record<string, typeof Home> = {
   todo: CheckSquare,
   calendar: Calendar,
   event: Calendar,
-  tools: Monitor,
-  tool: Monitor,
   search: Search,
   chat: MessageCircle,
   help: HelpCircle,

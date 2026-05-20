@@ -24,7 +24,6 @@
     "todo": "ToDo",
     "calendar": "Calendar",
     "cal": "Cal",
-    "tools": "Tools",
     "chat": "AI Chat",
     "search": "Search",
     "help": "Help",
@@ -127,18 +126,6 @@
     "memberAdded": "Member added",
     "calendarDeleted": "Calendar deleted"
   },
-  "tools": {
-    "title": "Tools",
-    "noTools": "No tools yet",
-    "newTool": "New Tool",
-    "name": "Name",
-    "url": "URL",
-    "confirmDelete": "Delete \"{{name}}\"?",
-    "editTool": "Edit Tool",
-    "category": "Category",
-    "categoryPlaceholder": "e.g. Dev, Infra, Docs",
-    "healthCheck": "Health Check"
-  },
   "publicShare": {
     "button": "Share",
     "title": "Share link",
@@ -158,11 +145,10 @@
     "noResults": "No results found.",
     "memo": "memo",
     "todo": "todo",
-    "event": "event",
-    "tool": "tool"
+    "event": "event"
   },
   "search": {
-    "placeholder": "Search memos, todos, events, tools...",
+    "placeholder": "Search memos, todos, events...",
     "noResults": "No results found.",
     "loading": "Searching...",
     "resultCount": "{{count}} results",
@@ -355,19 +341,9 @@
         "Import events from .ics files in Settings > Data"
       ]
     },
-    "tools": {
-      "title": "Tools",
-      "description": "Save and organize your frequently used links and web tools. Think of it as a bookmark launcher.",
-      "tips": [
-        "Add a name, URL, and optional category to create a tool",
-        "Tools are grouped by category for quick access",
-        "Favicons are fetched automatically",
-        "Use Health Check to verify which links are still reachable"
-      ]
-    },
     "search": {
       "title": "Search",
-      "description": "Find anything across memos, todos, events, and tools from one place.",
+      "description": "Find anything across memos, todos, and events from one place.",
       "tips": [
         "Press Ctrl+K (or Cmd+K) anywhere to open quick search",
         "The Search page provides filters by type, tag, and date range",

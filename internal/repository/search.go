@@ -24,14 +24,6 @@ type SuggestionRow struct {
 	Type       string
 }
 
-type ToolSearchRow struct {
-	ID        uuid.UUID
-	Name      string
-	URL       string
-	Icon      string
-	CreatedAt time.Time
-}
-
 // --- Content search (ILIKE) with optional date filter ---
 
 func (q *Queries) SearchMemos(ctx context.Context, userID uuid.UUID, pattern string, limit int) ([]SearchRow, error) {
@@ -231,32 +223,6 @@ func (q *Queries) SearchEventsByTag(ctx context.Context, userID uuid.UUID, patte
 		[]any{userID, pattern, limit, offset})
 }
 
-// --- Tool search ---
-
-func (q *Queries) SearchTools(ctx context.Context, userID uuid.UUID, pattern string, limit, offset int) ([]ToolSearchRow, error) {
-	rows, err := q.db.QueryContext(ctx,
-		`SELECT id, name, url, icon, created_at
-		 FROM tools
-		 WHERE user_id = $1 AND deleted_at IS NULL
-		   AND (name ILIKE $2 OR url ILIKE $2)
-		 ORDER BY sort_order LIMIT $3 OFFSET $4`,
-		userID, pattern, limit, offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var results []ToolSearchRow
-	for rows.Next() {
-		var r ToolSearchRow
-		if err := rows.Scan(&r.ID, &r.Name, &r.URL, &r.Icon, &r.CreatedAt); err != nil {
-			return nil, err
-		}
-		results = append(results, r)
-	}
-	return results, rows.Err()
-}
-
 // --- Fuzzy search (similarity) ---
 
 func (q *Queries) FuzzySearchMemos(ctx context.Context, userID uuid.UUID, query string, excludeIDs []uuid.UUID, limit int) ([]SuggestionRow, error) {
@@ -387,16 +353,6 @@ func (q *Queries) CountSearchEvents(ctx context.Context, userID uuid.UUID, patte
 
 	var count int
 	err := q.db.QueryRowContext(ctx, query, args...).Scan(&count)
-	return count, err
-}
-
-func (q *Queries) CountSearchTools(ctx context.Context, userID uuid.UUID, pattern string) (int, error) {
-	var count int
-	err := q.db.QueryRowContext(ctx,
-		`SELECT COUNT(*) FROM tools
-		 WHERE user_id = $1 AND deleted_at IS NULL
-		   AND (name ILIKE $2 OR url ILIKE $2)`,
-		userID, pattern).Scan(&count)
 	return count, err
 }
 
