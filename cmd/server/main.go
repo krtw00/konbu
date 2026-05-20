@@ -64,6 +64,7 @@ func main() {
 	todoSvc := service.NewTodoService(db, tagSvc)
 	eventSvc := service.NewEventService(db, tagSvc, calSvc)
 	searchSvc := service.NewSearchService(db)
+	dailySvc := service.NewDailyService(db)
 	feedbackReporter := service.NewGitHubFeedbackReporter(cfg)
 	billingSvc := service.NewBillingService(cfg)
 
@@ -98,6 +99,7 @@ func main() {
 	todoH := handler.NewTodoHandler(todoSvc)
 	eventH := handler.NewEventHandler(eventSvc)
 	searchH := handler.NewSearchHandler(searchSvc)
+	dailyH := handler.NewDailyHandler(dailySvc)
 	exportH := handler.NewExportHandler(exportSvc)
 	importH := handler.NewImportHandler(eventSvc)
 	chatH := handler.NewChatHandler(chatSvc)
@@ -211,6 +213,7 @@ func main() {
 				return cr
 			}())
 			r.Get("/search", searchH.HandleSearch)
+			r.Mount("/daily", dailyH.Routes())
 			r.Mount("/export", exportH.Routes())
 			r.Mount("/import", importH.Routes())
 			r.Mount("/chat", chatH.Routes())

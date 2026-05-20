@@ -67,6 +67,29 @@ func (q *Queries) ListMemosByUserID(ctx context.Context, userID uuid.UUID, limit
 	return memos, rows.Err()
 }
 
+func (q *Queries) ListMemosByCreatedRange(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]Memo, error) {
+	rows, err := q.db.QueryContext(ctx,
+		`SELECT id, user_id, title, type, created_at, updated_at
+		 FROM memos WHERE user_id = $1 AND deleted_at IS NULL
+		   AND created_at >= $2 AND created_at < $3
+		 ORDER BY created_at DESC`,
+		userID, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var memos []Memo
+	for rows.Next() {
+		var m Memo
+		if err := rows.Scan(&m.ID, &m.UserID, &m.Title, &m.Type, &m.CreatedAt, &m.UpdatedAt); err != nil {
+			return nil, err
+		}
+		memos = append(memos, m)
+	}
+	return memos, rows.Err()
+}
+
 func (q *Queries) CountMemosByUserID(ctx context.Context, userID uuid.UUID) (int64, error) {
 	row := q.db.QueryRowContext(ctx,
 		`SELECT count(*) FROM memos WHERE user_id = $1 AND deleted_at IS NULL`, userID)

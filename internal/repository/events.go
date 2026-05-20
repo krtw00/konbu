@@ -82,6 +82,28 @@ func (q *Queries) ListEventsByUserID(ctx context.Context, userID uuid.UUID, cale
 	return events, rows.Err()
 }
 
+func (q *Queries) ListEventsByRange(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]EventRow, error) {
+	rows, err := q.db.QueryContext(ctx,
+		`SELECT `+eventCols+` FROM calendar_events
+		 WHERE created_by = $1 AND deleted_at IS NULL AND start_at >= $2 AND start_at < $3
+		 ORDER BY start_at`,
+		userID, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []EventRow
+	for rows.Next() {
+		e, err := scanEvent(rows)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, e)
+	}
+	return events, rows.Err()
+}
+
 func (q *Queries) ListAllEventsByUserID(ctx context.Context, userID uuid.UUID) ([]EventRow, error) {
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT `+eventCols+` FROM calendar_events

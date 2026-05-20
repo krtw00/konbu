@@ -60,6 +60,29 @@ func (q *Queries) ListTodosByUserID(ctx context.Context, userID uuid.UUID, limit
 	return todos, rows.Err()
 }
 
+func (q *Queries) ListTodosByDueRange(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]TodoRow, error) {
+	rows, err := q.db.QueryContext(ctx,
+		`SELECT id, user_id, title, description, status, due_date, created_at, updated_at
+		 FROM todos WHERE user_id = $1 AND deleted_at IS NULL
+		   AND due_date IS NOT NULL AND due_date >= $2 AND due_date < $3
+		 ORDER BY due_date`,
+		userID, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var todos []TodoRow
+	for rows.Next() {
+		var t TodoRow
+		if err := rows.Scan(&t.ID, &t.UserID, &t.Title, &t.Description, &t.Status, &t.DueDate, &t.CreatedAt, &t.UpdatedAt); err != nil {
+			return nil, err
+		}
+		todos = append(todos, t)
+	}
+	return todos, rows.Err()
+}
+
 func (q *Queries) CountTodosByUserID(ctx context.Context, userID uuid.UUID) (int64, error) {
 	row := q.db.QueryRowContext(ctx,
 		`SELECT count(*) FROM todos WHERE user_id = $1 AND deleted_at IS NULL`, userID)
