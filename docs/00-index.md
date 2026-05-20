@@ -6,7 +6,7 @@ ai_summary: "konbu設計ドキュメントへのナビゲーションハブ"
 
 # 設計ドキュメントインデックス
 
-> **Status**: Active | 最終更新: 2026-03-14
+> **Status**: Active | 最終更新: 2026-05-21
 
 本ドキュメントは、konbuの設計ドキュメント全体のナビゲーションを提供する。
 
@@ -36,6 +36,7 @@ flowchart LR
 
 | ドキュメント | 説明 |
 |--------------|------|
+| [concept.md](./01-overview/concept.md) | **骨子: システム手帳のデジタル化（機能取捨の判定基準・正本）** |
 | [summary.md](./01-overview/summary.md) | プロジェクト概要（1枚で全体把握） |
 | [goals.md](./01-overview/goals.md) | 目的・解決する課題 |
 | [principles.md](./01-overview/principles.md) | 設計原則・判断基準 |
@@ -77,10 +78,11 @@ flowchart LR
 
 ### 初めて読む場合
 
-1. [summary.md](./01-overview/summary.md) - プロジェクト概要を把握
-2. [goals.md](./01-overview/goals.md) - 目的を理解
-3. [principles.md](./01-overview/principles.md) - 設計原則を確認
-4. [context.md](./02-architecture/context.md) - システム境界を確認
+1. [concept.md](./01-overview/concept.md) - 骨子（何として捉えるか）を把握
+2. [summary.md](./01-overview/summary.md) - プロジェクト概要を把握
+3. [goals.md](./01-overview/goals.md) - 目的を理解
+4. [principles.md](./01-overview/principles.md) - 設計原則を確認
+5. [context.md](./02-architecture/context.md) - システム境界を確認
 
 ### 設計を理解したい場合
 
