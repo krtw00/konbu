@@ -164,13 +164,31 @@ type UpdateTodoRequest struct {
 // --- Calendar ---
 
 type Calendar struct {
-	ID        uuid.UUID `json:"id"`
-	OwnerID   uuid.UUID `json:"owner_id"`
-	Name      string    `json:"name"`
-	IsDefault bool      `json:"is_default"`
-	Color     string    `json:"color"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID         uuid.UUID `json:"id"`
+	OwnerID    uuid.UUID `json:"owner_id"`
+	Name       string    `json:"name"`
+	IsDefault  bool      `json:"is_default"`
+	IsExternal bool      `json:"is_external"`
+	Color      string    `json:"color"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+}
+
+type CalendarSubscription struct {
+	ID            uuid.UUID  `json:"id"`
+	OwnerID       uuid.UUID  `json:"owner_id"`
+	CalendarID    uuid.UUID  `json:"calendar_id"`
+	ICalURL       string     `json:"ical_url"`
+	LastFetchedAt *time.Time `json:"last_fetched_at,omitempty"`
+	LastError     *string    `json:"last_error,omitempty"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+}
+
+type CreateSubscriptionRequest struct {
+	Name    string `json:"name"`
+	ICalURL string `json:"ical_url"`
+	Color   string `json:"color"`
 }
 
 type CalendarDetail struct {
@@ -200,6 +218,7 @@ type CalendarEvent struct {
 	AllDay         bool       `json:"all_day"`
 	RecurrenceRule *string    `json:"recurrence_rule,omitempty"`
 	RecurrenceEnd  *string    `json:"recurrence_end,omitempty"`
+	ExternalUID    *string    `json:"external_uid,omitempty"`
 	Tags           []Tag      `json:"tags,omitempty"`
 	CreatedAt      time.Time  `json:"created_at"`
 	UpdatedAt      time.Time  `json:"updated_at"`

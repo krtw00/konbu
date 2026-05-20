@@ -43,6 +43,7 @@ type Config struct {
 	SMTPPassword         string
 	SMTPFrom             string
 	NotificationTick     time.Duration
+	CalendarSyncInterval time.Duration
 }
 
 func getEnvDefault(key, fallback string) string {
@@ -79,6 +80,13 @@ func Load() (*Config, error) {
 	if raw := os.Getenv("NOTIFICATION_TICK_INTERVAL"); raw != "" {
 		if d, err := time.ParseDuration(raw); err == nil && d > 0 {
 			tick = d
+		}
+	}
+
+	calendarSyncInterval := 30 * time.Minute
+	if raw := os.Getenv("CALENDAR_SYNC_INTERVAL"); raw != "" {
+		if d, err := time.ParseDuration(raw); err == nil && d > 0 {
+			calendarSyncInterval = d
 		}
 	}
 
@@ -119,5 +127,6 @@ func Load() (*Config, error) {
 		SMTPPassword:         os.Getenv("SMTP_PASSWORD"),
 		SMTPFrom:             os.Getenv("SMTP_FROM"),
 		NotificationTick:     tick,
+		CalendarSyncInterval: calendarSyncInterval,
 	}, nil
 }

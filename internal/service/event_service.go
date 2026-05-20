@@ -195,6 +195,7 @@ func toModelEvent(r repository.EventRow) model.CalendarEvent {
 		AllDay:         r.AllDay,
 		RecurrenceRule: r.RecurrenceRule,
 		RecurrenceEnd:  r.RecurrenceEnd,
+		ExternalUID:    r.ExternalUID,
 		CreatedAt:      r.CreatedAt,
 		UpdatedAt:      r.UpdatedAt,
 	}

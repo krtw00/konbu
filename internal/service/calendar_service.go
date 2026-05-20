@@ -152,12 +152,13 @@ func (s *CalendarService) EnsureDefaultCalendar(ctx context.Context, userID uuid
 
 func toModelCalendar(r repository.CalendarRow) model.Calendar {
 	return model.Calendar{
-		ID:        r.ID,
-		OwnerID:   r.OwnerID,
-		Name:      r.Name,
-		IsDefault: r.IsDefault,
-		Color:     r.Color,
-		CreatedAt: r.CreatedAt,
-		UpdatedAt: r.UpdatedAt,
+		ID:         r.ID,
+		OwnerID:    r.OwnerID,
+		Name:       r.Name,
+		IsDefault:  r.IsDefault,
+		IsExternal: r.IsExternal,
+		Color:      r.Color,
+		CreatedAt:  r.CreatedAt,
+		UpdatedAt:  r.UpdatedAt,
 	}
 }

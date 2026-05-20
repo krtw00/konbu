@@ -59,6 +59,7 @@ func main() {
 	authSvc := service.NewAuthService(db, cfg)
 	tagSvc := service.NewTagService(db)
 	calSvc := service.NewCalendarService(db)
+	subscriptionSvc := service.NewSubscriptionService(db)
 	memoSvc := service.NewMemoService(db, tagSvc)
 	todoSvc := service.NewTodoService(db, tagSvc)
 	eventSvc := service.NewEventService(db, tagSvc, calSvc)
@@ -81,11 +82,16 @@ func main() {
 		log.Printf("notification sweep disabled (SMTP env not configured)")
 	}
 
+	// Calendar subscription sync (iCal inbound).
+	subscriptionSvc.StartLoop(cfg.CalendarSyncInterval)
+	log.Printf("calendar subscription sync started (interval=%s)", cfg.CalendarSyncInterval)
+
 	// Handlers
 	authH := handler.NewAuthHandler(authSvc, cfg)
 	apiKeyH := handler.NewAPIKeyHandler(authSvc)
 	tagH := handler.NewTagHandler(tagSvc)
 	calendarH := handler.NewCalendarHandler(calSvc)
+	subscriptionH := handler.NewSubscriptionHandler(subscriptionSvc)
 	memoRowSvc := service.NewMemoRowService(db)
 	memoH := handler.NewMemoHandler(memoSvc)
 	memoRowH := handler.NewMemoRowHandler(memoRowSvc)
@@ -199,7 +205,11 @@ func main() {
 			}())
 			r.Mount("/todos", todoH.Routes())
 			r.Mount("/events", eventH.Routes())
-			r.Mount("/calendars", calendarH.Routes())
+			r.Mount("/calendars", func() chi.Router {
+				cr := calendarH.Routes()
+				cr.Mount("/subscriptions", subscriptionH.Routes())
+				return cr
+			}())
 			r.Get("/search", searchH.HandleSearch)
 			r.Mount("/export", exportH.Routes())
 			r.Mount("/import", importH.Routes())

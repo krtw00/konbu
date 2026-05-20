@@ -141,6 +141,7 @@ CREATE TABLE calendars (
     owner_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name        TEXT NOT NULL DEFAULT '',
     is_default  BOOLEAN NOT NULL DEFAULT FALSE,
+    is_external BOOLEAN NOT NULL DEFAULT FALSE,
     color       TEXT NOT NULL DEFAULT '#4F46E5',
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -155,17 +156,18 @@ CREATE UNIQUE INDEX idx_calendars_default ON calendars(owner_id) WHERE is_defaul
 -- =============================================================================
 
 CREATE TABLE calendar_events (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    created_by  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    calendar_id UUID REFERENCES calendars(id) ON DELETE SET NULL,
-    title       TEXT NOT NULL,
-    description TEXT NOT NULL DEFAULT '',
-    start_at    TIMESTAMPTZ NOT NULL,
-    end_at      TIMESTAMPTZ,
-    all_day     BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-    deleted_at  TIMESTAMPTZ
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_by   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    calendar_id  UUID REFERENCES calendars(id) ON DELETE SET NULL,
+    title        TEXT NOT NULL,
+    description  TEXT NOT NULL DEFAULT '',
+    start_at     TIMESTAMPTZ NOT NULL,
+    end_at       TIMESTAMPTZ,
+    all_day      BOOLEAN NOT NULL DEFAULT FALSE,
+    external_uid TEXT,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at   TIMESTAMPTZ
 );
 
 CREATE TABLE calendar_event_tags (
@@ -178,6 +180,26 @@ CREATE INDEX idx_calendar_events_user_id ON calendar_events(created_by) WHERE de
 CREATE INDEX idx_calendar_events_range ON calendar_events(created_by, start_at) WHERE deleted_at IS NULL;
 CREATE INDEX idx_calendar_events_calendar_id ON calendar_events(calendar_id) WHERE deleted_at IS NULL;
 CREATE INDEX idx_calendar_events_title_trgm ON calendar_events USING gin (title gin_trgm_ops);
+CREATE UNIQUE INDEX idx_calendar_events_external ON calendar_events (calendar_id, external_uid) WHERE external_uid IS NOT NULL AND deleted_at IS NULL;
+
+-- =============================================================================
+-- Calendar Subscriptions (iCal inbound)
+-- =============================================================================
+
+CREATE TABLE calendar_subscriptions (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_id        UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    calendar_id     UUID NOT NULL REFERENCES calendars(id) ON DELETE CASCADE,
+    ical_url        TEXT NOT NULL,
+    last_fetched_at TIMESTAMPTZ,
+    last_error      TEXT,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at      TIMESTAMPTZ
+);
+
+CREATE UNIQUE INDEX idx_calendar_subscriptions_calendar ON calendar_subscriptions (calendar_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_calendar_subscriptions_owner ON calendar_subscriptions (owner_id) WHERE deleted_at IS NULL;
 
 -- =============================================================================
 -- Chat Sessions & Messages

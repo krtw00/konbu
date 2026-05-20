@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type EventRow struct {
@@ -18,15 +19,16 @@ type EventRow struct {
 	AllDay         bool
 	RecurrenceRule *string
 	RecurrenceEnd  *string
+	ExternalUID    *string
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
 
-var eventCols = `id, created_by, calendar_id, title, description, start_at, end_at, all_day, recurrence_rule, recurrence_end, created_at, updated_at`
+var eventCols = `id, created_by, calendar_id, title, description, start_at, end_at, all_day, recurrence_rule, recurrence_end, external_uid, created_at, updated_at`
 
 func scanEvent(row interface{ Scan(...any) error }) (EventRow, error) {
 	var e EventRow
-	err := row.Scan(&e.ID, &e.CreatedBy, &e.CalendarID, &e.Title, &e.Description, &e.StartAt, &e.EndAt, &e.AllDay, &e.RecurrenceRule, &e.RecurrenceEnd, &e.CreatedAt, &e.UpdatedAt)
+	err := row.Scan(&e.ID, &e.CreatedBy, &e.CalendarID, &e.Title, &e.Description, &e.StartAt, &e.EndAt, &e.AllDay, &e.RecurrenceRule, &e.RecurrenceEnd, &e.ExternalUID, &e.CreatedAt, &e.UpdatedAt)
 	return e, err
 }
 
@@ -145,6 +147,44 @@ func (q *Queries) SoftDeleteEventsByCalendar(ctx context.Context, calendarID uui
 		 SET deleted_at = now()
 		 WHERE calendar_id = $1 AND deleted_at IS NULL`,
 		calendarID)
+	return err
+}
+
+// UpsertExternalEvent inserts or updates an event imported from an external
+// iCal subscription, keyed by (calendar_id, external_uid). On conflict it
+// refreshes the mutable fields. The conflict target matches the partial unique
+// index idx_calendar_events_external.
+func (q *Queries) UpsertExternalEvent(ctx context.Context, userID uuid.UUID, calendarID uuid.UUID, externalUID, title, description string, startAt time.Time, endAt *time.Time, allDay bool, recurrenceRule *string) (EventRow, error) {
+	row := q.db.QueryRowContext(ctx,
+		`INSERT INTO calendar_events (created_by, calendar_id, title, description, start_at, end_at, all_day, recurrence_rule, external_uid)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		 ON CONFLICT (calendar_id, external_uid) WHERE external_uid IS NOT NULL AND deleted_at IS NULL
+		 DO UPDATE SET
+		   title = EXCLUDED.title,
+		   description = EXCLUDED.description,
+		   start_at = EXCLUDED.start_at,
+		   end_at = EXCLUDED.end_at,
+		   all_day = EXCLUDED.all_day,
+		   recurrence_rule = EXCLUDED.recurrence_rule,
+		   updated_at = now()
+		 RETURNING `+eventCols,
+		userID, calendarID, title, description, startAt, endAt, allDay, recurrenceRule, externalUID)
+	return scanEvent(row)
+}
+
+// DeleteStaleExternalEvents soft-deletes external events under the given
+// calendar whose external_uid is not in keepUIDs. Self-authored events
+// (external_uid IS NULL) are never touched. When keepUIDs is empty all external
+// events under the calendar are removed.
+func (q *Queries) DeleteStaleExternalEvents(ctx context.Context, calendarID uuid.UUID, keepUIDs []string) error {
+	_, err := q.db.ExecContext(ctx,
+		`UPDATE calendar_events
+		 SET deleted_at = now()
+		 WHERE calendar_id = $1
+		   AND deleted_at IS NULL
+		   AND external_uid IS NOT NULL
+		   AND NOT (external_uid = ANY($2))`,
+		calendarID, pq.Array(keepUIDs))
 	return err
 }
 

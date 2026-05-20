@@ -21,6 +21,7 @@ func NewImportService(eventSvc *EventService) *ImportService {
 }
 
 type icalEvent struct {
+	uid         string
 	summary     string
 	description string
 	dtstart     string
@@ -65,6 +66,8 @@ func parseICal(r io.Reader) ([]icalEvent, error) {
 			if current != nil {
 				val := line[1:]
 				switch lastKey {
+				case "UID":
+					current.uid += val
 				case "SUMMARY":
 					current.summary += val
 				case "DESCRIPTION":
@@ -105,6 +108,9 @@ func parseICal(r io.Reader) ([]icalEvent, error) {
 		}
 
 		switch baseKey {
+		case "UID":
+			current.uid = val
+			lastKey = "UID"
 		case "SUMMARY":
 			current.summary = val
 			lastKey = "SUMMARY"
