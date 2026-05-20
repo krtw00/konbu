@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/stores/app'
 import { api, apiFetch } from '@/lib/api'
-import type { ApiKey, CalendarFeedTokenStatus } from '@/types/api'
+import type { ApiKey } from '@/types/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Copy, Trash2, Plus, Key, ExternalLink, Sun, Moon, Monitor, Calendar as CalendarIcon, Palette, Contrast } from 'lucide-react'
+import { Copy, Trash2, Plus, Key, ExternalLink, Sun, Moon, Monitor, Palette, Contrast } from 'lucide-react'
 
 function ProfileTab() {
   const { t } = useTranslation()
@@ -451,14 +451,6 @@ function DataTab() {
   const [importing, setImporting] = useState(false)
   const [importMsg, setImportMsg] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
-  const [icalCopied, setIcalCopied] = useState(false)
-  const [feedStatus, setFeedStatus] = useState<CalendarFeedTokenStatus>({ exists: false })
-  const [calendarFeedURL, setCalendarFeedURL] = useState('')
-  const [feedMsg, setFeedMsg] = useState('')
-
-  useEffect(() => {
-    api.getCalendarFeedTokenStatus().then((res) => setFeedStatus(res.data)).catch(() => {})
-  }, [])
 
   async function downloadExport(format: 'json' | 'markdown') {
     const res = await apiFetch(`/export/${format}`)
@@ -494,33 +486,6 @@ function DataTab() {
     }
     setImporting(false)
     if (fileRef.current) fileRef.current.value = ''
-  }
-
-  async function handleGenerateFeedToken() {
-    setFeedMsg('')
-    try {
-      const res = await api.createCalendarFeedToken()
-      setCalendarFeedURL(res.data.url)
-      setFeedStatus({
-        exists: true,
-        created_at: res.data.created_at,
-        last_used_at: res.data.last_used_at ?? null,
-      })
-      setFeedMsg(t('settings.icalReady'))
-    } catch (err) {
-      setFeedMsg(err instanceof Error ? err.message : t('settings.exportFailed'))
-    }
-  }
-
-  async function handleDeleteFeedToken() {
-    setFeedMsg('')
-    try {
-      await api.deleteCalendarFeedToken()
-      setFeedStatus({ exists: false })
-      setCalendarFeedURL('')
-    } catch (err) {
-      setFeedMsg(err instanceof Error ? err.message : t('settings.exportFailed'))
-    }
   }
 
   return (
@@ -560,51 +525,6 @@ function DataTab() {
             />
           </div>
           {importMsg && <p className="text-sm text-green-600">{importMsg}</p>}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarIcon size={16} />
-            {t('settings.icalUrl')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <p className="text-sm text-muted-foreground">{t('settings.icalDescription')}</p>
-          <p className="text-xs text-muted-foreground">{t('settings.icalReadOnly')}</p>
-          {calendarFeedURL ? (
-            <div className="flex items-center gap-2 rounded-md border p-2 text-sm">
-              <code className="flex-1 break-all text-xs">{calendarFeedURL}</code>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={async () => {
-                  await navigator.clipboard.writeText(calendarFeedURL)
-                  setIcalCopied(true)
-                  setTimeout(() => setIcalCopied(false), 2000)
-                }}
-              >
-                <Copy size={14} />
-              </Button>
-            </div>
-          ) : (
-            <div className="rounded-md border p-3 text-sm text-muted-foreground">
-              {feedStatus.exists ? t('settings.icalActiveHidden') : t('settings.icalNotGenerated')}
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={handleGenerateFeedToken}>
-              {feedStatus.exists ? t('settings.icalRegenerate') : t('settings.icalGenerate')}
-            </Button>
-            {feedStatus.exists && (
-              <Button variant="ghost" size="sm" onClick={handleDeleteFeedToken}>
-                {t('settings.icalRevoke')}
-              </Button>
-            )}
-          </div>
-          {icalCopied && <p className="text-sm text-green-600">{t('settings.icalCopied')}</p>}
-          {feedMsg && <p className="text-sm text-muted-foreground">{feedMsg}</p>}
         </CardContent>
       </Card>
 

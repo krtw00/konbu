@@ -42,9 +42,7 @@ func (q *Queries) CreateEvent(ctx context.Context, userID uuid.UUID, calendarID 
 func (q *Queries) GetEventByID(ctx context.Context, id, userID uuid.UUID) (EventRow, error) {
 	row := q.db.QueryRowContext(ctx,
 		`SELECT `+eventCols+` FROM calendar_events
-		 WHERE id = $1 AND deleted_at IS NULL
-		   AND (created_by = $2
-		        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $2))`,
+		 WHERE id = $1 AND deleted_at IS NULL AND created_by = $2`,
 		id, userID)
 	return scanEvent(row)
 }
@@ -55,15 +53,12 @@ func (q *Queries) ListEventsByUserID(ctx context.Context, userID uuid.UUID, cale
 
 	if calendarID != nil {
 		query = `SELECT ` + eventCols + ` FROM calendar_events
-			 WHERE calendar_id = $1 AND deleted_at IS NULL
-			   AND (created_by = $2 OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $2))
+			 WHERE calendar_id = $1 AND deleted_at IS NULL AND created_by = $2
 			 ORDER BY start_at DESC LIMIT $3 OFFSET $4`
 		args = []any{*calendarID, userID, limit, offset}
 	} else {
 		query = `SELECT ` + eventCols + ` FROM calendar_events
-			 WHERE deleted_at IS NULL
-			   AND (created_by = $1
-			        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $1))
+			 WHERE deleted_at IS NULL AND created_by = $1
 			 ORDER BY start_at DESC LIMIT $2 OFFSET $3`
 		args = []any{userID, limit, offset}
 	}
@@ -88,9 +83,7 @@ func (q *Queries) ListEventsByUserID(ctx context.Context, userID uuid.UUID, cale
 func (q *Queries) ListAllEventsByUserID(ctx context.Context, userID uuid.UUID) ([]EventRow, error) {
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT `+eventCols+` FROM calendar_events
-		 WHERE deleted_at IS NULL
-		   AND (created_by = $1
-		        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $1))
+		 WHERE deleted_at IS NULL AND created_by = $1
 		 ORDER BY start_at ASC`,
 		userID)
 	if err != nil {
@@ -115,14 +108,11 @@ func (q *Queries) CountEventsByUserID(ctx context.Context, userID uuid.UUID, cal
 
 	if calendarID != nil {
 		query = `SELECT count(*) FROM calendar_events
-			 WHERE calendar_id = $1 AND deleted_at IS NULL
-			   AND (created_by = $2 OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $2))`
+			 WHERE calendar_id = $1 AND deleted_at IS NULL AND created_by = $2`
 		args = []any{*calendarID, userID}
 	} else {
 		query = `SELECT count(*) FROM calendar_events
-			 WHERE deleted_at IS NULL
-			   AND (created_by = $1
-			        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $1))`
+			 WHERE deleted_at IS NULL AND created_by = $1`
 		args = []any{userID}
 	}
 
@@ -135,9 +125,7 @@ func (q *Queries) CountEventsByUserID(ctx context.Context, userID uuid.UUID, cal
 func (q *Queries) UpdateEvent(ctx context.Context, id, userID uuid.UUID, title, description string, startAt time.Time, endAt *time.Time, allDay bool, recurrenceRule, recurrenceEnd *string) (EventRow, error) {
 	row := q.db.QueryRowContext(ctx,
 		`UPDATE calendar_events SET title = $3, description = $4, start_at = $5, end_at = $6, all_day = $7, recurrence_rule = $8, recurrence_end = $9, updated_at = now()
-		 WHERE id = $1 AND deleted_at IS NULL
-		   AND (created_by = $2
-		        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $2 AND role IN ('admin', 'editor')))
+		 WHERE id = $1 AND deleted_at IS NULL AND created_by = $2
 		 RETURNING `+eventCols,
 		id, userID, title, description, startAt, endAt, allDay, recurrenceRule, recurrenceEnd)
 	return scanEvent(row)
@@ -146,9 +134,7 @@ func (q *Queries) UpdateEvent(ctx context.Context, id, userID uuid.UUID, title, 
 func (q *Queries) SoftDeleteEvent(ctx context.Context, id, userID uuid.UUID) error {
 	_, err := q.db.ExecContext(ctx,
 		`UPDATE calendar_events SET deleted_at = now()
-		 WHERE id = $1
-		   AND (created_by = $2
-		        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $2 AND role IN ('admin', 'editor')))`,
+		 WHERE id = $1 AND created_by = $2`,
 		id, userID)
 	return err
 }

@@ -43,19 +43,6 @@ type CreateAPIKeyRequest struct {
 	Name string `json:"name"`
 }
 
-type CalendarFeedToken struct {
-	Token      string     `json:"token"`
-	URL        string     `json:"url"`
-	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
-	CreatedAt  time.Time  `json:"created_at"`
-}
-
-type CalendarFeedTokenStatus struct {
-	Exists     bool       `json:"exists"`
-	LastUsedAt *time.Time `json:"last_used_at,omitempty"`
-	CreatedAt  *time.Time `json:"created_at,omitempty"`
-}
-
 type FeedbackSubmission struct {
 	ID         uuid.UUID  `json:"id"`
 	UserID     *uuid.UUID `json:"user_id,omitempty"`
@@ -177,30 +164,17 @@ type UpdateTodoRequest struct {
 // --- Calendar ---
 
 type Calendar struct {
-	ID          uuid.UUID `json:"id"`
-	OwnerID     uuid.UUID `json:"owner_id"`
-	Name        string    `json:"name"`
-	IsDefault   bool      `json:"is_default"`
-	ShareToken  *string   `json:"share_token,omitempty"`
-	Color       string    `json:"color"`
-	MemberCount int       `json:"member_count"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-type CalendarMember struct {
-	CalendarID uuid.UUID `json:"calendar_id"`
-	UserID     uuid.UUID `json:"user_id"`
-	UserName   string    `json:"user_name"`
-	UserEmail  string    `json:"user_email"`
-	Role       string    `json:"role"`
-	Color      string    `json:"color"`
-	JoinedAt   time.Time `json:"joined_at"`
+	ID        uuid.UUID `json:"id"`
+	OwnerID   uuid.UUID `json:"owner_id"`
+	Name      string    `json:"name"`
+	IsDefault bool      `json:"is_default"`
+	Color     string    `json:"color"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type CalendarDetail struct {
 	Calendar
-	Members []CalendarMember `json:"members"`
 }
 
 type CreateCalendarRequest struct {
@@ -210,16 +184,6 @@ type CreateCalendarRequest struct {
 
 type UpdateCalendarRequest struct {
 	Name  string `json:"name"`
-	Color string `json:"color"`
-}
-
-type AddMemberRequest struct {
-	Email string `json:"email"`
-	Role  string `json:"role"`
-}
-
-type UpdateMemberRequest struct {
-	Role  string `json:"role"`
 	Color string `json:"color"`
 }
 

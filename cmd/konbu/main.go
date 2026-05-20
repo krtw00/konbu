@@ -864,17 +864,13 @@ func calendarCmd() *cobra.Command {
 				return nil
 			}
 			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-			fmt.Fprintln(w, "ID\tNAME\tCOLOR\tMEMBERS\tDEFAULT\tSHARED")
+			fmt.Fprintln(w, "ID\tNAME\tCOLOR\tDEFAULT")
 			for _, c := range calendars {
 				def := ""
-				shared := ""
 				if c.IsDefault {
 					def = "✓"
 				}
-				if c.ShareToken != nil && *c.ShareToken != "" {
-					shared = "✓"
-				}
-				fmt.Fprintf(w, "%s\t%s\t%s\t%d\t%s\t%s\n", c.ID[:8], c.Name, c.Color, c.MemberCount, def, shared)
+				fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", c.ID[:8], c.Name, c.Color, def)
 			}
 			w.Flush()
 			return nil
@@ -895,21 +891,9 @@ func calendarCmd() *cobra.Command {
 				return nil
 			}
 			fmt.Printf("# %s\n\n", detail.Name)
-			fmt.Printf("ID: %s\nColor: %s\nMembers: %d\n", detail.ID, detail.Color, len(detail.Members))
+			fmt.Printf("ID: %s\nColor: %s\n", detail.ID, detail.Color)
 			if detail.IsDefault {
 				fmt.Println("Default: yes")
-			}
-			if detail.ShareToken != nil && *detail.ShareToken != "" {
-				fmt.Printf("Share token: %s\n", *detail.ShareToken)
-			}
-			if len(detail.Members) > 0 {
-				fmt.Println("\nMembers:")
-				w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
-				fmt.Fprintln(w, "USER_ID\tNAME\tEMAIL\tROLE\tCOLOR")
-				for _, m := range detail.Members {
-					fmt.Fprintf(w, "%s\t%s\t%s\t%s\t%s\n", m.UserID[:8], m.UserName, m.UserEmail, m.Role, m.Color)
-				}
-				w.Flush()
 			}
 			return nil
 		},
@@ -975,109 +959,6 @@ func calendarCmd() *cobra.Command {
 			return nil
 		},
 	})
-
-	calendar.AddCommand(&cobra.Command{
-		Use: "join [token]", Short: "Join a calendar by invitation token",
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cal, err := cli().JoinCalendar(args[0])
-			if err != nil {
-				return err
-			}
-			if jsonOut {
-				printJSON(cal)
-				return nil
-			}
-			fmt.Printf("Joined: %s (%s)\n", cal.Name, cal.ID[:8])
-			return nil
-		},
-	})
-
-	calendar.AddCommand(&cobra.Command{
-		Use: "share-link [id]", Short: "Create or rotate an invite share token",
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			id := resolveCalendarID(args[0])
-			token, err := cli().CreateCalendarShareLink(id)
-			if err != nil {
-				return err
-			}
-			if jsonOut {
-				printJSON(map[string]string{"share_token": token})
-				return nil
-			}
-			fmt.Println(token)
-			return nil
-		},
-	})
-
-	calendar.AddCommand(&cobra.Command{
-		Use: "revoke-share-link [id]", Short: "Delete the invite share token",
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			id := resolveCalendarID(args[0])
-			if err := cli().DeleteCalendarShareLink(id); err != nil {
-				return err
-			}
-			fmt.Println("Revoked.")
-			return nil
-		},
-	})
-
-	member := &cobra.Command{Use: "member", Short: "Manage calendar members"}
-
-	memberAdd := &cobra.Command{
-		Use: "add [calendar_id] [email]", Short: "Add a calendar member",
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			role, _ := cmd.Flags().GetString("role")
-			calendarID := resolveCalendarID(args[0])
-			m, err := cli().AddCalendarMember(calendarID, args[1], role)
-			if err != nil {
-				return err
-			}
-			if jsonOut {
-				printJSON(m)
-				return nil
-			}
-			fmt.Printf("Added: %s (%s)\n", m.UserEmail, m.Role)
-			return nil
-		},
-	}
-	memberAdd.Flags().String("role", "editor", "Role (admin, editor, viewer)")
-	member.AddCommand(memberAdd)
-
-	memberEdit := &cobra.Command{
-		Use: "edit [calendar_id] [user_id]", Short: "Update a calendar member",
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			fields := map[string]any{}
-			if v, _ := cmd.Flags().GetString("role"); v != "" {
-				fields["role"] = v
-			}
-			if v, _ := cmd.Flags().GetString("color"); v != "" {
-				fields["color"] = v
-			}
-			return cli().UpdateCalendarMember(resolveCalendarID(args[0]), args[1], fields)
-		},
-	}
-	memberEdit.Flags().String("role", "", "Role (admin, editor, viewer)")
-	memberEdit.Flags().String("color", "", "Member color")
-	member.AddCommand(memberEdit)
-
-	member.AddCommand(&cobra.Command{
-		Use: "rm [calendar_id] [user_id]", Short: "Remove a calendar member",
-		Args: cobra.ExactArgs(2),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := cli().RemoveCalendarMember(resolveCalendarID(args[0]), args[1]); err != nil {
-				return err
-			}
-			fmt.Println("Removed.")
-			return nil
-		},
-	})
-
-	calendar.AddCommand(member)
 
 	return calendar
 }
@@ -1257,22 +1138,6 @@ func exportCmd() *cobra.Command {
 	}
 	mdCmd.Flags().StringP("output", "o", "", "Output file path")
 	export.AddCommand(mdCmd)
-
-	icalCmd := &cobra.Command{
-		Use: "ical", Short: "Export calendar as iCal",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			out, _ := cmd.Flags().GetString("output")
-			if err := cli().ExportICal(out); err != nil {
-				return err
-			}
-			if out != "" {
-				fmt.Printf("Exported to %s\n", out)
-			}
-			return nil
-		},
-	}
-	icalCmd.Flags().StringP("output", "o", "", "Output file path")
-	export.AddCommand(icalCmd)
 
 	return export
 }

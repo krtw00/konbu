@@ -62,25 +62,11 @@ export interface Calendar {
   owner_id: string
   name: string
   is_default: boolean
-  token: string | null
   color: string
-  member_count: number
   created_at: string
 }
 
-export interface CalendarMember {
-  calendar_id: string
-  user_id: string
-  user_name: string
-  user_email: string
-  role: 'admin' | 'editor' | 'viewer'
-  color: string
-  joined_at: string
-}
-
-export interface CalendarDetail extends Calendar {
-  members: CalendarMember[]
-}
+export type CalendarDetail = Calendar
 
 export interface SearchResult {
   type: 'memo' | 'todo' | 'event'
@@ -106,19 +92,6 @@ export interface SearchParams {
   tag?: string
   from?: string
   to?: string
-}
-
-export interface CalendarFeedTokenStatus {
-  exists: boolean
-  created_at?: string | null
-  last_used_at?: string | null
-}
-
-export interface CalendarFeedToken {
-  token: string
-  url: string
-  created_at: string
-  last_used_at?: string | null
 }
 
 export interface FeedbackSubmission {

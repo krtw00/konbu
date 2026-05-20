@@ -99,8 +99,6 @@ func main() {
 	feedbackH := handler.NewFeedbackHandler(feedbackSvc)
 	billingH := handler.NewBillingHandler(billingSvc, authSvc)
 
-	icalH := handler.NewICalHandler(authSvc, eventSvc)
-
 	// Rate limiters
 	apiLimiter := middleware.NewRateLimiter(100, time.Minute)
 	authLimiter := middleware.NewRateLimiter(10, time.Minute)
@@ -124,9 +122,6 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write([]byte(`{"status":"ok"}`))
 	})
-
-	// iCal feed (token query param auth)
-	r.Get("/api/v1/calendar.ics", icalH.HandleCalendarICS)
 
 	// Attachment serving (unauthenticated, for Markdown image display)
 	r.Get("/api/v1/attachments/*", attachH.Serve)

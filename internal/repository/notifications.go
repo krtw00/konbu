@@ -67,16 +67,15 @@ func (q *Queries) ListDueTodosForUser(ctx context.Context, userID uuid.UUID, unt
 	return todos, rows.Err()
 }
 
-// ListUpcomingEventsForUser returns events the user owns or is a member of
-// whose start_at falls within the [from, to] window. Used by the notification
-// sweep to build the candidate set for "event lead" notifications.
+// ListUpcomingEventsForUser returns events the user owns whose start_at falls
+// within the [from, to] window. Used by the notification sweep to build the
+// candidate set for "event lead" notifications.
 func (q *Queries) ListUpcomingEventsForUser(ctx context.Context, userID uuid.UUID, from, to time.Time) ([]EventRow, error) {
 	rows, err := q.db.QueryContext(ctx,
 		`SELECT `+eventCols+` FROM calendar_events
 		 WHERE deleted_at IS NULL
 		   AND start_at >= $2 AND start_at <= $3
-		   AND (created_by = $1
-		        OR calendar_id IN (SELECT calendar_id FROM calendar_members WHERE user_id = $1))`,
+		   AND created_by = $1`,
 		userID, from, to)
 	if err != nil {
 		return nil, err

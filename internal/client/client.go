@@ -329,30 +329,17 @@ func (c *Client) DeleteEvent(id string) error {
 // --- Calendar ---
 
 type Calendar struct {
-	ID          string  `json:"id"`
-	OwnerID     string  `json:"owner_id"`
-	Name        string  `json:"name"`
-	IsDefault   bool    `json:"is_default"`
-	ShareToken  *string `json:"share_token"`
-	Color       string  `json:"color"`
-	MemberCount int     `json:"member_count"`
-	CreatedAt   string  `json:"created_at"`
-	UpdatedAt   string  `json:"updated_at"`
-}
-
-type CalendarMember struct {
-	CalendarID string `json:"calendar_id"`
-	UserID     string `json:"user_id"`
-	UserName   string `json:"user_name"`
-	UserEmail  string `json:"user_email"`
-	Role       string `json:"role"`
-	Color      string `json:"color"`
-	JoinedAt   string `json:"joined_at"`
+	ID        string `json:"id"`
+	OwnerID   string `json:"owner_id"`
+	Name      string `json:"name"`
+	IsDefault bool   `json:"is_default"`
+	Color     string `json:"color"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
 }
 
 type CalendarDetail struct {
 	Calendar
-	Members []CalendarMember `json:"members"`
 }
 
 func (c *Client) ListCalendars() ([]Calendar, error) {
@@ -400,56 +387,6 @@ func (c *Client) DeleteCalendar(id string) error {
 	return err
 }
 
-func (c *Client) JoinCalendar(token string) (*Calendar, error) {
-	data, err := c.do("POST", "/api/v1/calendars/join/"+token, nil)
-	if err != nil {
-		return nil, err
-	}
-	var cal Calendar
-	return &cal, json.Unmarshal(data, &cal)
-}
-
-func (c *Client) CreateCalendarShareLink(id string) (string, error) {
-	data, err := c.do("POST", "/api/v1/calendars/"+id+"/share-link", nil)
-	if err != nil {
-		return "", err
-	}
-	var resp struct {
-		ShareToken string `json:"share_token"`
-	}
-	if err := json.Unmarshal(data, &resp); err != nil {
-		return "", err
-	}
-	return resp.ShareToken, nil
-}
-
-func (c *Client) DeleteCalendarShareLink(id string) error {
-	_, err := c.do("DELETE", "/api/v1/calendars/"+id+"/share-link", nil)
-	return err
-}
-
-func (c *Client) AddCalendarMember(id, email, role string) (*CalendarMember, error) {
-	data, err := c.do("POST", "/api/v1/calendars/"+id+"/members", map[string]any{
-		"email": email,
-		"role":  role,
-	})
-	if err != nil {
-		return nil, err
-	}
-	var member CalendarMember
-	return &member, json.Unmarshal(data, &member)
-}
-
-func (c *Client) UpdateCalendarMember(id, userID string, fields map[string]any) error {
-	_, err := c.do("PUT", "/api/v1/calendars/"+id+"/members/"+userID, fields)
-	return err
-}
-
-func (c *Client) RemoveCalendarMember(id, userID string) error {
-	_, err := c.do("DELETE", "/api/v1/calendars/"+id+"/members/"+userID, nil)
-	return err
-}
-
 // --- Tag ---
 
 func (c *Client) ListTags() ([]Tag, error) {
@@ -475,19 +412,6 @@ type APIKey struct {
 	CreatedAt string `json:"created_at"`
 }
 
-type CalendarFeedTokenStatus struct {
-	Exists     bool    `json:"exists"`
-	CreatedAt  *string `json:"created_at,omitempty"`
-	LastUsedAt *string `json:"last_used_at,omitempty"`
-}
-
-type CalendarFeedToken struct {
-	Token      string  `json:"token"`
-	URL        string  `json:"url"`
-	CreatedAt  string  `json:"created_at"`
-	LastUsedAt *string `json:"last_used_at,omitempty"`
-}
-
 func (c *Client) ListAPIKeys() ([]APIKey, error) {
 	data, err := c.do("GET", "/api/v1/api-keys", nil)
 	if err != nil {
@@ -508,29 +432,6 @@ func (c *Client) CreateAPIKey(name string) (*APIKey, error) {
 
 func (c *Client) DeleteAPIKey(id string) error {
 	_, err := c.do("DELETE", "/api/v1/api-keys/"+id, nil)
-	return err
-}
-
-func (c *Client) GetCalendarFeedTokenStatus() (*CalendarFeedTokenStatus, error) {
-	data, err := c.do("GET", "/api/v1/api-keys/calendar-feed", nil)
-	if err != nil {
-		return nil, err
-	}
-	var status CalendarFeedTokenStatus
-	return &status, json.Unmarshal(data, &status)
-}
-
-func (c *Client) RotateCalendarFeedToken() (*CalendarFeedToken, error) {
-	data, err := c.do("POST", "/api/v1/api-keys/calendar-feed", map[string]any{})
-	if err != nil {
-		return nil, err
-	}
-	var token CalendarFeedToken
-	return &token, json.Unmarshal(data, &token)
-}
-
-func (c *Client) DeleteCalendarFeedToken() error {
-	_, err := c.do("DELETE", "/api/v1/api-keys/calendar-feed", nil)
 	return err
 }
 
@@ -587,36 +488,6 @@ func (c *Client) ExportMarkdown(outPath string) error {
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
-	}
-	f, err := os.Create(outPath)
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-	_, err = io.Copy(f, resp.Body)
-	return err
-}
-
-func (c *Client) ExportICal(outPath string) error {
-	req, err := http.NewRequest("GET", c.BaseURL+"/api/v1/calendar.ics", nil)
-	if err != nil {
-		return err
-	}
-	if c.APIKey != "" {
-		req.Header.Set("Authorization", "Bearer "+c.APIKey)
-	}
-	resp, err := c.HTTPClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode >= 400 {
-		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
-	}
-	if outPath == "" {
-		_, err = io.Copy(os.Stdout, resp.Body)
-		return err
 	}
 	f, err := os.Create(outPath)
 	if err != nil {

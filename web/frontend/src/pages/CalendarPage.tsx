@@ -4,12 +4,11 @@ import { api } from '@/lib/api'
 import { useCache, invalidateCache } from '@/hooks/useCache'
 import { dateKey, formatTime, localToISO, isoToLocal, isoToDateInput, localDateToISO } from '@/lib/date'
 import { getHolidays } from '@/lib/holidays'
-import { appURL } from '@/lib/runtime'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
-import { ChevronLeft, ChevronRight, Repeat, Plus, ChevronDown, Settings2, Link2, Copy, Trash2, UserPlus, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Repeat, Plus, ChevronDown, Settings2, Trash2 } from 'lucide-react'
 import type { CalendarEvent, Calendar, CalendarDetail } from '@/types/api'
 
 type ViewMode = 'month' | 'week' | 'list'
@@ -97,12 +96,6 @@ export function CalendarPage() {
   const [showNewCal, setShowNewCal] = useState(false)
   const [newEventAllDay, setNewEventAllDay] = useState(false)
   const [newListEventAllDay, setNewListEventAllDay] = useState(false)
-  const [joinToken, setJoinToken] = useState('')
-  const [joinMsg, setJoinMsg] = useState('')
-  const [newMemberEmail, setNewMemberEmail] = useState('')
-  const [newMemberRole, setNewMemberRole] = useState('editor')
-  const [memberMsg, setMemberMsg] = useState('')
-  const [shareMsg, setShareMsg] = useState('')
 
   async function openManageCalendar(calId: string) {
     setCalSelectorOpen(false)
@@ -153,73 +146,6 @@ export function CalendarPage() {
     setManageDetail(null)
     if (selectedCalendarId === id) setSelectedCalendarId(null)
     invalidateCache('calendars', 'calendar')
-  }
-
-  async function handleGenerateLink() {
-    if (!manageDetail) return
-    await api.createShareLink(manageDetail.id)
-    const r = await api.getCalendar(manageDetail.id)
-    setManageDetail(r.data)
-  }
-
-  async function handleRevokeLink() {
-    if (!manageDetail) return
-    await api.deleteShareLink(manageDetail.id)
-    const r = await api.getCalendar(manageDetail.id)
-    setManageDetail(r.data)
-  }
-
-  async function handleCopyLink(token: string) {
-    const url = appURL(`/api/v1/calendars/join/${token}`)
-    await navigator.clipboard.writeText(url)
-    setShareMsg(t('calendar.linkCopied'))
-    setTimeout(() => setShareMsg(''), 2000)
-  }
-
-  async function handleJoin() {
-    setJoinMsg('')
-    let token = joinToken.trim()
-    const match = token.match(/join\/([a-zA-Z0-9_-]+)/)
-    if (match) token = match[1]
-    if (!token) return
-    try {
-      await api.joinCalendar(token)
-      setJoinToken('')
-      setJoinMsg(t('calendar.joined'))
-      invalidateCache('calendars')
-    } catch (err) {
-      setJoinMsg(err instanceof Error ? err.message : 'Error')
-    }
-  }
-
-  async function handleAddMember() {
-    if (!manageDetail || !newMemberEmail.trim()) return
-    setMemberMsg('')
-    try {
-      await api.addCalendarMember(manageDetail.id, { user_email: newMemberEmail.trim(), role: newMemberRole })
-      setNewMemberEmail('')
-      setMemberMsg(t('calendar.memberAdded'))
-      const r = await api.getCalendar(manageDetail.id)
-      setManageDetail(r.data)
-      setTimeout(() => setMemberMsg(''), 2000)
-    } catch (err) {
-      setMemberMsg(err instanceof Error ? err.message : 'Error')
-    }
-  }
-
-  async function handleRemoveMember(uid: string) {
-    if (!manageDetail) return
-    if (!confirm(t('calendar.removeMember') + '?')) return
-    await api.removeCalendarMember(manageDetail.id, uid)
-    const r = await api.getCalendar(manageDetail.id)
-    setManageDetail(r.data)
-  }
-
-  async function handleUpdateMemberRole(uid: string, role: string) {
-    if (!manageDetail) return
-    await api.updateCalendarMember(manageDetail.id, uid, { role })
-    const r = await api.getCalendar(manageDetail.id)
-    setManageDetail(r.data)
   }
 
   function getEventColorDot(ev: CalendarEvent): string | null {
@@ -945,7 +871,6 @@ export function CalendarPage() {
                         >
                           <span className="h-2.5 w-2.5 rounded-full shrink-0" style={{ backgroundColor: cal.color || '#3b82f6' }} />
                           <span className="truncate">{cal.name}</span>
-                          {cal.member_count > 1 && <span className="ml-auto text-xs text-muted-foreground">{cal.member_count}</span>}
                         </button>
                         <button
                           className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition hover:bg-accent hover:text-foreground"
@@ -962,13 +887,6 @@ export function CalendarPage() {
                       >
                         <Plus size={14} />
                         {t('calendar.newCalendar')}
-                      </button>
-                      <button
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-muted-foreground hover:bg-accent/50"
-                        onClick={() => { setCalSelectorOpen(false); setJoinToken(''); setJoinMsg(''); setManageOpen(false); setShowNewCal(false); document.getElementById('join-input')?.focus() }}
-                      >
-                        <UserPlus size={14} />
-                        {t('calendar.joinCalendar')}
                       </button>
                     </div>
                   </div>
@@ -1266,14 +1184,6 @@ export function CalendarPage() {
                 ))}
               </div>
             </div>
-            <div className="border-t border-border pt-3">
-              <label className="text-xs text-muted-foreground">{t('calendar.joinCalendar')}</label>
-              <div className="flex gap-2 mt-1">
-                <Input id="join-input" placeholder={t('calendar.joinToken')} value={joinToken} onChange={e => setJoinToken(e.target.value)} className="flex-1" />
-                <Button size="sm" onClick={handleJoin} disabled={!joinToken.trim()}>{t('calendar.joinCalendar')}</Button>
-              </div>
-              {joinMsg && <p className="text-xs text-muted-foreground mt-1">{joinMsg}</p>}
-            </div>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={() => setShowNewCal(false)}>{t('common.cancel')}</Button>
@@ -1333,58 +1243,6 @@ export function CalendarPage() {
                     {t('common.save')}
                   </Button>
                 </div>
-              </div>
-
-              {/* Share link */}
-              <div>
-                <label className="text-sm font-medium">{t('calendar.shareLink')}</label>
-                {manageDetail.token ? (
-                  <div className="flex items-center gap-2 mt-1">
-                    <code className="text-xs bg-muted px-2 py-1 rounded flex-1 truncate">{manageDetail.token}</code>
-                    <Button size="sm" variant="outline" onClick={() => handleCopyLink(manageDetail.token!)}><Copy size={12} /></Button>
-                    <Button size="sm" variant="ghost" className="text-destructive" onClick={handleRevokeLink}><X size={12} /></Button>
-                  </div>
-                ) : (
-                  <div className="mt-1">
-                    <Button size="sm" variant="outline" onClick={handleGenerateLink}><Link2 size={12} className="mr-1" />{t('calendar.generateLink')}</Button>
-                  </div>
-                )}
-                {shareMsg && <p className="text-xs text-muted-foreground mt-1">{shareMsg}</p>}
-              </div>
-
-              {/* Members */}
-              <div>
-                <label className="text-sm font-medium">{t('calendar.members')}</label>
-                <div className="mt-1 space-y-1">
-                  {manageDetail.members?.map(m => (
-                    <div key={m.user_id} className="flex items-center gap-2 text-sm py-1">
-                      <span className="flex-1 truncate">{m.user_name || m.user_email}</span>
-                      <select
-                        value={m.role}
-                        onChange={e => handleUpdateMemberRole(m.user_id, e.target.value)}
-                        className="text-xs bg-background border border-input rounded px-2 py-0.5"
-                      >
-                        <option value="admin">{t('calendar.roleAdmin')}</option>
-                        <option value="editor">{t('calendar.roleMember')}</option>
-                        <option value="viewer">{t('calendar.roleViewer')}</option>
-                      </select>
-                      <button className="text-muted-foreground hover:text-destructive p-1" onClick={() => handleRemoveMember(m.user_id)}>
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                {/* Add member */}
-                <div className="flex gap-2 mt-2">
-                  <Input placeholder="email@example.com" value={newMemberEmail} onChange={e => setNewMemberEmail(e.target.value)} className="flex-1 h-8 text-xs" />
-                  <select value={newMemberRole} onChange={e => setNewMemberRole(e.target.value)} className="text-xs bg-background border border-input rounded px-2 py-0.5">
-                    <option value="editor">{t('calendar.roleMember')}</option>
-                    <option value="viewer">{t('calendar.roleViewer')}</option>
-                    <option value="admin">{t('calendar.roleAdmin')}</option>
-                  </select>
-                  <Button size="sm" variant="outline" onClick={handleAddMember} disabled={!newMemberEmail.trim()}><UserPlus size={12} /></Button>
-                </div>
-                {memberMsg && <p className="text-xs text-muted-foreground mt-1">{memberMsg}</p>}
               </div>
 
               {/* Delete */}

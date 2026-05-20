@@ -84,15 +84,6 @@ export const api = {
   updateCalendar: (id: string, body: { name?: string; color?: string }) =>
     request<{ data: import('@/types/api').Calendar }>('PUT', `/calendars/${id}`, body),
   deleteCalendar: (id: string) => request<null>('DELETE', `/calendars/${id}`),
-  createShareLink: (id: string) => request<{ data: { token: string } }>('POST', `/calendars/${id}/share-link`),
-  deleteShareLink: (id: string) => request<null>('DELETE', `/calendars/${id}/share-link`),
-  joinCalendar: (token: string) => request<{ data: import('@/types/api').Calendar }>('POST', `/calendars/join/${token}`),
-  addCalendarMember: (id: string, body: { user_email: string; role: string }) =>
-    request<null>('POST', `/calendars/${id}/members`, body),
-  updateCalendarMember: (id: string, uid: string, body: { role?: string; color?: string }) =>
-    request<null>('PUT', `/calendars/${id}/members/${uid}`, body),
-  removeCalendarMember: (id: string, uid: string) =>
-    request<null>('DELETE', `/calendars/${id}/members/${uid}`),
 
   // Tags
   listTags: () => request<{ data: import('@/types/api').Tag[] }>('GET', '/tags'),
@@ -142,9 +133,6 @@ export const api = {
   createApiKey: (body: { name: string }) =>
     request<{ data: import('@/types/api').ApiKey }>('POST', '/api-keys', body),
   deleteApiKey: (id: string) => request<null>('DELETE', `/api-keys/${id}`),
-  getCalendarFeedTokenStatus: () => request<{ data: import('@/types/api').CalendarFeedTokenStatus }>('GET', '/api-keys/calendar-feed'),
-  createCalendarFeedToken: () => request<{ data: import('@/types/api').CalendarFeedToken }>('POST', '/api-keys/calendar-feed', {}),
-  deleteCalendarFeedToken: () => request<null>('DELETE', '/api-keys/calendar-feed'),
 
   // Chat
   listChatSessions: () => request<{ data: import('@/types/api').ChatSession[] }>('GET', '/chat/sessions'),
