@@ -351,17 +351,19 @@ func toolDefinitions() []ToolDef {
 	return []ToolDef{
 		{
 			Name: "search",
-			Description: "Full-text search across all memos, todos, and calendar events in the user's konbu personal planner. " +
-				"Use this when the user asks an open-ended question like \"find anything about X\" or hasn't specified the resource type. " +
+			Description: "Search across memos, todos, and calendar events by keyword. " +
+				"Use when the user asks an open-ended question like \"find anything about X\" or doesn't specify the resource type. " +
 				"Returns a unified result list with each match tagged by its resource kind (memo / todo / event). " +
-				"For listing every item of a specific kind, prefer list_memos / list_todos / list_events instead.",
+				"For listing every item of a specific kind use list_memos / list_todos / list_events instead.\n" +
+				"Example: {\"query\":\"meeting notes\"} matches items whose title, body, description, or tags contain both \"meeting\" AND \"notes\" (whitespace is AND, case-insensitive substring match).\n" +
+				"Side effects: read-only, safe to retry.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"query"},
 				"properties": map[string]interface{}{
 					"query": map[string]interface{}{
 						"type":        "string",
-						"description": "Search keyword. Matches against titles, content/description bodies, and tag names. Whitespace separates terms and is treated as AND.",
+						"description": "Search keyword. Matches against titles, content/description bodies, and tag names. Whitespace separates terms and is AND-combined.",
 					},
 				},
 			},
@@ -371,13 +373,19 @@ func toolDefinitions() []ToolDef {
 		{
 			Name: "list_memos",
 			Description: "List all memos (free-form Markdown notes) belonging to the user, newest first. " +
-				"Returns id, title, tags, and timestamps for each memo, but NOT the full Markdown body — call get_memo to read a specific memo's full content. " +
-				"Memos have no status or due date; for actionable tasks use list_todos instead.",
+				"Returns id, title, tags, and timestamps for each memo, but NOT the full Markdown body — call get_memo to read a specific memo's body. " +
+				"Memos have no status or due date; for actionable tasks use list_todos.\n" +
+				"Example: returns [{\"id\":\"abc12345-...\",\"title\":\"Daily notes\",\"tags\":[\"work\"],\"created_at\":\"2026-05-27T...\"}, ...].\n" +
+				"Workflow: typically followed by get_memo(id) when the user wants to read a specific memo's content.\n" +
+				"Side effects: read-only.",
 			InputSchema: emptyObjectSchema(),
 		},
 		{
-			Name:        "get_memo",
-			Description: "Fetch the full details of a single memo by ID, including the Markdown content body. Typically used after list_memos or search to read a memo's body.",
+			Name: "get_memo",
+			Description: "Fetch the full details of a single memo by ID, including the Markdown content body. " +
+				"Typically called after list_memos or search to read a memo's body.\n" +
+				"Example: {\"id\":\"abc12345\"} returns {\"id\":\"abc12345-...\",\"title\":\"...\",\"content\":\"# heading...\",\"tags\":[...]}.\n" +
+				"Side effects: read-only. Errors if the id does not exist or belongs to another user.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -393,7 +401,9 @@ func toolDefinitions() []ToolDef {
 			Name: "create_memo",
 			Description: "Create a new memo (free-form Markdown note) in the konbu planner. " +
 				"Returns the created memo with its assigned UUID. " +
-				"Use this for notes without a due date or completion state; use create_todo for actionable tasks, and create_event for time-bound calendar items.",
+				"Use this for notes without a due date or completion state; use create_todo for actionable tasks, and create_event for time-bound calendar items.\n" +
+				"Example: {\"title\":\"Q3 plans\",\"content\":\"## Goals\\n- ship MCP\",\"tags\":[\"work\",\"planning\"]} → {\"id\":\"...\",\"title\":\"Q3 plans\",...}.\n" +
+				"Side effects: writes a new record on each call — calling twice creates two memos. Not idempotent.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"title"},
@@ -418,7 +428,9 @@ func toolDefinitions() []ToolDef {
 			Name: "update_memo",
 			Description: "Update an existing memo's title, content, and/or tags. " +
 				"Only the fields provided are modified; omitted fields are left unchanged. " +
-				"Note that the tags array (if provided) REPLACES the existing tag set — pass the full desired list, not a delta. Returns the updated memo.",
+				"Note that the tags array (if provided) REPLACES the existing tag set — pass the full desired list, not a delta. Returns the updated memo.\n" +
+				"Example: {\"id\":\"abc12345\",\"title\":\"New title\"} renames the memo and leaves content/tags untouched.\n" +
+				"Side effects: idempotent for the same input; only specified fields change. Errors if the id does not exist.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -446,7 +458,9 @@ func toolDefinitions() []ToolDef {
 		{
 			Name: "delete_memo",
 			Description: "Permanently delete a memo by ID. This action cannot be undone. " +
-				"Returns the string \"deleted\" on success.",
+				"Returns the string \"deleted\" on success.\n" +
+				"Example: {\"id\":\"abc12345\"} → \"deleted\".\n" +
+				"Side effects: destructive, irreversible. The first call deletes; subsequent calls with the same id error because the memo no longer exists.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -464,12 +478,17 @@ func toolDefinitions() []ToolDef {
 			Name: "list_todos",
 			Description: "List all todos (actionable tasks with status and optional due date), newest first. " +
 				"Returns id, title, status (open / done), due_date, and tags for each todo. " +
-				"For free-form notes without status use list_memos; for time-bound calendar items use list_events.",
+				"For free-form notes without status use list_memos; for time-bound calendar items use list_events.\n" +
+				"Example: returns [{\"id\":\"def67890-...\",\"title\":\"Buy groceries\",\"status\":\"open\",\"due_date\":\"2026-06-01\",\"tags\":[\"shopping\"]}, ...].\n" +
+				"Workflow: typically followed by mark_todo_done(id) when the user reports completion, or get_todo(id) to read the full description.\n" +
+				"Side effects: read-only.",
 			InputSchema: emptyObjectSchema(),
 		},
 		{
-			Name:        "get_todo",
-			Description: "Fetch the full details of a single todo by ID, including description, status, due date, and tags.",
+			Name: "get_todo",
+			Description: "Fetch the full details of a single todo by ID, including description, status, due date, and tags.\n" +
+				"Example: {\"id\":\"def67890\"} → {\"id\":\"def67890-...\",\"title\":\"...\",\"description\":\"...\",\"status\":\"open\",\"due_date\":\"2026-06-01\",\"tags\":[...]}.\n" +
+				"Side effects: read-only. Errors if the id does not exist.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -485,7 +504,9 @@ func toolDefinitions() []ToolDef {
 			Name: "create_todo",
 			Description: "Create a new todo (actionable task) in the konbu planner. " +
 				"Returns the created todo with its assigned UUID and status=\"open\". " +
-				"Use this for tasks that need completion tracking; use create_memo for free-form notes, and create_event for items with a specific start time.",
+				"Use this for tasks that need completion tracking; use create_memo for free-form notes, and create_event for items with a specific start time.\n" +
+				"Example: {\"title\":\"Buy groceries\",\"due_date\":\"2026-06-01\",\"tags\":[\"shopping\"]} → {\"id\":\"...\",\"title\":\"Buy groceries\",\"status\":\"open\",...}.\n" +
+				"Side effects: writes a new record on each call — calling twice creates two todos. Not idempotent.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"title"},
@@ -515,7 +536,9 @@ func toolDefinitions() []ToolDef {
 			Description: "Update an existing todo's fields. Only the fields provided are modified; omitted fields are left unchanged. " +
 				"For toggling completion state alone, prefer mark_todo_done / reopen_todo for clearer intent; " +
 				"use update_todo when you also need to change title, description, due_date, or tags. " +
-				"Note that the tags array (if provided) REPLACES the existing tag set.",
+				"The tags array (if provided) REPLACES the existing tag set.\n" +
+				"Example: {\"id\":\"def67890\",\"due_date\":\"2026-07-01\",\"description\":\"Updated context\"} changes only those two fields.\n" +
+				"Side effects: idempotent for the same input; only specified fields change. Errors if the id does not exist.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -552,8 +575,10 @@ func toolDefinitions() []ToolDef {
 		{
 			Name: "mark_todo_done",
 			Description: "Mark a todo as completed (status=\"done\"). " +
-				"This is a convenience shortcut for the most common state transition; equivalent to update_todo with status=\"done\" but communicates intent more clearly. " +
-				"Returns the string \"marked as done\" on success.",
+				"Convenience shortcut for the most common state transition; equivalent to update_todo with status=\"done\" but communicates intent more clearly. " +
+				"Returns the string \"marked as done\" on success.\n" +
+				"Example: {\"id\":\"def67890\"} → \"marked as done\".\n" +
+				"Side effects: idempotent — calling on an already-completed todo is a no-op that still returns success.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -568,7 +593,9 @@ func toolDefinitions() []ToolDef {
 		{
 			Name: "reopen_todo",
 			Description: "Reopen a completed todo (transition status from \"done\" back to \"open\"). " +
-				"Use this when the user wants to undo a completion. Returns the string \"reopened\" on success.",
+				"Use this when the user wants to undo a completion. Returns the string \"reopened\" on success.\n" +
+				"Example: {\"id\":\"def67890\"} → \"reopened\".\n" +
+				"Side effects: idempotent — calling on an already-open todo is a no-op that still returns success.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -583,7 +610,9 @@ func toolDefinitions() []ToolDef {
 		{
 			Name: "delete_todo",
 			Description: "Permanently delete a todo by ID. This action cannot be undone. " +
-				"Prefer mark_todo_done if you only want to record completion — completed todos remain searchable and visible in history.",
+				"Prefer mark_todo_done if you only want to record completion — completed todos remain searchable and visible in history.\n" +
+				"Example: {\"id\":\"def67890\"} → \"deleted\".\n" +
+				"Side effects: destructive, irreversible. The first call deletes; subsequent calls with the same id error.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -601,12 +630,17 @@ func toolDefinitions() []ToolDef {
 			Name: "list_events",
 			Description: "List calendar events belonging to the user, ordered by start time. " +
 				"Returns id, title, start_at, end_at, all_day flag, and tags for each event. " +
-				"For tasks without a fixed time use list_todos; for free-form notes use list_memos.",
+				"For tasks without a fixed time use list_todos; for free-form notes use list_memos.\n" +
+				"Example: returns [{\"id\":\"ghi09876-...\",\"title\":\"Standup\",\"start_at\":\"2026-05-28T10:00:00+09:00\",\"end_at\":\"2026-05-28T10:15:00+09:00\",\"all_day\":false,\"tags\":[\"work\"]}, ...].\n" +
+				"Workflow: typically followed by get_event(id) for full details or update_event(id, ...) to reschedule.\n" +
+				"Side effects: read-only.",
 			InputSchema: emptyObjectSchema(),
 		},
 		{
-			Name:        "get_event",
-			Description: "Fetch the full details of a single calendar event by ID, including description, all-day flag, and tags.",
+			Name: "get_event",
+			Description: "Fetch the full details of a single calendar event by ID, including description, all-day flag, and tags.\n" +
+				"Example: {\"id\":\"ghi09876\"} → {\"id\":\"ghi09876-...\",\"title\":\"...\",\"description\":\"...\",\"start_at\":\"...\",\"end_at\":\"...\",\"all_day\":false,\"tags\":[...]}.\n" +
+				"Side effects: read-only. Errors if the id does not exist.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -622,7 +656,9 @@ func toolDefinitions() []ToolDef {
 			Name: "create_event",
 			Description: "Create a calendar event with a fixed start time (and optional end time). " +
 				"Use this for time-bound items such as meetings or appointments; use create_todo for deadline-style tasks without a specific time, " +
-				"and create_memo for free-form notes. Returns the created event with its assigned UUID.",
+				"and create_memo for free-form notes. Returns the created event with its assigned UUID.\n" +
+				"Example: {\"title\":\"Dentist\",\"start_at\":\"2026-06-15T13:00:00+09:00\",\"end_at\":\"2026-06-15T14:00:00+09:00\",\"tags\":[\"health\"]} → {\"id\":\"...\",\"title\":\"Dentist\",...}.\n" +
+				"Side effects: writes a new record on each call — calling twice creates two events. Not idempotent.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"title", "start_at"},
@@ -658,7 +694,9 @@ func toolDefinitions() []ToolDef {
 		{
 			Name: "update_event",
 			Description: "Update an existing calendar event. Only the fields provided are modified; omitted fields are left unchanged. " +
-				"Note that the tags array (if provided) REPLACES the existing tag set. Returns the updated event.",
+				"The tags array (if provided) REPLACES the existing tag set. Returns the updated event.\n" +
+				"Example: {\"id\":\"ghi09876\",\"start_at\":\"2026-06-16T13:00:00+09:00\",\"end_at\":\"2026-06-16T14:00:00+09:00\"} reschedules the event by one day.\n" +
+				"Side effects: idempotent for the same input; only specified fields change. Errors if the id does not exist.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
@@ -696,8 +734,10 @@ func toolDefinitions() []ToolDef {
 			},
 		},
 		{
-			Name:        "delete_event",
-			Description: "Permanently delete a calendar event by ID. This action cannot be undone.",
+			Name: "delete_event",
+			Description: "Permanently delete a calendar event by ID. This action cannot be undone.\n" +
+				"Example: {\"id\":\"ghi09876\"} → \"deleted\".\n" +
+				"Side effects: destructive, irreversible. The first call deletes; subsequent calls with the same id error.",
 			InputSchema: map[string]interface{}{
 				"type":     "object",
 				"required": []string{"id"},
