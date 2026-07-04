@@ -64,5 +64,8 @@
     "typescript-eslint": "^8.62.1",
     "vite": "^7.3.1",
     "vitest": "^4.1.9"
+  },
+  "overrides": {
+    "dompurify": "^3.4.11"
   }
 }
